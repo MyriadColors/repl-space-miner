@@ -3,6 +3,12 @@ from helpers import take_input
 from typing import Dict
 from ore import Ore
 
+@dataclass
+class OreCargo:
+    ore: Ore
+    quantity: int
+    price: float
+
 class Station:
     def __init__(self, name, station_id, position):
         self.name = name
@@ -12,7 +18,7 @@ class Station:
         self.fueltank = self.fueltank_cap / helpers.rnd_int(1, 4)
         self.fuel_price = helpers.rnd_float(8, 20)
         self.ores_available: list[Ore] = []
-        self.ore_cargo: dict[Ore, float] = {}
+        self.ore_cargo: list[OreCargo] = []  # ore, quantity, price
         self.ore_cargo_volume = 0.0
         self.ore_capacity = helpers.rnd_float(25_000, 75_000)
         self.ore_prices: Dict[str, float] = {}
