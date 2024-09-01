@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 
 import helpers
-from helpers import take_input
-from typing import Dict
+from helpers import take_input, rnd_float
 from ore import Ore
 
 @dataclass
@@ -23,10 +22,14 @@ class Station:
         self.ore_cargo: list[OreCargo] = []  # ore, quantity, price
         self.ore_cargo_volume = 0.0
         self.ore_capacity = helpers.rnd_float(25_000, 75_000)
-        self.ore_prices: Dict[str, float] = {}
         self.generate_ores_availability()
-        self.calculate_cargo()
-        self.generate_prices()
+        self.generate_ore_cargo_instances()
+        self.generate_ore_cargo()
+
+    def get_ore_price(self, ore_name):
+        for ore_cargo in self.ore_cargo:
+            if ore_cargo.ore.name == ore_name:
+                return ore_cargo.price
 
     def is_ore_available(self, ore_to_check):
         for ore in self.ores_available:
@@ -34,15 +37,6 @@ class Station:
                 return True
         return False
 
-    def generate_cargo(self):
-        pass
-
-
-    def get_ore_price(self, ore_to_check_name: str):
-        for ore_name, price in self.ore_prices.items():
-            if ore_name == ore_to_check_name:
-                return price
-        return None
     def generate_ores_availability(self):
         selected = []
         for _ in range(5):
@@ -50,34 +44,42 @@ class Station:
 
         self.ores_available = selected
 
-    def generate_ore_cargo(self):
-        for i, ore in enumerate(self.ores_available):
-            if helpers.rnd_int(0, len(self.ores_available)) == i:
-                self.ore_cargo[ore] = ore.volume
-                self.ore_cargo_volume += ore.volume
-            else:
-                continue
+    def generate_ore_cargo_instances(self):
+        # create the OreCargo instances
+        for ore in self.ores_available:
+            ore_quantity: int = 0
+            ore_price: float = ore.base_value * rnd_float(0.8, 1.2)
+            ore_cargo = OreCargo(ore, ore_quantity, ore_price)
 
+            self.ore_cargo.append(ore_cargo)
+    def generate_ore_cargo(self):
+        # Fill the cargo until the capacity is filled
+        while self.ore_cargo_volume < self.ore_capacity:
+            how_many_ore_types_available = len(self.ores_available)
+            for ore_type in range(how_many_ore_types_available):
+                self.ore_cargo[ore_type].quantity += 1
+                self.ore_cargo_volume += self.ores_available[ore_type].volume
+
+    def get_ore_by_name(self, name):
+        for ore in self.ore_cargo:
+            if ore.ore.name == name:
+                return ore
     def calculate_cargo(self):
         occupancy = 0
-        for ore in self.ore_cargo:
-            occupancy += ore.volume
+        for ore_cargo in self.ore_cargo:
+            occupancy += ore_cargo.quantity
         return occupancy
-
-    def generate_prices(self):
-        from helpers import rnd_float
-        for ore in self.ore_cargo:
-            self.ore_prices[ore.name] = ore.base_value * rnd_float(0.8, 1.2)
 
     def get_ore_price_to_string(self):
         string = ""
-        for ore_name, price in self.ore_prices.items():
-            string += f"{ore_name}: {price} credits\n"
+        for ore_cargo in self.ore_cargo:
+            string += f"{ore_cargo.ore.name}: {ore_cargo.price}\n"
         return string
 
     def get_ore_info_to_string(self):
         string = ""
-        for ore, volume in self.ore_cargo.items():
+        for ore in self.ores_available:
+            volume = ore.volume * self.ore_capacity
             string += f"{ore.name}: {volume} m³\n"
         return string
 
@@ -127,33 +129,33 @@ class Station:
         print(f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³")
 
     def buy_ore(self, player_ship, amount):
-        print(f"Price: {amount * self.ore_prices[player_ship.ore]} credits ({self.ore_prices[player_ship.ore]} credits per m³)")
+        print(f"Price: {amount * self.ore_cargo[player_ship.ore]} credits ({self.ore_cargo[player_ship.ore]} credits per m³)")
         response = take_input("Do you want to buy ore? (y/n) ")
         if response != "y":
             return
-        if player_ship.credits < amount * self.ore_prices[player_ship.ore]:
+        if player_ship.credits < amount * self.ore_cargo[player_ship.ore]:
             print("You don't have enough credits")
             return
-        player_ship.credits -= amount * self.ore_prices[player_ship.ore]
+        player_ship.credits -= amount * self.ore_cargo[player_ship.ore]
         player_ship.ore += amount
         self.ore_cargo -= amount
         self.ore_cargo_volume = self.calculate_cargo()
-        print(f"You bought {amount} m³ of ore for {amount * self.ore_prices[player_ship.ore]} credits")
+        print(f"You bought {amount} m³ of ore for {amount * self.ore_cargo[player_ship.ore]} credits")
         print(f"You now have {player_ship.ore} m³ of ore and {player_ship.credits} credits")
         print(f"The station has {self.ore_cargo} m³ of ore left out of {self.ore_capacity} m³")
 
     def sell_ore(self, player_ship, amount):
-        print(f"Price: {amount * self.ore_prices[player_ship.ore]} credits ({self.ore_prices[player_ship.ore]} credits per m³)")
+        print(f"Price: {amount * self.ore_cargo[player_ship.ore]} credits ({self.ore_cargo[player_ship.ore]} credits per m³)")
         response = take_input("Do you want to sell ore? (y/n) ")
         if response != "y":
             return
         if player_ship.ore < amount:
             print("You don't have enough ore")
             return
-        player_ship.credits += amount * self.ore_prices[player_ship.ore]
+        player_ship.credits += amount * self.ore_cargo[player_ship.ore]
         player_ship.ore -= amount
         self.ore_cargo += amount
         self.ore_cargo_volume = self.calculate_cargo()
-        print(f"You sold {amount} m³ of ore for {amount * self.ore_prices[player_ship.ore]} credits")
+        print(f"You sold {amount} m³ of ore for {amount * self.ore_cargo[player_ship.ore]} credits")
         print(f"You now have {player_ship.ore} m³ of ore and {player_ship.credits} credits")
         print(f"The station has {self.ore_cargo} m³ of ore left out of {self.ore_capacity} m³")
