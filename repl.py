@@ -243,17 +243,24 @@ def handle_scan_command(player_ship, game, args):
     if input_response == "-1":
         return
     else:
-        selected_object = objects[int(input_response)]
+        try:
+            input_response = int(input_response)
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+            return
+        selected_object = objects[input_response]
         game.global_time = handle_travel_command(player_ship, game.solar_system, [selected_object.position.x, selected_object.position.y], game.global_time)
 
 def handle_docking_command(player_ship, game):
     """Handles the docking command."""
-    station_to_dock = game.solar_system.get_object_within_interaction_radius(player_ship)
+    station_to_dock: Station = game.solar_system.get_object_within_interaction_radius(player_ship)
     if station_to_dock is None:
         print("No station found within range.")
     else:
         player_ship.dock_into_station(station_to_dock)
         print(f"Docked at {station_to_dock.name}.")
+        print(f"This station has: ")
+        print(station_to_dock.ores_available_to_string())
 
 def handle_undocking_command(player_ship):
     """Handles the undocking command."""
