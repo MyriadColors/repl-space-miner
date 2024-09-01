@@ -3,7 +3,7 @@ from station import Station
 
 
 class Ship:
-    def __init__(self, position, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed):
+    def __init__(self, position, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
         self.position = position  # in AU
         self.speed = speed  # in AU/s
         self.fuel = max_fuel  # in m3
@@ -17,6 +17,10 @@ class Ship:
         self.interaction_radius = 0.001 # Radius around the player ship where it can interact with other objects
         self.is_docked: bool = False
         self.docked_at: Station = None
+        self.ship_name = name
+
+    def set_ship_name(self, new_name):
+        self.ship_name = new_name
 
     def dock_into_station(self, station):
         self.is_docked = True
