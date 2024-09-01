@@ -1,4 +1,6 @@
 from helpers import format_seconds, take_input, euclidean_distance
+from ore import Ore
+from ship import Ship
 from station import Station
 from vector2d import Vector2d
 
@@ -114,8 +116,11 @@ def handle_travel_command(player_ship: Ship, solar_system, args, time):
     if len(args) < 1 or len(args) > 2:
         print("Invalid arguments. Please enter coordinates or use 'closest'.")
         return time
+    if player_ship.fuel == 0:
+        print("Cannot travel while out of fuel.")
+        return time
 
-    if len(args) == 1 and args[0] == "closest":
+    if len(args) == 1 and args[0] in ['closest', 'c']:
         if solar_system.is_object_within_an_asteroid_field_radius(player_ship.position):
             closest_field = get_closest_field(solar_system, player_ship.position, True)
         else:
@@ -126,12 +131,31 @@ def handle_travel_command(player_ship: Ship, solar_system, args, time):
             closest_station: Station = get_closest_station(solar_system, player_ship, True)
         print(f"Closest field is Field {closest_field.id} at {euclidean_distance(player_ship.position, closest_field.position)} AUs from here.")
         print(f"Closest station is Station {closest_station.id} at {euclidean_distance(player_ship.position, closest_station.position)} AUs from here.")
-        print("Do you wish to go to the closest field or the closest station?")
-        response = take_input(">> ")
-        if response == "field":
+        print("Do you wish to go to the closest 1. (f)ield or the closest 2. (s)tation?")
+        tries = 3
+        while tries > 0:
+            response = take_input(">> ")
+            if response in ["1", "f", "field"]:
+                time = player_ship.travel(closest_field.position, time)
+                break
+            elif response in ["2", "s", "station"]:
+                time = player_ship.travel(closest_station.position, time)
+                break
+            elif tries > 0:
+                print("Invalid response.")
+                tries -= 1
+            else:
+                print("Too many tries. Aborting.")
+
+    elif len(args) == 2 and args[0] in ['closest', 'c']:
+        object_type = args[1]
+        if object_type in ['field', 'f']:
+            closest_field = get_closest_field(solar_system, player_ship.position)
             time = player_ship.travel(closest_field.position, time)
-        else:
+        elif object_type in ['station', 's']:
+            closest_station = get_closest_station(solar_system, player_ship)
             time = player_ship.travel(closest_station.position, time)
+
     elif len(args) == 1:
         print("You need to enter the coordinate (x y) or use 'closest' to go to the closest object available.")
     else:
