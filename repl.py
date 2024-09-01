@@ -58,6 +58,8 @@ def handle_travel_command(player_ship, solar_system, args, time):
             time = player_ship.travel(closest_field.position, time)
         else:
             time = player_ship.travel(closest_station.position, time)
+    elif len(args) == 1:
+        print("You need to enter the coordinate (x y) or use 'closest' to go to the closest object available.")
     else:
         try:
             x = float(args[0])
