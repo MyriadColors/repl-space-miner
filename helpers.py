@@ -1,6 +1,7 @@
 import math
 import random
 
+import data
 from ore import PyrogenOre, AscorbonOre, AngionOre, VariteOre, OxyniteOre, CyclonOre, HeronOre, JonniteOre, MagnetonOre, \
     Ore
 from vector2d import Vector2d
@@ -56,8 +57,6 @@ def format_seconds(seconds: float):
 
 
 def select_random_ore() -> Ore:
-    ores = [PyrogenOre(), AscorbonOre(), AngionOre(), VariteOre(), OxyniteOre(),
-            CyclonOre(), HeronOre(), JonniteOre(), MagnetonOre()]
-    rnd_index = random.randint(0, len(ores) - 1)
+    rnd_index = random.randint(0, len(data.ORES) - 1)
 
-    return ores[rnd_index]
+    return data.ORES[rnd_index]
