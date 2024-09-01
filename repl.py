@@ -16,11 +16,15 @@ def display_time_and_status(time, player_ship):
 
 def handle_refuel_command(player_ship, game, args):
     """Handles the refuel command."""
+    if not player_ship.is_docked:
+        print("Cannot refuel while not docked.")
+        return
     if len(args) != 1:
         print("Invalid arguments. Please enter the amount of fuel to add.")
         return
     try:
         amount = float(args[0])
+        station = game.solar_system.get_object_within_interaction_radius(player_ship)
         if amount <= 0:
             print("Invalid amount. Please enter a positive number.")
             return
@@ -30,11 +34,16 @@ def handle_refuel_command(player_ship, game, args):
                 "Cannot refuel more than your ship's maximum fuel capacity, consider upgrading your ship."
             )
             return
-
-        price = amount * 15
+        price = amount * station.fuel_price
+        print(f"Total price for {round(amount, 2)}m³ of fuel: {round(price, 2)} credits.")
+        print("Are you sure you want to refuel? y/n")
+        confirm = take_input(">> ")
+        if confirm != "y":
+            print("Refuel cancelled.")
+            return
         player_ship.refuel(amount)
         game.player_credits -= price
-        print(f"Refueled with {amount} m3 for {price} credits.")
+        print(f"Refueled with {round(amount, 2)} m3 for {round(price, 2)} credits.")
     except ValueError:
         print("Invalid amount. Please enter a valid number.")
 
