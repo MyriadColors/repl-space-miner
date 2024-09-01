@@ -289,6 +289,9 @@ def handle_add_ore_command(player_ship: Ship, args):
     else:
         print("Invalid ore name. Please enter a valid ore name.")
         return
+
+    if ore.volume * ore_amount > player_ship.cargohold_capacity:
+        print("You are trying to add more ore than your ship can hold, since this is a cheat/debug command I will allow it.")
     for _ in range(ore_amount):
         player_ship.cargohold.append(ore_selected)
         player_ship.calculate_volume_occupied(True)
