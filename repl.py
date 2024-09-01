@@ -213,14 +213,16 @@ def display_help():
     print("Available commands:")
     print("  q, quit: Quit the game.")
     print("  refuel <amount>: Refuel the ship with the given amount.")
-    print("  move or travel <x> <y> or 'closest':" +
+    print("  move or travel (m, t) <x> <y> or <closest> <object>:" +
           " Move the ship to the given coordinates or" +
-          " 'closest' to travel to the closest asteroid.")
+          " 'closest' to travel to the closest asteroid field (f) or station (s).")
     print(
-        "  mine <time>: Mine for the specified time at the nearest asteroid field."
+        "  mine (mi) <time>: Mine for the specified time at the nearest asteroid field."
     )
-    print("  status: Display the current status of the ship.")
+    print("  status (st): Display the current status of the ship.")
     print("  scan <amount>: Scan for the specified amount of objects and travel to one of them if you wish to.")
+    print("  dock (do): Dock with the nearest station.")
+    print("  undock (ud): Undock from the nearest station.")
     print("  help: Display this help message.")
 
 def handle_scan_command(player_ship, game, args):
@@ -285,11 +287,11 @@ def start_repl(game):
         elif cmd in ['sell', 's']:
             print("sell command")
             handle_sell_command(game.player_ship, game)
-        elif cmd in ('move', 'travel', 'm', 't'):
+        elif cmd in ('move', 'travel', 'mo', 't'):
             game.global_time = handle_travel_command(game.player_ship,
                                                      game.solar_system, args,
                                                      game.global_time)
-        elif cmd in ['mine', 'm']:
+        elif cmd in ['mine', 'mi']:
             game.global_time = handle_mine_command(game.player_ship,
                                                    game.solar_system, args,
                                                    game.global_time)
