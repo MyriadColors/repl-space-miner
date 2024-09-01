@@ -81,6 +81,9 @@ class Station:
             return f"{self.name}, Position: {self.position}, ID: {self.id}"
         return f"{self.name}, Position: {self.position}, ID: {self.id}, Distance: {self.position.distance(position):.3f} AU"
 
+    def ores_available_to_string(self):
+        return "\n".join([ore.to_string() for ore in self.ores_available])
+
     def to_string(self):
         return f"{self.name}\nPosition: {self.position}\nID: {self.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_price_to_string()}"
 
