@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import helpers
 from helpers import take_input
 from typing import Dict
