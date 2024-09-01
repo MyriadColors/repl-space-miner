@@ -222,6 +222,7 @@ def display_help():
     print("  scan <amount>: Scan for the specified amount of objects and travel to one of them if you wish to.")
     print("  dock (do): Dock with the nearest station.")
     print("  undock (ud): Undock from the nearest station.")
+    print("  add (a) <quantity> <ore_type>: Adds an arbitrary amount of some ore to your cargohold.")
     print("  help: Display this help message.")
 
 def handle_scan_command(player_ship, game, args):
