@@ -1,4 +1,5 @@
 from helpers import euclidean_distance, vector_to_string, take_input
+from ore import Ore
 from station import Station
 
 
@@ -9,7 +10,7 @@ class Ship:
         self.fuel = max_fuel  # in m3
         self.max_fuel = max_fuel  # in m3
         self.fuel_consumption = fuel_consumption  # in m3/AU
-        self.cargohold = []  # type: list
+        self.cargohold: list[Ore] = []
         self.cargohold_occupied = 0
         self.cargohold_capacity = cargo_capacity
         self.value = value
@@ -72,7 +73,7 @@ class Ship:
         return current_time
 
     def status_to_string(self):
-        return f"Position: {vector_to_string(self.position)}\nSpeed: {self.speed}\nm/s Fuel: {round(self.fuel, 2)}/{self.max_fuel} m3\nCargohold: {round(self.cargohold_occupied, 2)}/{self.cargohold_capacity} m3\nOres: {self.cargohold}"
+        return f"Ship Name: {self.ship_name}\nPosition: {vector_to_string(self.position)}\nSpeed: {self.speed}\nm/s Fuel: {round(self.fuel, 2)}/{self.max_fuel} m3\nCargohold: {round(self.cargohold_occupied, 2)}/{self.cargohold_capacity} m3\nOres: {self.cargohold}"
 
     def mine_belt(self, asteroid_field, time_to_mine):
         if len(asteroid_field.asteroids) == 0:
