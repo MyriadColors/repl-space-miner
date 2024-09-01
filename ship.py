@@ -128,6 +128,8 @@ class Ship:
         return f"Mining Report:\nOres mined: {len(ores_mined)} of {set(list_of_ores_names)} ores\nVolume occupied: {round(self.cargohold_occupied, 2)}/{self.cargohold_capacity} m3"
 
     def calculate_volume_occupied(self):
+        total_volume = 0
         for ore in self.cargohold:
-            self.cargohold_occupied += ore.volume
+            total_volume += ore.volume
+        self.cargohold_occupied = total_volume
         print(f"The ship has occupied {self.cargohold_occupied} m3 of cargohold.")
