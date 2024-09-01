@@ -141,10 +141,6 @@ def display_help():
     print("  scan <amount>: Scan for the specified amount of objects and travel to one of them if you wish to.")
     print("  help: Display this help message.")
 
-
-
-
-
 def handle_scan_command(player_ship, game, args):
     """Handles the scan command."""
     if len(args) != 1:
