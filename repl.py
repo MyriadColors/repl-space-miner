@@ -158,7 +158,7 @@ def handle_docking_command(player_ship, game):
         player_ship.dock_into_station(station_to_dock)
         print(f"Docked at {station_to_dock.name}.")
 
-def handle_undocking_command(player_ship, game):
+def handle_undocking_command(player_ship):
     """Handles the undocking command."""
     player_ship.undock_from_station()
     print("Undocked.")
@@ -192,7 +192,7 @@ def start_repl(game):
         elif cmd in ['do', 'dock']:
             handle_docking_command(game.player_ship, game)
         elif cmd in ['ud', 'undock']:
-            handle_undocking_command(game.player_ship, game)
+            handle_undocking_command(game.player_ship)
         elif cmd == 'help':
             display_help()
         else:
