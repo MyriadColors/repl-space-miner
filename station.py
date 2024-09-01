@@ -63,8 +63,8 @@ class Station:
 
     def get_ore_price_to_string(self):
         string = ""
-        for ore, price in self.ore_prices.items():
-            string += f"{ore.name}: {price} credits\n"
+        for ore_name, price in self.ore_prices.items():
+            string += f"{ore_name}: {price} credits\n"
         return string
 
     def get_ore_info_to_string(self):
