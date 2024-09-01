@@ -59,7 +59,7 @@ class Station:
     def generate_prices(self):
         from helpers import rnd_float
         for ore in self.ore_cargo:
-            self.ore_prices[ore] = ore.base_value * rnd_float(0.8, 1.2)
+            self.ore_prices[ore.name] = ore.base_value * rnd_float(0.8, 1.2)
 
     def get_ore_price_to_string(self):
         string = ""
