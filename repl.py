@@ -58,9 +58,16 @@ def handle_travel_command(player_ship, solar_system, args, time):
         return time
 
     if len(args) == 1 and args[0] == "closest":
-        closest_field = get_closest_field(solar_system, player_ship.position)
-        closest_station: Station = get_closest_station(solar_system, player_ship)
-        print(f"Closest field is {closest_field.id} at {euclidean_distance(player_ship.position, closest_field.position)} AUs from here.")
+        if solar_system.is_object_within_an_asteroid_field_radius(player_ship.position):
+            closest_field = get_closest_field(solar_system, player_ship.position, True)
+        else:
+            closest_field = get_closest_field(solar_system, player_ship.position, False)
+        if solar_system.get_object_within_interaction_radius(player_ship) is None:
+            closest_station: Station = get_closest_station(solar_system, player_ship)
+        else:
+            closest_station: Station = get_closest_station(solar_system, player_ship, True)
+        print(f"Closest field is Field {closest_field.id} at {euclidean_distance(player_ship.position, closest_field.position)} AUs from here.")
+        print(f"Closest station is Station {closest_station.id} at {euclidean_distance(player_ship.position, closest_station.position)} AUs from here.")
         print("Do you wish to go to the closest field or the closest station?")
         response = take_input(">> ")
         if response == "field":
@@ -84,13 +91,16 @@ def handle_travel_command(player_ship, solar_system, args, time):
 
     return time
 
-def get_closest_field(solar_system, position):
+def get_closest_field(solar_system, position, is_at_field=False):
+    if is_at_field:
+        return solar_system.sort_fields('asc', 'distance', position)[1]
     closest_field = solar_system.sort_fields('asc', 'distance', position)[0]
     return closest_field
 
-def get_closest_station(solar_system, player_ship ):
-    closest_station: Station = solar_system.sort_stations('asc', 'distance', 'all', player_ship.position)[0]
-    return closest_station
+def get_closest_station(solar_system, player_ship, is_at_station=False):
+    if is_at_station:
+        return solar_system.sort_stations('asc', 'distance', player_ship.position)[1]
+    return solar_system.sort_stations('asc', 'distance', player_ship.position)[0]
 
 
 def handle_mine_command(player_ship, solar_system, args, global_time):
