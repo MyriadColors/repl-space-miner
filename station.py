@@ -11,11 +11,11 @@ class Station:
         self.fueltank_cap = helpers.rnd_float(5_000, 20_000)
         self.fueltank = self.fueltank_cap / helpers.rnd_int(1, 4)
         self.fuel_price = helpers.rnd_float(8, 20)
-        self.ores_available = []
+        self.ores_available: list[Ore] = []
         self.ore_cargo: dict[Ore, float] = {}
         self.ore_cargo_volume = 0.0
         self.ore_capacity = helpers.rnd_float(25_000, 75_000)
-        self.ore_prices: Dict[Ore, float] = {}
+        self.ore_prices: Dict[str, float] = {}
         self.generate_ores_availability()
         self.calculate_cargo()
         self.generate_prices()
