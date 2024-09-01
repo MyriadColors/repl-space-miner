@@ -9,9 +9,9 @@ from vector2d import Vector2d
 class SolarSystem:
 
     def __init__(self, size, field_quantity):
-        self.size = size
-        self.game_time = 0
-        self.field_quantity = field_quantity
+        self.size: float = size
+        self.game_time: int = 0
+        self.field_quantity: int = field_quantity
         self.asteroid_fields: list[AsteroidField] = []
         self.stations: list[Station] = []
         self.generate_fields()
