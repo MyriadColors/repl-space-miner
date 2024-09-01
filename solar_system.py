@@ -2,7 +2,6 @@ import math
 import random
 from asteroid import AsteroidField
 from helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore
-from ship import Ship
 from station import Station
 from vector2d import Vector2d
 
