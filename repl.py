@@ -64,7 +64,6 @@ def handle_sell_command(player_ship: Ship, game):
     ores_which_cannot_sell: set[Ore] = set()
     for i, ore in enumerate(player_ship.cargohold):
         if station.is_ore_available(ore):
-            print(f"Ore {i + 1}: {ore.name} ({ore.volume}m³) for {ore.base_value} credits.")
             ores_to_sell.append(ore)
         else:
             ores_which_cannot_sell.add(ore)
@@ -76,12 +75,11 @@ def handle_sell_command(player_ship: Ship, game):
 
         for i, ore in enumerate(ores_to_sell):
             total_ore_volume += ore.volume
-            # ore_price = station.get_ore_price(ore.name)
-            # I have no idea how this can happen, but it's there for sanity checking in case im hallucinating
-            # if ore_price is None:
-            #     print("Something went wrong, please contact the developer's psychiatrist.")
-            #     ores_which_cannot_sell.add(ore)
-            total_ore_price += ore.base_value
+            price = station.get_ore_price(ore.name)
+            if price == 0.0:
+                print("Error, please contact the developer's psychiatrist.")
+                return
+            total_ore_price += price
             ore_names.append(ore.name)
 
         print(f"You can sell {round(total_ore_volume, 2)}m³ of ores for {round(total_ore_price, 2)} credits.")
@@ -94,8 +92,8 @@ def handle_sell_command(player_ship: Ship, game):
 
         for ore in ores_to_sell:
             player_ship.cargohold.remove(ore)
-            station.ore_cargo[ore] = ore.volume
-            player_ship.calculate_volume_occupied()
+            station.ore_cargo_volume += ore.volume
+            player_ship.calculate_volume_occupied(True)
             station.calculate_cargo()
 
         game.player_credits += total_ore_price
