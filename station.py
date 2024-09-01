@@ -20,7 +20,21 @@ class Station:
         self.calculate_cargo()
         self.generate_prices()
 
+    def is_ore_available(self, ore_to_check):
+        for ore in self.ores_available:
+            if ore.name == ore_to_check.name:
+                return True
+        return False
 
+    def generate_cargo(self):
+        pass
+
+
+    def get_ore_price(self, ore_to_check_name: str):
+        for ore_name, price in self.ore_prices.items():
+            if ore_name == ore_to_check_name:
+                return price
+        return None
     def generate_ores_availability(self):
         selected = []
         for _ in range(5):
