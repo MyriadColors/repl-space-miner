@@ -15,6 +15,9 @@ class Game:
                                       100, 1)
         self.player_credits = 1000
 
+    def get_credits(self):
+        return round(self.player_credits, 2)
+
 
 def main():
     mixer.init()
