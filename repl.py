@@ -1,3 +1,4 @@
+import data
 from helpers import format_seconds, take_input, euclidean_distance
 from ore import Ore
 from ship import Ship
@@ -269,6 +270,32 @@ def handle_undocking_command(player_ship):
     player_ship.undock_from_station()
     print("Undocked.")
 
+def handle_add_ore_command(player_ship: Ship, args):
+    """Handles the add ore command."""
+    if len(args) != 2:
+        print(
+            "Invalid arguments. Please enter the amount of ore you wish to add and the name of the ore."
+        )
+        return
+    ore_amount = int(args[0])
+    if ore_amount < 0:
+        print("Invalid amount. Please enter a positive number.")
+        return
+    ore_name = args[1]
+    ore_selected: Ore
+    for ore in data.ORES:
+        if ore_name == ore.get_name().lower():
+            ore_selected = ore
+            break
+    else:
+        print("Invalid ore name. Please enter a valid ore name.")
+        return
+    for _ in range(ore_amount):
+        player_ship.cargohold.append(ore_selected)
+        player_ship.calculate_volume_occupied(True)
+
+    print(f"{ore_amount} of {ore_name} added to cargohold.")
+
 def start_repl(game):
     display_help()
     while True:
@@ -305,6 +332,8 @@ def start_repl(game):
             handle_docking_command(game.player_ship, game)
         elif cmd in ['ud', 'undock']:
             handle_undocking_command(game.player_ship)
+        elif cmd in ['a', 'add']:
+            handle_add_ore_command(game.player_ship, args)
         elif cmd in ["reset_name", 'rn']:
             new_name = take_input("Enter new name").strip()
             if len(new_name) == 0:
