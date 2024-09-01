@@ -272,6 +272,9 @@ def start_repl(game):
     while True:
 
         input_cmd = take_input(">> ").strip().lower().split()
+        if len(input_cmd) == 0:
+            print("Invalid command. Please enter a valid command.")
+            continue
         cmd = input_cmd[0]
         args = input_cmd[1:]
 
