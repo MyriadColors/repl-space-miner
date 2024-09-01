@@ -303,6 +303,12 @@ def start_repl(game):
             handle_docking_command(game.player_ship, game)
         elif cmd in ['ud', 'undock']:
             handle_undocking_command(game.player_ship)
+        elif cmd in ["reset_name", 'rn']:
+            new_name = take_input("Enter new name").strip()
+            if len(new_name) == 0:
+                print("Invalid name. Please enter a valid name.")
+                continue
+            game.player_ship.set_ship_name(new_name)
         elif cmd == 'help':
             display_help()
         else:
