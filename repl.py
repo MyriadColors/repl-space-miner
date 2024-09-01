@@ -47,8 +47,66 @@ def handle_refuel_command(player_ship, game, args):
     except ValueError:
         print("Invalid amount. Please enter a valid number.")
 
+def handle_sell_command(player_ship: Ship, game):
+    """Handles the sell command."""
+    if not player_ship.is_docked:
+        print("Cannot sell while not docked.")
+        return
 
-def handle_travel_command(player_ship, solar_system, args, time):
+    station: Station = game.solar_system.get_object_within_interaction_radius(player_ship)
+    if station.ore_cargo_volume == station.ore_capacity:
+        print("Cannot sell because the station's ore cargo is full, look for another one.")
+        return
+    ores_to_sell: list[Ore] = []
+    ores_which_cannot_sell: set[Ore] = set()
+    for i, ore in enumerate(player_ship.cargohold):
+        if station.is_ore_available(ore):
+            print(f"Ore {i + 1}: {ore.name} ({ore.volume}m³) for {ore.base_value} credits.")
+            ores_to_sell.append(ore)
+        else:
+            ores_which_cannot_sell.add(ore)
+
+    if len(ores_to_sell) > 0:
+        total_ore_volume = 0.0
+        total_ore_price = 0.0
+        ore_names = []
+
+        for i, ore in enumerate(ores_to_sell):
+            total_ore_volume += ore.volume
+            # ore_price = station.get_ore_price(ore.name)
+            # I have no idea how this can happen, but it's there for sanity checking in case im hallucinating
+            # if ore_price is None:
+            #     print("Something went wrong, please contact the developer's psychiatrist.")
+            #     ores_which_cannot_sell.add(ore)
+            total_ore_price += ore.base_value
+            ore_names.append(ore.name)
+
+        print(f"You can sell {round(total_ore_volume, 2)}m³ of ores for {round(total_ore_price, 2)} credits.")
+        print("Confirm? y/n")
+        confirm = take_input(">> ")
+
+        if confirm != "y":
+            print("Sell cancelled.")
+            return
+
+        for ore in ores_to_sell:
+            player_ship.cargohold.remove(ore)
+            station.ore_cargo[ore] = ore.volume
+            player_ship.calculate_volume_occupied()
+            station.calculate_cargo()
+
+        game.player_credits += total_ore_price
+
+        print(f"Sold {round(total_ore_volume, 2)}m³ of ores for {round(total_ore_price, 2)} credits.")
+        return
+    print(f"You cannot sell: ")
+    for ore in set(ores_which_cannot_sell):
+        print(ore.name)
+    print("Because the station doesnt buy them.")
+    return
+
+
+def handle_travel_command(player_ship: Ship, solar_system, args, time):
     """Handles the travel command."""
     if player_ship.is_docked:
         print("Cannot travel while docked.")
@@ -190,6 +248,9 @@ def start_repl(game):
             break
         elif cmd in ['refuel', 'r']:
             handle_refuel_command(game.player_ship, game, args)
+        elif cmd in ['sell', 's']:
+            print("sell command")
+            handle_sell_command(game.player_ship, game)
         elif cmd in ('move', 'travel', 'm', 't'):
             game.global_time = handle_travel_command(game.player_ship,
                                                      game.solar_system, args,
