@@ -6,10 +6,10 @@ class Ore:
         self.mineral_yield = mineral_yield  # Minerals per unit
 
     def to_string(self):
-        return f"{self.name}: {self.value} credits, {self.volume} m³ per unit"
+        return f"{self.name}: {self.base_value} credits, {self.volume} m³ per unit"
 
     def get_info(self):
-        return f"{self.name} {self.value} {self.volume}"
+        return f"{self.name} {self.base_value} {self.volume}"
 
 
 class PyrogenOre(Ore):
