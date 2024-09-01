@@ -10,8 +10,6 @@ from vector2d import Vector2d
 class SolarSystem:
 
     def __init__(self, size, field_quantity):
-        self.player_ship = Ship(Vector2d(50, 50), 0.0005, 100, 0.05, 5000,
-                                25000, 80)
         self.size = size
         self.game_time = 0
         self.field_quantity = field_quantity
