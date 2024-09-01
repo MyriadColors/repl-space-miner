@@ -11,6 +11,9 @@ class Ore:
     def get_info(self):
         return f"{self.name} {self.base_value} {self.volume}"
 
+    def get_name(self) -> str:
+        return self.name.lower()
+
 
 class PyrogenOre(Ore):
     def __init__(self):
