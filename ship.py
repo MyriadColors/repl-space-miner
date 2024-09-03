@@ -19,7 +19,7 @@ class Ship:
         self.is_docked: bool = False
         self.docked_at: Station | None = None
         self.ship_name = name
-        self.calculate_volume_occupied()
+        self.calculate_volume_occupied(True)
 
     def set_ship_name(self, new_name):
         self.ship_name = new_name
