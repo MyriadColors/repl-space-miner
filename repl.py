@@ -152,10 +152,16 @@ def handle_travel_command(player_ship: Ship, solar_system, args, time):
     elif len(args) == 2 and args[0] in ['closest', 'c']:
         object_type = args[1]
         if object_type in ['field', 'f']:
-            closest_field = get_closest_field(solar_system, player_ship.position)
+            if solar_system.is_object_within_an_asteroid_field_radius(player_ship.position):
+                closest_field = get_closest_field(solar_system, player_ship.position, True)
+            else:
+                closest_field = get_closest_field(solar_system, player_ship.position)
             time = player_ship.travel(closest_field.position, time)
         elif object_type in ['station', 's']:
-            closest_station = get_closest_station(solar_system, player_ship)
+            if solar_system.get_object_within_interaction_radius(player_ship) is None:
+                closest_station: Station = get_closest_station(solar_system, player_ship)
+            else:
+                closest_station: Station = get_closest_station(solar_system, player_ship, True)
             time = player_ship.travel(closest_station.position, time)
 
     elif len(args) == 1:
