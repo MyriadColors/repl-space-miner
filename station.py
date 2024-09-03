@@ -4,12 +4,6 @@ import helpers
 from helpers import take_input, rnd_float
 from ore import Ore
 
-@dataclass
-class OreCargo:
-    ore: Ore
-    quantity: int
-    price: float
-
 class Station:
     def __init__(self, name, station_id, position):
         self.name = name
