@@ -1,7 +1,9 @@
 import math
 import random
+
+import data
 from asteroid import AsteroidField
-from helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore
+from helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore, rnd_int
 from station import Station
 from vector2d import Vector2d
 
@@ -99,7 +101,8 @@ class SolarSystem:
         for i in range(random.randint(20, 30)):
             position = Vector2d(random.uniform(-self.size, self.size),
                                 random.uniform(-self.size, self.size))
-            station = Station(f"Station {i}", i, position)
+            rnd_name = data.generate_random_name(rnd_int(2, 4))
+            station = Station(f"Station {rnd_name}", i, position)
             self.stations.append(station)
 
 
