@@ -1,7 +1,6 @@
-from dataclasses import dataclass
-
 import helpers
-from helpers import take_input, rnd_float
+from data import OreCargo
+from helpers import take_input, rnd_float, rnd_int
 from ore import Ore
 
 class Station:
