@@ -56,8 +56,6 @@ class SolarSystem:
                     f"Warning: Could not place asteroid field {len(self.asteroid_fields) + 1} without overlap"
                 )
 
-        print(f"Generated {len(self.asteroid_fields)} asteroid fields")
-
     def is_object_within_an_asteroid_field_radius(self, object_position):
         for asteroid_field in self.asteroid_fields:
             distance = euclidean_distance(object_position,
