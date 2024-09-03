@@ -59,21 +59,19 @@ def handle_sell_command(player_ship: Ship, game):
         return
 
     station: Station = game.solar_system.get_object_within_interaction_radius(player_ship)
-    if station.ore_cargo_volume == station.ore_capacity:
+    if station.ore_cargo_volume >= station.ore_capacity:
         print("Cannot sell because the station's ore cargo is full, look for another one.")
         return
-    ores_to_sell: list[Ore] = []
-    ores_which_cannot_sell: set[Ore] = set()
-    for i, ore in enumerate(player_ship.cargohold):
-        if station.is_ore_available(ore):
-            ores_to_sell.append(ore)
-        else:
-            ores_which_cannot_sell.add(ore)
 
-    if len(ores_to_sell) > 0:
-        total_ore_volume = 0.0
-        total_ore_price = 0.0
-        ore_names = []
+    ores_sold: list[OreCargo] = []
+
+    # Get the ores to sell
+    # remember that player_ship.cargohold is a set
+    for ore_cargo in player_ship.cargohold:
+        if ore_cargo.quantity > 0:
+            if ore_cargo.ore.id not in [ore.id for ore in station.ores_available]:
+                print(f"Cannot sell {ore_cargo.ore.name} because it is not available.")
+                continue
 
         for i, ore in enumerate(ores_to_sell):
             total_ore_volume += ore.volume
@@ -98,15 +96,7 @@ def handle_sell_command(player_ship: Ship, game):
             player_ship.calculate_volume_occupied(True)
             station.calculate_cargo()
 
-        game.player_credits += total_ore_price
-
-        print(f"Sold {round(total_ore_volume, 2)}m³ of ores for {round(total_ore_price, 2)} credits.")
-        return
-    print(f"You cannot sell: ")
-    for ore in set(ores_which_cannot_sell):
-        print(ore.name)
-    print("Because the station doesnt buy them.")
-    return
+    print(f"Sold {total_units} units of {', '.join(ore_names)} for {total_value} credits.")
 
 
 def handle_travel_command(player_ship: Ship, solar_system, args, time):
