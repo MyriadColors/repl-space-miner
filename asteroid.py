@@ -27,6 +27,7 @@ class AsteroidField:
         self.position = position
         self.spawn_asteroids()
         self.id = AsteroidField.belt_counter
+        self.visited = False
         AsteroidField.belt_counter += 1
 
     def to_string_short(self, position=None):
