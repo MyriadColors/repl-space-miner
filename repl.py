@@ -73,28 +73,39 @@ def handle_sell_command(player_ship: Ship, game):
                 print(f"Cannot sell {ore_cargo.ore.name} because it is not available.")
                 continue
 
-        for i, ore in enumerate(ores_to_sell):
-            total_ore_volume += ore.volume
-            price = station.get_ore_price(ore.name)
-            if price == 0.0:
-                print("Error, please contact the developer's psychiatrist.")
-                return
-            total_ore_price += price
-            ore_names.append(ore.name)
+            if ore_cargo.ore.volume > station.ore_capacity - station.ore_cargo_volume:
+                print(f"Cannot sell {ore_cargo.ore.name} because the station's ore cargo is full.")
+                continue
 
-        print(f"You can sell {round(total_ore_volume, 2)}m³ of ores for {round(total_ore_price, 2)} credits.")
-        print("Confirm? y/n")
-        confirm = take_input(">> ")
+            ores_sold.append(ore_cargo)
+    if len(ores_sold) == 0:
+        print("No ores to sell.")
+        return
 
-        if confirm != "y":
-            print("Sell cancelled.")
-            return
+    # Debug print the orecargo
+    for ore_cargo in ores_sold:
+        print(ore_cargo.ore.to_string())
 
-        for ore in ores_to_sell:
-            player_ship.cargohold.remove(ore)
-            station.ore_cargo_volume += ore.volume
-            player_ship.calculate_volume_occupied(True)
-            station.calculate_cargo()
+    ore_names: set[str] = {ore.ore.name for ore in ores_sold}
+    total_value = sum([ore_sold.quantity * ore_sold.price for ore_sold in ores_sold])
+    total_volume = sum([ore_sold.quantity * ore_sold.ore.volume for ore_sold in ores_sold])
+    total_units = sum([ore_sold.quantity for ore_sold in ores_sold])
+    print(f"Ores to be sold: {', '.join(ore_names)}")
+    print(f"Total value: {total_value} credits")
+    print(f"Total volume: {total_volume} m³")
+    print(f"Total units: {total_units}")
+    print("Are you sure you want to sell these ores? y/n")
+    confirm = take_input(">> ")
+    if confirm != "y":
+        print("Sell cancelled.")
+        return
+    game.player_credits += total_value
+    station.ore_cargo_volume += total_volume
+    for player_ore_cargo in player_ship.cargohold:
+        if player_ore_cargo.ore.id in [ore.ore.id for ore in ores_sold]:
+            player_ore_cargo.quantity -= total_units
+    player_ship.cargohold = [cargo for cargo in player_ship.cargohold if cargo.quantity > 0]
+    player_ship.calculate_volume_occupied(True)
 
     print(f"Sold {total_units} units of {', '.join(ore_names)} for {total_value} credits.")
 
