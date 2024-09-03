@@ -1,4 +1,6 @@
 import data
+from data import OreCargo
+from game import Game
 from helpers import format_seconds, take_input, euclidean_distance
 from ore import Ore
 from ship import Ship
@@ -269,6 +271,7 @@ def handle_undocking_command(player_ship):
     player_ship.undock_from_station()
     print("Undocked.")
 
+# TODO: This is broken, dunno why, investigate later.
 def handle_add_ore_command(player_ship: Ship, args):
     """Handles the add ore command."""
     if len(args) != 2:
@@ -293,10 +296,72 @@ def handle_add_ore_command(player_ship: Ship, args):
     if ore.volume * ore_amount > player_ship.cargohold_capacity:
         print("You are trying to add more ore than your ship can hold, since this is a cheat/debug command I will allow it.")
     for _ in range(ore_amount):
-        player_ship.cargohold.append(ore_selected)
-        player_ship.calculate_volume_occupied(True)
+        existing_ore_cargo = next((cargo for cargo in player_ship.cargohold if cargo.ore == ore_selected), None)
+        if existing_ore_cargo:
+            existing_ore_cargo.quantity += ore_amount
+        else:
+            ore_cargo = OreCargo(ore_selected, ore_amount, ore.base_value)
+            player_ship.cargohold.append(ore_cargo)
+
 
     print(f"{ore_amount} of {ore_name} added to cargohold.")
+
+def handle_add_creds_command(game, args):
+    """Handles the add credits command."""
+    if len(args) != 1:
+        print("Invalid arguments. Please enter the amount of credits you wish to add.")
+        return
+    amount = int(args[0])
+    if amount < 0:
+        print("You have entered a negative number, this means you are in debt.")
+        print("Are you sure? (y/n)")
+        confirm = take_input(">> ").strip()
+        if confirm != "y":
+            return
+    game.player_credits += amount
+    print(f"{amount} credits added to your credits.")
+
+def handle_upgrade_command(game: Game, args):
+    """Handles the upgrade command."""
+    if len(args) != 1:
+        print("Invalid arguments. Please enter the ship stat you wish to upgrade or 'help' to see available upgrades.")
+        print("Available stats: speed, mining_speed, cargo_capacity")
+        print("Costs: 5000, 10000, 7500")
+        return
+
+    if not game.player_ship.is_docked:
+        print("You must be docked to upgrade your ship.")
+        return
+    if args[0] == "list":
+        print("Available stats: speed (price 5000), mining_speed (price: 10000), cargo_capacity (price: 7500)")
+        return
+
+    if args[0] == "speed":
+        if game.player_credits < 5000:
+            print("You do not have enough credits to upgrade this stat.")
+            return
+        old_stat = game.player_ship.speed
+        game.player_ship.speed = round(old_stat * 1.1, 2)
+        game.player_credits -= 5000
+        print(f"Upgraded from {old_stat} to {game.player_ship.speed}AU³/s for 5000 credits.")
+    elif args[0] == "mining_speed":
+        if game.player_credits < 10000:
+            print("You do not have enough credits to upgrade this stat.")
+            return
+        old_stat = game.player_ship.mining_speed
+        game.player_ship.mining_speed = round(old_stat * 1.1, 2)
+        game.player_credits -= 10000
+        print(f"Upgraded from {old_stat} to {game.player_ship.mining_speed}m³/s for 10000 credits.")
+    elif args[0] == "cargo_capacity":
+        if game.player_credits < 7500:
+            print("You do not have enough credits to upgrade this stat.")
+            return
+        old_stat = game.player_ship.cargohold_capacity
+        game.player_ship.cargohold_capacity = round(old_stat * 1.1, 2)
+        game.player_credits -= 7500
+        print(f"Upgraded from {old_stat} to {game.player_ship.cargohold_capacity}m³ for 7500 credits.")
+    else:
+        print("Invalid argument. Please enter the ship stat you wish to upgrade or 'help' to see available upgrades.")
 
 def start_repl(game):
     display_help()
@@ -334,8 +399,13 @@ def start_repl(game):
             handle_docking_command(game.player_ship, game)
         elif cmd in ['ud', 'undock']:
             handle_undocking_command(game.player_ship)
-        elif cmd in ['a', 'add']:
-            handle_add_ore_command(game.player_ship, args)
+        elif cmd in ['up', 'upgrade']:
+            handle_upgrade_command(game, args)
+        elif cmd in ['ao', 'add_ore']:
+            print("Sorry, this command is broken, try again next update.")
+            # handle_add_ore_command(game.player_ship, args)
+        elif cmd in['ac', 'add_creds']:
+            handle_add_creds_command(game, args)
         elif cmd in ["reset_name", 'rn']:
             new_name = take_input("Enter new name").strip()
             if len(new_name) == 0:
