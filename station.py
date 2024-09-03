@@ -31,9 +31,9 @@ class Station:
             if ore_cargo.ore.name == ore_name:
                 return ore_cargo.price
 
-    def is_ore_available(self, ore_to_check):
-        for ore in self.ores_available:
-            if ore.name == ore_to_check.name:
+    def is_ore_available(self, ore_to_check: OreCargo):
+        for ore_cargo in self.ore_cargo:
+            if ore_cargo.ore.id == ore_to_check.ore.id:
                 return True
         return False
 

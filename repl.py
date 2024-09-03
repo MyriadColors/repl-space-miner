@@ -200,10 +200,9 @@ def handle_mine_command(player_ship, solar_system, args, global_time):
         return global_time
 
     try:
-        time_to_mine = float(args[0])
+        time_to_mine = int(args[0])
         global_time += time_to_mine
-        asteroid_field = solar_system.get_field_by_position(
-            player_ship.position)
+        asteroid_field = solar_system.get_field_by_position(player_ship.position)
         print(player_ship.mine_belt(asteroid_field, time_to_mine))
         return global_time
     except ValueError:
