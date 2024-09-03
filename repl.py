@@ -10,7 +10,7 @@ from vector2d import Vector2d
 
 def display_welcome_message():
     """Displays the welcome message to the player."""
-    print("Welcome to the spaceship simulator!")
+    print("Welcome to the Space Trader CLI game!")
 
 
 def display_time_and_status(time, player_ship):
