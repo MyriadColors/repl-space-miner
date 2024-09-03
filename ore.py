@@ -1,9 +1,10 @@
 class Ore:
-    def __init__(self, name, value, volume, mineral_yield):
+    def __init__(self, name, value, volume, mineral_yield, id: int):
         self.name = name
         self.base_value = value  # in credits
         self.volume = volume  # in m³ per unit
         self.mineral_yield = mineral_yield  # Minerals per unit
+        self.id = id
 
     def to_string(self):
         return f"{self.name}: {self.base_value} credits, {self.volume} m³ per unit"
@@ -17,44 +18,43 @@ class Ore:
 
 class PyrogenOre(Ore):
     def __init__(self):
-        super().__init__("Pyrogen", 29.0, 0.3, [])
+        super().__init__("Pyrogen", 29.0, 0.3, [], 0)
 
 
 class AscorbonOre(Ore):
     def __init__(self):
-        super().__init__("Ascorbon", 16.0, 0.15, [])
+        super().__init__("Ascorbon", 16.0, 0.15, [], 1)
 
 
 class AngionOre(Ore):
     def __init__(self):
-        super().__init__("Angion", 55.0, 0.35, [])
+        super().__init__("Angion", 55.0, 0.35, [], 2)
 
 
 class VariteOre(Ore):
     def __init__(self):
-        super().__init__("Varite", 18.0, 0.1, [])
+        super().__init__("Varite", 18.0, 0.1, [], 3)
 
 
 class OxyniteOre(Ore):
     def __init__(self):
-        super().__init__("Oxynite", 3500.0, 16, [])
-
+        super().__init__("Oxynite", 3500.0, 16, [], 4)
 
 class CyclonOre(Ore):
     def __init__(self):
-        super().__init__("Cyclon", 600.0, 2, [])
+        super().__init__("Cyclon", 600.0, 2, [], 5)
 
 
 class HeronOre(Ore):
     def __init__(self):
-        super().__init__("Heron", 1200.0, 3, [])
+        super().__init__("Heron", 1200.0, 3, [], 6)
 
 
 class JonniteOre(Ore):
     def __init__(self):
-        super().__init__("Jonnite", 7250.0, 16, [])
+        super().__init__("Jonnite", 7250.0, 16, [], 7)
 
 
 class MagnetonOre(Ore):
     def __init__(self):
-        super().__init__("Magneton", 580.0, 1.2, [])
+        super().__init__("Magneton", 580.0, 1.2, [], 8)
