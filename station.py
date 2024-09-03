@@ -40,7 +40,9 @@ class Station:
     def generate_ores_availability(self):
         selected = []
         for _ in range(5):
-            selected.append(helpers.select_random_ore())
+            rnd_ore = helpers.select_random_ore()
+            if rnd_ore not in selected:
+                selected.append(rnd_ore)
 
         self.ores_available = selected
 
