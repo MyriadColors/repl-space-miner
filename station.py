@@ -22,6 +22,7 @@ class Station:
         self.ore_cargo: list[OreCargo] = []  # ore, quantity, price
         self.ore_cargo_volume = 0.0
         self.ore_capacity = helpers.rnd_float(25_000, 75_000)
+        self.visited = False
         self.generate_ores_availability()
         self.generate_ore_cargo_instances()
         self.generate_ore_cargo()
