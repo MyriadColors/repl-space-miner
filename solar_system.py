@@ -132,9 +132,6 @@ class SolarSystem:
             sorted_stations = self.sort_objects_by_distance(sorted_stations,
                                                             position_flag)
 
-        if len(sorted_stations) > 10:
-            sorted_stations = sorted_stations[0:10]
-
         if len(sorted_stations) == 0:
             print("No stations found")
 
