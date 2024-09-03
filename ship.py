@@ -85,60 +85,66 @@ class Ship:
 
     def mine_belt(self, asteroid_field, time_to_mine):
         if len(asteroid_field.asteroids) == 0:
-            return "No asteroids in this field"
+            print("This field is empty.")
+            return
+
+        if self.is_cargo_full():
+            print("You have no cargo space left.")
+            return
 
         asteroid_being_mined: Asteroid | None = None
         ores_mined: list[OreCargo] = []
+        time_spent = 0
 
-        while time_to_mine > 0:
+        while time_spent < time_to_mine:
+            if self.is_cargo_full():
+                print("Your cargo is now full.")
+                break
+
             if asteroid_being_mined is None or asteroid_being_mined.volume <= 0:
-                # Find the next available asteroid with ore
-                for asteroid in asteroid_field.asteroids:
-                    if asteroid.volume > 0:
-                        asteroid_being_mined = asteroid
-                        break
-
+                asteroid_being_mined = next((asteroid for asteroid in asteroid_field.asteroids if asteroid.volume > 0),
+                                            None)
                 if asteroid_being_mined is None:
-                    return "This field seems to be depleted."
+                    print("This field is empty.")
+                    break
 
             ore = asteroid_being_mined.ore
-            if ore.id not in [ore_cargo.ore.id for ore_cargo in ores_mined]:
-                ores_mined.append(OreCargo(ore, 0, ore.base_value))
+            if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
+                print(f"Cannot mine this ore because the {ore.name} ore is too voluminous for the ship's cargohold.")
+                print("In the future you may be able to try again with another ore.")
+                break
+
+            # Mine the ore
+            ore_cargo = next((cargo for cargo in ores_mined if cargo.ore.id == ore.id), None)
+            if ore_cargo:
+                ore_cargo.quantity += 1
             else:
-                for ore_cargo in ores_mined:
-                    if ore.id == ore_cargo.ore.id:
-                        ore_cargo.quantity += 1
+                ores_mined.append(OreCargo(ore, 1, ore.base_value))
 
-            time_to_mine -= 1
+            asteroid_being_mined.volume -= ore.volume
+            self.cargohold_occupied += ore.volume
+            time_spent += 1
 
-        total_volume = sum([ore_cargo.quantity * ore_cargo.ore.volume for ore_cargo in ores_mined])
-        if total_volume > self.cargohold_capacity - self.cargohold_occupied:
-            print(f"The amount mined is too much for the ship's cargohold.")
-            print(f"Discarding {round(total_volume - (self.cargohold_capacity - self.cargohold_occupied), 2)} m³")
-            # remove excess ores from the ores_mined list
-            while total_volume > self.cargohold_capacity - self.cargohold_occupied:
-                for ore_cargo in ores_mined:
-                    if ore_cargo.quantity > 1:
-                        ore_cargo.quantity -= 1
-                        total_volume -= ore_cargo.ore.volume
-                    else:
-                        ores_mined.remove(ore_cargo)
-                        total_volume -= ore_cargo.ore.volume
-
-        total_quantity = sum([ore_cargo.quantity for ore_cargo in ores_mined])
-        asteroid_being_mined.volume -= total_volume
-        ore_names: set[str] = {ore.ore.name for ore in ores_mined}
+        total_volume = sum(ore_cargo.quantity * ore_cargo.ore.volume for ore_cargo in ores_mined)
+        total_quantity = sum(ore_cargo.quantity for ore_cargo in ores_mined)
+        ore_names = {ore.ore.name for ore in ores_mined}
 
         # Update ship
         for ore_cargo in ores_mined:
-            if ore_cargo.ore.id not in [ore_cargo_player.ore.id for ore_cargo_player in self.cargohold]:
-                self.cargohold.append(ore_cargo)
+            existing_cargo = next((cargo for cargo in self.cargohold if cargo.ore.id == ore_cargo.ore.id), None)
+            if existing_cargo:
+                existing_cargo.quantity += ore_cargo.quantity
             else:
-                for ore_cargo_player in self.cargohold:
-                    if ore_cargo.ore.id == ore_cargo_player.ore.id:
-                        ore_cargo_player.quantity += ore_cargo.quantity
-        print(f"Mined {total_quantity} units of {ore_names} for {round(total_volume, 2)} m³")
+                self.cargohold.append(ore_cargo)
+
+        if total_quantity > 0:
+            print(f"Mined {total_quantity} units of {', '.join(ore_names)} for {round(total_volume, 2)} m³")
+        else:
+            print("No ores were mined.")
+
         self.calculate_volume_occupied(silence_flag=True)
+        print(f"Time spent mining: {time_spent} seconds.")
+        return time_spent
 
     def calculate_volume_occupied(self, silence_flag=False):
         total_volume = 0
@@ -147,3 +153,6 @@ class Ship:
         self.cargohold_occupied = total_volume
         if not silence_flag:
             print(f"The ship has occupied {self.cargohold_occupied} m3 of cargohold.")
+
+    def is_cargo_full(self) -> bool:
+        return self.cargohold_occupied == self.cargohold_capacity
