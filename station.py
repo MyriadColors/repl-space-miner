@@ -56,7 +56,7 @@ class Station:
             self.ore_cargo.append(ore_cargo)
     def generate_ore_cargo(self):
         # Fill the cargo until the capacity is filled
-        while self.ore_cargo_volume < self.ore_capacity:
+        while self.ore_cargo_volume < self.ore_capacity / rnd_int(2, 4):
             how_many_ore_types_available = len(self.ores_available)
             for ore_type in range(how_many_ore_types_available):
                 self.ore_cargo[ore_type].quantity += 1
