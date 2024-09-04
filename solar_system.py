@@ -1,11 +1,10 @@
 import math
 import random
-
 import data
 from asteroid import AsteroidField
 from helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore, rnd_int
 from station import Station
-from vector2d import Vector2d
+from pygame import Vector2
 
 
 class SolarSystem:
@@ -32,13 +31,13 @@ class SolarSystem:
                 rnd_position = rnd_vector(-self.size, self.size)
 
                 # Check distance from center
-                if rnd_position.distance(Vector2d(0, 0)) < 0.2:
+                if rnd_position.distance_to(Vector2(0, 0)) < 0.2:
                     continue
 
                 # Check overlap with existing fields
                 overlapping = False
                 for existing_field in self.asteroid_fields:
-                    distance = rnd_position.distance(existing_field.position)
+                    distance = rnd_position.distance_to(existing_field.position)
                     if distance < (rnd_radius + existing_field.radius):
                         overlapping = True
                         break
@@ -58,8 +57,7 @@ class SolarSystem:
 
     def is_object_within_an_asteroid_field_radius(self, object_position):
         for asteroid_field in self.asteroid_fields:
-            distance = euclidean_distance(object_position,
-                                          asteroid_field.position)
+            distance = object_position.distance_to(asteroid_field.position)
             if distance <= asteroid_field.radius:
                 return True
         return False
@@ -74,7 +72,7 @@ class SolarSystem:
 
     def sort_fields(self, sort_order, sort_type, position_flag=None):
 
-        def sort_key(field):
+        def sort_key(field: AsteroidField):
             if sort_type in ('radius', 'r'):
                 return field.radius
             elif sort_type in ('asteroids', 'a'):
@@ -83,9 +81,7 @@ class SolarSystem:
                 if position_flag is None:
                     raise ValueError(
                         "Position flag is required for distance sorting")
-                dx = field.position.x - position_flag.x
-                dy = field.position.y - position_flag.y
-                return math.sqrt(dx * dx + dy * dy)
+                return field.position.distance_to(position_flag)
             else:
                 raise ValueError(f"Invalid sort type: {sort_type}")
 
@@ -97,7 +93,7 @@ class SolarSystem:
     def generate_stations(self):
         """Generate stations in the game world."""
         for i in range(random.randint(20, 30)):
-            position = Vector2d(random.uniform(-self.size, self.size),
+            position = Vector2(random.uniform(-self.size, self.size),
                                 random.uniform(-self.size, self.size))
             rnd_name = data.generate_random_name(rnd_int(2, 4))
             station = Station(f"Station {rnd_name}", i, position)
@@ -114,9 +110,7 @@ class SolarSystem:
                 if position_flag is None:
                     raise ValueError(
                         "Position flag is required for distance sorting")
-                dx = station_key.position.x - position_flag.x
-                dy = station_key.position.y - position_flag.y
-                return math.sqrt(dx * dx + dy * dy)
+                return station_key.position.distance_to(position_flag)
             else:
                 raise ValueError(f"Invalid sort type: {sort_type}")
 

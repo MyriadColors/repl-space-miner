@@ -1,10 +1,10 @@
 import math
 import random
 
+from pygame import Vector2
+
 import data
-from ore import PyrogenOre, AscorbonOre, AngionOre, VariteOre, OxyniteOre, CyclonOre, HeronOre, JonniteOre, MagnetonOre, \
-    Ore
-from vector2d import Vector2d
+from ore import Ore
 
 
 def euclidean_distance(v1, v2):
@@ -18,7 +18,7 @@ def rnd_int(min_val, max_val):
     return random.randint(min_val, max_val)
 
 def rnd_vector(min_val, max_val):
-    return Vector2d(rnd_float(min_val, max_val), rnd_float(min_val, max_val))
+    return Vector2(rnd_float(min_val, max_val), rnd_float(min_val, max_val))
 
 
 def vector_to_string(v):

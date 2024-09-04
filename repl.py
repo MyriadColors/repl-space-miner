@@ -5,7 +5,7 @@ from helpers import format_seconds, take_input, euclidean_distance
 from ore import Ore
 from ship import Ship
 from station import Station
-from vector2d import Vector2d
+from pygame import Vector2
 
 
 def display_welcome_message():
@@ -177,7 +177,7 @@ def handle_travel_command(player_ship: Ship, solar_system, args, time):
         if x >= solar_system.size or y >= solar_system.size:
             print("Invalid coordinates. Please enter coordinates within the solar system.")
         else:
-            time = player_ship.travel(Vector2d(x, y), time)
+            time = player_ship.travel(Vector2(x, y), time)
 
     return time
 

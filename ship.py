@@ -1,11 +1,12 @@
+from pygame import Vector2
 from asteroid import Asteroid
 from helpers import euclidean_distance, vector_to_string, take_input
 from station import Station
 from data import OreCargo
 
 class Ship:
-    def __init__(self, position, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
-        self.position = position  # in AU
+    def __init__(self, position: Vector2, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
+        self.position: Vector2 = position  # in AU
         self.speed = speed  # in AU/s
         self.fuel = max_fuel  # in m3
         self.max_fuel = max_fuel  # in m3

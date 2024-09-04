@@ -1,3 +1,4 @@
+from pygame import Vector2
 import helpers
 from data import OreCargo
 from helpers import take_input, rnd_float, rnd_int
@@ -6,7 +7,7 @@ from ore import Ore
 class Station:
     def __init__(self, name, station_id, position):
         self.name = name
-        self.position = position
+        self.position: Vector2 = position
         self.id = station_id
         self.fueltank_cap = helpers.rnd_float(5_000, 20_000)
         self.fueltank = self.fueltank_cap / helpers.rnd_int(1, 4)

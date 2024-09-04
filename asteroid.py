@@ -1,5 +1,4 @@
 import random
-
 from helpers import rnd_float, meters_cubed_to_km_cubed
 from ore import Ore
 
