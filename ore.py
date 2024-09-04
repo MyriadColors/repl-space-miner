@@ -1,10 +1,9 @@
 class Ore:
     def __init__(self, name, value, volume, mineral_yield, id: int):
-        self.name = name
-        self.base_value = value  # in credits
-        self.volume = volume  # in m³ per unit
-        self.mineral_yield = mineral_yield  # Minerals per unit
-        self.id = id
+        self.name: str = name
+        self.base_value: float = value  # in credits
+        self.volume: float = volume  # in m³ per unit
+        self.id: int = id
 
     def to_string(self):
         return f"{self.name}: {self.base_value} credits, {self.volume} m³ per unit"

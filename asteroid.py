@@ -1,7 +1,7 @@
 import random
+from pygame import Vector2
 from helpers import rnd_float, meters_cubed_to_km_cubed
 from ore import Ore
-
 
 class Asteroid:
     def __init__(self, name, volume, ore):
@@ -19,14 +19,14 @@ class Asteroid:
 class AsteroidField:
     belt_counter: int = 0
     def __init__(self, asteroid_quantity, ores_available, radius, position):
-        self.asteroid_quantity = asteroid_quantity
-        self.ores_available = ores_available  # type: list[Ore]
-        self.radius = radius  # in AU
-        self.asteroids = []
-        self.position = position
+        self.asteroid_quantity: int = asteroid_quantity
+        self.ores_available: list[Ore] = ores_available
+        self.radius: float = radius  # in AU
+        self.asteroids: list[Asteroid] = []
+        self.position: Vector2 = position
+        self.id: int = AsteroidField.belt_counter
+        self.visited: bool = False
         self.spawn_asteroids()
-        self.id = AsteroidField.belt_counter
-        self.visited = False
         AsteroidField.belt_counter += 1
 
     def to_string_short(self, position=None):

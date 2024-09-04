@@ -7,19 +7,19 @@ from data import OreCargo
 class Ship:
     def __init__(self, position: Vector2, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
         self.position: Vector2 = position  # in AU
-        self.speed = speed  # in AU/s
-        self.fuel = max_fuel  # in m3
-        self.max_fuel = max_fuel  # in m3
-        self.fuel_consumption = fuel_consumption  # in m3/AU
+        self.speed: float = speed  # in AU/s
+        self.fuel: float = max_fuel  # in m3
+        self.max_fuel: float = max_fuel  # in m3
+        self.fuel_consumption: float = fuel_consumption  # in m3/AU
         self.cargohold: list[OreCargo] = []
-        self.cargohold_occupied = 0
-        self.cargohold_capacity = cargo_capacity
-        self.value = value
-        self.mining_speed = mining_speed
-        self.interaction_radius = 0.001 # Radius around the player ship where it can interact with other objects
+        self.cargohold_occupied: float = 0
+        self.cargohold_capacity: float = cargo_capacity
+        self.value: float = value
+        self.mining_speed: float = mining_speed
+        self.interaction_radius: float = 0.001 # Radius around the player ship where it can interact with other objects
         self.is_docked: bool = False
         self.docked_at: Station | None = None
-        self.ship_name = name
+        self.ship_name: str = name
         self.calculate_volume_occupied(True)
 
     def set_ship_name(self, new_name):

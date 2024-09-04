@@ -6,17 +6,17 @@ from ore import Ore
 
 class Station:
     def __init__(self, name, station_id, position):
-        self.name = name
+        self.name: str = name
         self.position: Vector2 = position
-        self.id = station_id
-        self.fueltank_cap = helpers.rnd_float(5_000, 20_000)
-        self.fueltank = self.fueltank_cap / helpers.rnd_int(1, 4)
-        self.fuel_price = helpers.rnd_float(8, 20)
+        self.id: int = station_id
+        self.fueltank_cap: float = helpers.rnd_float(5_000, 20_000)
+        self.fueltank: float = self.fueltank_cap / helpers.rnd_int(1, 4)
+        self.fuel_price: float = helpers.rnd_float(8, 20)
         self.ores_available: list[Ore] = []
         self.ore_cargo: list[OreCargo] = []  # ore, quantity, price
-        self.ore_cargo_volume = 0.0
-        self.ore_capacity = helpers.rnd_float(25_000, 75_000)
-        self.visited = False
+        self.ore_cargo_volume: float = 0.0
+        self.ore_capacity: float = helpers.rnd_float(25_000, 75_000)
+        self.visited: bool = False
         self.generate_ores_availability()
         self.generate_ore_cargo_instances()
         self.generate_ore_cargo()
