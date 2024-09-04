@@ -124,35 +124,3 @@ class Station:
         print(f"You sold {amount} m³ of fuel for {amount * self.fuel_price} credits")
         print(f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits")
         print(f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³")
-
-    def buy_ore(self, player_ship, amount):
-        print(f"Price: {amount * self.ore_cargo[player_ship.ore]} credits ({self.ore_cargo[player_ship.ore]} credits per m³)")
-        response = take_input("Do you want to buy ore? (y/n) ")
-        if response != "y":
-            return
-        if player_ship.credits < amount * self.ore_cargo[player_ship.ore]:
-            print("You don't have enough credits")
-            return
-        player_ship.credits -= amount * self.ore_cargo[player_ship.ore]
-        player_ship.ore += amount
-        self.ore_cargo -= amount
-        self.ore_cargo_volume = self.calculate_cargo()
-        print(f"You bought {amount} m³ of ore for {amount * self.ore_cargo[player_ship.ore]} credits")
-        print(f"You now have {player_ship.ore} m³ of ore and {player_ship.credits} credits")
-        print(f"The station has {self.ore_cargo} m³ of ore left out of {self.ore_capacity} m³")
-
-    def sell_ore(self, player_ship, amount):
-        print(f"Price: {amount * self.ore_cargo[player_ship.ore]} credits ({self.ore_cargo[player_ship.ore]} credits per m³)")
-        response = take_input("Do you want to sell ore? (y/n) ")
-        if response != "y":
-            return
-        if player_ship.ore < amount:
-            print("You don't have enough ore")
-            return
-        player_ship.credits += amount * self.ore_cargo[player_ship.ore]
-        player_ship.ore -= amount
-        self.ore_cargo += amount
-        self.ore_cargo_volume = self.calculate_cargo()
-        print(f"You sold {amount} m³ of ore for {amount * self.ore_cargo[player_ship.ore]} credits")
-        print(f"You now have {player_ship.ore} m³ of ore and {player_ship.credits} credits")
-        print(f"The station has {self.ore_cargo} m³ of ore left out of {self.ore_capacity} m³")
