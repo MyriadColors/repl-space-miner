@@ -86,7 +86,7 @@ class Station:
     def to_string_short(self, position=None):
         if position is None:
             return f"{self.name}, Position: {self.position}, ID: {self.id}"
-        return f"{self.name}, Position: {self.position}, ID: {self.id}, Distance: {self.position.distance(position):.3f} AU"
+        return f"{self.name}, Position: {self.position}, ID: {self.id}, Distance: {self.position.distance_to(position):.3f} AU"
 
     def ores_available_to_string(self):
         return "\n".join([ore.to_string() for ore in self.ores_available])

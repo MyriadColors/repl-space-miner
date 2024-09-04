@@ -32,7 +32,7 @@ class AsteroidField:
     def to_string_short(self, position=None):
         if position is None:
             return f"Field id: {self.id}, Position: {self.position}, Radius: {self.radius}"
-        return f"Field id: {self.id}, Position: {self.position}, Distance: {self.position.distance(position):.3f} AU"
+        return f"Field id: {self.id}, Position: {self.position}, Distance: {self.position.distance_to(position):.3f} AU"
 
     def to_string(self, position=None):
         asteroid_field_info = (
@@ -40,7 +40,7 @@ class AsteroidField:
             f"Position: {self.position.x:.3f} {self.position.y:.3f}\n"
         )
         if position:
-            asteroid_field_info += f"Distance: {self.position.distance(position):.3f} AU\n"
+            asteroid_field_info += f"Distance: {self.position.distance_to(position):.3f} AU\n"
         ore_list_info = "\n".join(ore.to_string() for ore in self.ores_available)
         asteroid_field_info += (
             f"Radius: {self.radius:.3f} AU\n"
