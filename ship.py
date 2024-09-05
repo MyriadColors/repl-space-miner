@@ -22,6 +22,12 @@ class Ship:
         self.ship_name: str = name
         self.calculate_volume_occupied(True)
 
+    def get_ore_cargo_by_id(self, id: int) -> (bool, OreCargo):
+        for ore_cargo in self.cargohold:
+            if ore_cargo.ore.id == id:
+                return True, ore_cargo
+        return False, None
+
     def set_ship_name(self, new_name):
         self.ship_name = new_name
 

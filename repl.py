@@ -1,12 +1,11 @@
 import data
 from data import OreCargo
 from game import Game
-from helpers import format_seconds, take_input, euclidean_distance
+from helpers import format_seconds, take_input, euclidean_distance, rnd_float, rnd_int
 from ore import Ore
 from ship import Ship
 from station import Station
 from pygame import Vector2
-
 
 def display_welcome_message():
     """Displays the welcome message to the player."""
@@ -52,13 +51,13 @@ def handle_refuel_command(player_ship, game, args):
     except ValueError:
         print("Invalid amount. Please enter a valid number.")
 
-def handle_sell_command(player_ship: Ship, game):
+def handle_sell_command(game):
     """Handles the sell command."""
-    if not player_ship.is_docked:
+    if not game.player_ship.is_docked:
         print("Cannot sell while not docked.")
         return
 
-    station: Station = game.solar_system.get_object_within_interaction_radius(player_ship)
+    station: Station = game.solar_system.get_object_within_interaction_radius(game.player_ship)
     if station.ore_cargo_volume >= station.ore_capacity:
         print("Cannot sell because the station's ore cargo is full, look for another one.")
         return
@@ -67,7 +66,7 @@ def handle_sell_command(player_ship: Ship, game):
 
     # Get the ores to sell
     # remember that player_ship.cargohold is a set
-    for ore_cargo in player_ship.cargohold:
+    for ore_cargo in game.player_ship.cargohold:
         if ore_cargo.quantity > 0:
             if ore_cargo.ore.id not in [ore.id for ore in station.ores_available]:
                 print(f"Cannot sell {ore_cargo.ore.name} because it is not available.")
@@ -101,14 +100,109 @@ def handle_sell_command(player_ship: Ship, game):
         return
     game.player_credits += total_value
     station.ore_cargo_volume += total_volume
-    for player_ore_cargo in player_ship.cargohold:
+    for player_ore_cargo in game.player_ship.cargohold:
         if player_ore_cargo.ore.id in [ore.ore.id for ore in ores_sold]:
             player_ore_cargo.quantity -= total_units
-    player_ship.cargohold = [cargo for cargo in player_ship.cargohold if cargo.quantity > 0]
-    player_ship.calculate_volume_occupied(True)
+    game.player_ship.cargohold = [cargo for cargo in game.player_ship.cargohold if cargo.quantity > 0]
+    game.player_ship.calculate_volume_occupied(True)
 
     print(f"Sold {total_units} units of {', '.join(ore_names)} for {total_value} credits.")
 
+def handle_buy_command(game: Game, args: list[str]):
+    if not game.player_ship.is_docked:
+        print("Cannot buy while not docked.")
+        return
+    if len(args) != 2:
+        print("Invalid arguments. Please enter an ore name and amount to buy.")
+        return
+
+    ore_name = args[0].capitalize()
+    try:
+        amount = int(args[1])
+    except ValueError:
+        print("Invalid amount. Please enter a valid number.")
+        return
+    bartering_flag = False
+    try:
+        station = game.solar_system.get_object_within_interaction_radius(game.player_ship)
+        ore_exists, ore_cargo = station.get_ore_by_name(ore_name)
+        if not ore_exists:
+            print(f"Cannot buy {ore_name} because it is not available.")
+            return
+
+        total_volume = ore_cargo.ore.volume * amount
+        volume_of_ore_available = ore_cargo.quantity * ore_cargo.ore.volume
+        price = ore_cargo.price * amount
+        print(f"Price for {amount} {ore_name}: {price} credits")
+        print("Want to barter for a discount? y/n")
+        confirm = take_input(">> ")
+        if confirm == "y":
+            bartering_flag = True
+            rng_number: float = rnd_float(0, 1)
+            if rng_number < 0.5:
+                discount = rnd_int(10, 25)
+                price = price * (100 - discount) / 100
+                print(f"Bartered for {discount}% of the price.")
+                print(f"New price: {price} credits")
+                if price > game.player_credits:
+                    print("You still don't have enough credits.")
+                    return
+            else:
+                print("Bartering was unsuccessful.")
+        if price > game.player_credits:
+            print(f"Cannot buy {amount} {ore_name} because you don't have enough credits.")
+            if not bartering_flag:
+                print(f"Want to barter? y/n")
+                confirm = take_input(">> ")
+                if confirm == "y":
+                    rng_number: float = rnd_float(0, 1)
+                    if rng_number < 0.5:
+                        discount = rnd_int(10, 25)
+                        price = price * (100 - discount) / 100
+                        print(f"Bartered for {discount}% of the price.")
+                        print(f"New price: {price} credits")
+                        if price > game.player_credits:
+                            print("You still don't have enough credits.")
+                            return
+                    else:
+                        print("Bartering was unsucessful.")
+                else:
+                    print("Buy cancelled.")
+                    return
+            else:
+                rng_number: float = rnd_float(0, 1)
+                if rng_number < 0.5:
+                    discount = rnd_int(10, 25)
+                    price = price * (100 - discount) / 100
+                    print(f"Bartered for {discount}% of the price.")
+                    print(f"New price: {price} credits")
+                    if price > game.player_credits:
+                        print("You still don't have enough credits.")
+                        return
+        if total_volume > volume_of_ore_available:
+            print(f"Cannot buy {amount} {ore_name} because the station's doesn't have enough ore in its cargo.")
+            print("Do you want to buy all available ore? y/n")
+            confirm = take_input(">> ")
+            if confirm == "y":
+                amount = int(volume_of_ore_available / ore_cargo.ore.volume)
+            else:
+                print("Buy cancelled.")
+                return
+
+        ore_cargo.quantity -= amount
+        ore_exists, ore_cargo_found = game.player_ship.get_ore_cargo_by_id(ore_cargo.ore.id)
+        if ore_exists:
+            print("Found roe, adding")
+            ore_cargo_found.quantity += amount
+        else:
+            print("Did not found ore, appending")
+            game.player_ship.cargohold.append(OreCargo(ore_cargo.ore, amount, ore_cargo.price))
+        game.player_ship.cargohold = [cargo for cargo in game.player_ship.cargohold if cargo.quantity > 0]
+        game.player_ship.calculate_volume_occupied(True)
+        game.player_credits -= price
+        print(f"Report: {amount} {ore_name} bought for {price} credits.")
+    except ValueError:
+        print("Invalid amount. Please enter a valid number.")
 
 def handle_travel_command(player_ship: Ship, solar_system, args, time):
     """Handles the travel command."""
@@ -385,8 +479,9 @@ def start_repl(game):
         elif cmd in ['refuel', 'r']:
             handle_refuel_command(game.player_ship, game, args)
         elif cmd in ['sell', 's']:
-            print("sell command")
-            handle_sell_command(game.player_ship, game)
+            handle_sell_command(game)
+        elif cmd in ['buy', 'b']:
+            handle_buy_command(game, args)
         elif cmd in ('move', 'travel', 'mo', 't'):
             game.global_time = handle_travel_command(game.player_ship,
                                                      game.solar_system, args,
