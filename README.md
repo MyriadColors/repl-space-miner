@@ -46,8 +46,12 @@ Once you start the game, you’ll be greeted with a welcome message and a comman
 - **refuel [amount]**: Refuel your spaceship at a station.
 - **status (or st)**: Displays the current status of your ship, including position, fuel, cargo, and credits.
 - **scan [amount]**: Scans for nearby objects (asteroid fields or stations) within your current range.
-- **dock (or do)**: Dock at a station if your are close enough to it.
+- **dock (or do)**: Dock at a station if you are close enough to it.
 - **undock (or ud)**: Undock from the station you are currently docked at.
+- **add_credits (or ac)** : Add credits to the player (cheat/debug command).
+- **add_ores (or ao)** : Add ores to the player (cheat/debug command) [nonfunctional].
+- **sell (or s)**: Sell ores at a station.
+- **buy (or b) [ore] [amount]**: Buy ores from a station.
 - **quit (or q)**: Exit the game.
 
 ### Game Features
@@ -55,16 +59,18 @@ Once you start the game, you’ll be greeted with a welcome message and a comman
 - **Exploration**: Navigate through a procedurally generated solar system with multiple asteroid fields and space stations.
 - **Mining**: Extract valuable ores from asteroids, which can be sold at stations for credits.
 - **Resource Management**: Manage your fuel, cargo space, and credits carefully to survive and progress.
+- **Space Trading**: Trade ores with stations.
 
 ### Future Development
 
 Given the current state of the game, the following features could realistically be added as development progresses:
 
-- **Combat**: Introduce space battles with pirates or other factions.
+- **Combat**: Space battles with pirates or other factions.
 - **Economy**: Implement a dynamic market system where ore prices fluctuate based on supply and demand, influencing trading strategies.
 - **Missions and Quests**: Add story-driven missions or random quests that provide rewards, such as rare ores or unique ship upgrades.
 - **Ship Customization**: Allow players to upgrade and customize their ships with better engines, weapons, and larger cargo holds.
 - **Space Exploration**: Introduce new space exploration mechanics, such as interstellar travel, planet landing, finding hidden secrets and so on.
+
 ## Contribution
 
 Contributions are welcome! Feel free to submit issues and pull requests. Please ensure that any contributions align with the project's direction and follow the coding style of the existing codebase.
