@@ -55,7 +55,7 @@ class Station:
             how_many_ore_types_available = len(self.ores_available)
             for ore_type in range(how_many_ore_types_available):
                 self.ore_cargo[ore_type].quantity += 1
-                self.ore_cargo_volume += self.ores_available[ore_type].volume
+                self.ore_cargo_volume += round(self.ores_available[ore_type].volume, 2)
 
     def get_ore_by_name(self, name) -> (bool, OreCargo):
         for ore_cargo in self.ore_cargo:
