@@ -1,8 +1,8 @@
 import random
-import data
-from asteroid import AsteroidField
-from helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore, rnd_int
-from station import Station
+from src import data
+from src.classes.asteroid import AsteroidField
+from src.helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore, rnd_int
+from src.classes.station import Station
 from pygame import Vector2
 
 

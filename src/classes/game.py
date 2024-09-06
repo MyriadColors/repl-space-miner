@@ -1,7 +1,7 @@
 from random import choice
 
-from ship import Ship
-from solar_system import SolarSystem
+from src.classes.ship import Ship
+from src.classes.solar_system import SolarSystem
 
 
 class Game:

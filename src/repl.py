@@ -1,8 +1,8 @@
-from command_handlers import handle_refuel_command, handle_sell_command, handle_buy_command, handle_travel_command, \
+from src.command_handlers import handle_refuel_command, handle_sell_command, handle_buy_command, handle_travel_command, \
     handle_mine_command, display_help, handle_scan_command, handle_docking_command, handle_undocking_command, \
     handle_add_creds_command, handle_upgrade_command
-from game import Game
-from helpers import format_seconds, take_input
+from src.classes.game import Game
+from src.helpers import format_seconds, take_input
 
 def command_interpreter(game: Game, cmd: str, args: list[str]) -> bool:
     """Interprets the command and executes it."""

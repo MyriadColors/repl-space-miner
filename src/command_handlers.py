@@ -1,13 +1,13 @@
 from pygame import Vector2
 
-import data
-from data import OreCargo
-from game import Game
-from helpers import take_input, rnd_float, rnd_int, get_closest_field, get_closest_station, euclidean_distance, \
+from src import data
+from src.data import OreCargo
+from src.classes.game import Game
+from src.helpers import take_input, rnd_float, rnd_int, get_closest_field, get_closest_station, euclidean_distance, \
     prompt_for_closest_travel_choice, format_seconds
-from ore import Ore
-from ship import Ship
-from station import Station
+from src.classes.ore import Ore
+from src.classes.ship import Ship
+from src.classes.station import Station
 
 
 def handle_refuel_command(player_ship, game, args):

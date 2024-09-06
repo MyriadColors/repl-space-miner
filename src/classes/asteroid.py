@@ -1,7 +1,7 @@
 import random
 from pygame import Vector2
-from helpers import rnd_float, meters_cubed_to_km_cubed
-from ore import Ore
+from src.helpers import rnd_float, meters_cubed_to_km_cubed
+from src.classes.ore import Ore
 
 class Asteroid:
     def __init__(self, name, volume, ore):

@@ -1,8 +1,8 @@
 from pygame import Vector2
-from asteroid import Asteroid
-from helpers import euclidean_distance, vector_to_string, take_input, format_seconds
-from station import Station
-from data import OreCargo
+from src.classes.asteroid import Asteroid
+from src.helpers import euclidean_distance, vector_to_string, take_input, format_seconds
+from src.classes.station import Station
+from src.data import OreCargo
 
 class Ship:
     def __init__(self, position: Vector2, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
@@ -22,9 +22,9 @@ class Ship:
         self.ship_name: str = name
         self.calculate_volume_occupied(True)
 
-    def get_ore_cargo_by_id(self, id: int) -> (bool, OreCargo):
+    def get_ore_cargo_by_id(self, ore_id: int) -> (bool, OreCargo):
         for ore_cargo in self.cargohold:
-            if ore_cargo.ore.id == id:
+            if ore_cargo.ore.id == ore_id:
                 return True, ore_cargo
         return False, None
 

@@ -1,8 +1,8 @@
 from pygame import Vector2
-import helpers
-from data import OreCargo
-from helpers import take_input, rnd_float, rnd_int
-from ore import Ore
+from src import helpers
+from src.data import OreCargo
+from src.helpers import take_input, rnd_float, rnd_int
+from src.classes.ore import Ore
 
 class Station:
     def __init__(self, name, station_id, position):

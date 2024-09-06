@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from random import choice
 
-from ore import MagnetonOre, JonniteOre, HeronOre, CyclonOre, OxyniteOre, VariteOre, AngionOre, AscorbonOre, PyrogenOre, \
+from src.classes.ore import MagnetonOre, JonniteOre, HeronOre, CyclonOre, OxyniteOre, VariteOre, AngionOre, AscorbonOre, PyrogenOre, \
     Ore
 
 ORES = [PyrogenOre(), AscorbonOre(), AngionOre(), VariteOre(), OxyniteOre(),
