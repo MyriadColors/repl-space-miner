@@ -152,9 +152,9 @@ def handle_buy_command(game: Game, args: list[str]):
             print(f"Cannot buy {ore_name} because it is not available.")
             return
 
-        total_volume = ore_cargo.ore.volume * amount
-        volume_of_ore_available = ore_cargo.quantity * ore_cargo.ore.volume
-        price = ore_cargo.price * amount
+        total_volume = round(ore_cargo.ore.volume * amount, 2)
+        volume_of_ore_available = round(ore_cargo.quantity * ore_cargo.ore.volume, 2)
+        price = round(ore_cargo.price * amount, 2)
 
         print(f"Price for {amount} {ore_name}: {price} credits")
 
@@ -188,10 +188,8 @@ def update_ore_quantities(game: Game, ore_cargo: OreCargo, ore_name: str, amount
     ore_exists, ore_cargo_found = game.player_ship.get_ore_cargo_by_id(ore_cargo.ore.id)
 
     if ore_exists:
-        print("Found ore, adding.")
         ore_cargo_found.quantity += amount
     else:
-        print("Did not find ore, appending.")
         game.player_ship.cargohold.append(OreCargo(ore_cargo.ore, amount, ore_cargo.price))
 
     # Remove empty cargo entries and recalculate volume
