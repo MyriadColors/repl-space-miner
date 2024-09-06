@@ -79,6 +79,7 @@ Contributions are welcome! Feel free to submit issues and pull requests. Please 
 
 - [Pygame](https://www.pygame.org/) for the sound and game management.
 - Ukaer for helpful tips, suggestions and bugtesting.
+- Music 'Decoherence' by Scott Buckley – released under CC-BY 4.0. www.scottbuckley.com.au 
 ---
 
 This is just the beginning of what could become a more complex and engaging space exploration game. The current focus is on building a solid foundation, with more features and improvements to come as the project evolves.
