@@ -256,9 +256,7 @@ def handle_closest_travel(player_ship: Ship, solar_system, args, time):
         time = player_ship.travel(closest_field.position, time)
 
     elif object_type in ['station', 's']:
-        time = player_ship.travel(
-            destination=closest_station.position,
-            current_time=time)
+        time = player_ship.travel(closest_station.position, time)
 
     else:
         print("Invalid object type. Use 'field' or 'station'.")
