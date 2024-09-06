@@ -197,6 +197,10 @@ def update_ore_quantities(game: Game, ore_cargo: OreCargo, ore_name: str, amount
     game.player_ship.calculate_volume_occupied(True)
     game.player_credits -= price
 
+    # Update station
+    station.ore_cargo_volume -= round(amount * ore_cargo.ore.volume, 2)
+
+
     # Reporting
     print(f"Report: {amount} {ore_name} bought for {price} credits.")
     print(f"Station Ore Report:\n{station.ore_cargo_volume} tons of {ore_name} ore")
