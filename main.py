@@ -1,6 +1,7 @@
 from game import Game
 from helpers import take_input
 from repl import display_welcome_message, start_repl
+from pygame import mixer
 
 
 def main():
