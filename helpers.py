@@ -1,11 +1,8 @@
 import math
 import random
-
 from pygame import Vector2
-
 import data
 from ore import Ore
-
 
 def euclidean_distance(v1, v2):
     return round(math.sqrt((v1.x - v2.x) ** 2 + (v1.y - v2.y) ** 2), 2)
@@ -51,12 +48,44 @@ def format_seconds(seconds: float):
 
     formatted_days = f"{days} days, " if days > 0 else ""
     formatted_hours = f"{hours} hours, " if hours > 0 else ""
-    formatted_minutes = f"{minutes} minutes, " if minutes > 0 else ""
+    formatted_minutes = f"{minutes} minutes" if minutes > 0 else ""
 
-    return f"{formatted_days}{formatted_hours}{formatted_minutes}{seconds} seconds"
+    return f"{formatted_days}{formatted_hours}{formatted_minutes} and {seconds} seconds"
 
 
 def select_random_ore() -> Ore:
     rnd_index = random.randint(0, len(data.ORES) - 1)
 
     return data.ORES[rnd_index]
+
+
+def get_closest_field(solar_system, position, is_at_field=False):
+    if is_at_field:
+        return solar_system.sort_fields('asc', 'distance', position)[1]
+    closest_field = solar_system.sort_fields('asc', 'distance', position)[0]
+    return closest_field
+
+
+def get_closest_station(solar_system, player_ship, is_at_station=False):
+    if is_at_station:
+        return solar_system.sort_stations('asc', 'distance', player_ship.position)[1]
+    return solar_system.sort_stations('asc', 'distance', player_ship.position)[0]
+
+
+def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time):
+    """Prompts the player to choose between the closest field or station."""
+
+    print("Do you wish to go to the closest 1. (f)ield or the closest 2. (s)tation?")
+    tries = 3
+    while tries > 0:
+        response = take_input(">> ")
+        if response in ["1", "f", "field"]:
+            return player_ship.travel(closest_field.position, time)
+        elif response in ["2", "s", "station"]:
+            return player_ship.travel(closest_station.position, time)
+        else:
+            print("Invalid response.")
+            tries -= 1
+
+    print("Too many invalid attempts. Aborting.")
+    return time

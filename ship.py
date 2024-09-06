@@ -1,6 +1,6 @@
 from pygame import Vector2
 from asteroid import Asteroid
-from helpers import euclidean_distance, vector_to_string, take_input
+from helpers import euclidean_distance, vector_to_string, take_input, format_seconds
 from station import Station
 from data import OreCargo
 
@@ -60,7 +60,7 @@ class Ship:
     def travel(self, destination, current_time):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
 
-        print(f"The ship will travel {distance} AUs in {travel_time} seconds, using {fuel_consumed} fuel.")
+        print(f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel.")
 
         if self.fuel - fuel_consumed < 0:
             print("Not enough fuel to travel. Please refuel.")

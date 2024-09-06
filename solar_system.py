@@ -1,4 +1,3 @@
-import math
 import random
 import data
 from asteroid import AsteroidField
@@ -26,7 +25,7 @@ class SolarSystem:
             rnd_quantity = random.randint(2, 10)
             rnd_radius = rnd_float(0.5, 2.0)
 
-            max_attempts = 100
+            max_attempts = self.field_quantity
             for attempt in range(max_attempts):
                 rnd_position = rnd_vector(-self.size, self.size)
 
@@ -92,7 +91,7 @@ class SolarSystem:
 
     def generate_stations(self):
         """Generate stations in the game world."""
-        for i in range(random.randint(20, 30)):
+        for i in range(random.randint(75, 200)):
             position = Vector2(random.uniform(-self.size, self.size),
                                 random.uniform(-self.size, self.size))
             rnd_name = data.generate_random_name(rnd_int(2, 4))
