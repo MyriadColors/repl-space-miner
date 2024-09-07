@@ -1,13 +1,39 @@
+from dataclasses import dataclass
+
 from pygame import Vector2
 from src.classes.asteroid import Asteroid
 from src.helpers import euclidean_distance, vector_to_string, take_input, format_seconds
 from src.classes.station import Station
 from src.data import OreCargo
 
+@dataclass
+class IsSystemObject:
+    position: Vector2
+    id: int
+
+    def get_position(self):
+        return self.position
+
+    def set_position(self, new_position):
+        self.position = new_position
+
+    def get_id(self):
+        return self.id
+
+@dataclass
+class CanMove:
+    speed: float
+
+    def get_speed(self):
+        return self.speed
+
+    def set_speed(self, new_speed):
+        self.speed = new_speed
+
 class Ship:
     def __init__(self, position: Vector2, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
-        self.position: Vector2 = position  # in AU
-        self.speed: float = speed  # in AU/s
+        self.space_object: IsSystemObject = IsSystemObject(position, 0)
+        self.moves: CanMove = CanMove(speed)  # in AU/s
         self.fuel: float = max_fuel  # in m3
         self.max_fuel: float = max_fuel  # in m3
         self.fuel_consumption: float = fuel_consumption  # in m3/AU
@@ -43,17 +69,14 @@ class Ship:
         self.fuel -= value
 
     def move_unit(self):
-        self.position.x += self.speed
-
-    def move_to(self, destination):
-        self.position = destination
+        self.space_object.get_position().x += self.moves.get_speed()
 
     def refuel(self, value):
         self.fuel += value
 
     def calculate_travel_data(self, destination):
-        distance = round(euclidean_distance(self.position, destination), 3)
-        time = round(distance / self.speed, 3)
+        distance = round(euclidean_distance(self.space_object.get_position(), destination), 3)
+        time = round(distance / self.moves.get_speed(), 3)
         fuel_consumed = round(distance * self.fuel_consumption, 3)
         return distance, time, fuel_consumed
 
@@ -73,7 +96,7 @@ class Ship:
             return current_time
 
         self.consume_fuel(fuel_consumed)
-        self.move_to(destination)
+        self.space_object.set_position(destination)
         current_time += travel_time
 
         print(f"The ship has arrived at {vector_to_string(destination)}")
@@ -82,7 +105,7 @@ class Ship:
 
     def status_to_string(self):
         ore_units_on_cargohold = sum([ore_cargo.quantity for ore_cargo in self.cargohold])
-        return f"Ship Name: {self.ship_name}\nPosition: {vector_to_string(self.position)}\nSpeed: {self.speed}\nm/s Fuel: {round(self.fuel, 2)}/{self.max_fuel} m3\nCargohold: {round(self.cargohold_occupied, 2)}/{self.cargohold_capacity} m3\nAmount of Ores: {ore_units_on_cargohold}"
+        return f"Ship Name: {self.ship_name}\nPosition: {vector_to_string(self.space_object.get_position())}\nSpeed: {self.moves.get_speed()}\nm/s Fuel: {round(self.fuel, 2)}/{self.max_fuel} m3\nCargohold: {round(self.cargohold_occupied, 2)}/{self.cargohold_capacity} m3\nAmount of Ores: {ore_units_on_cargohold}"
 
     def cargo_to_string(self):
         output = ""

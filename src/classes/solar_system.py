@@ -147,12 +147,12 @@ class SolarSystem:
 
     def is_object_within_interaction_radius(self, player_ship):
         for station in self.stations:
-            if euclidean_distance(player_ship.position, station.position) <= player_ship.interaction_radius:
+            if euclidean_distance(player_ship.space_object.get_position(), station.position) <= player_ship.interaction_radius:
                 return True
         return False
 
     def get_object_within_interaction_radius(self, player_ship):
         for station in self.stations:
-            if euclidean_distance(player_ship.position, station.position) <= player_ship.interaction_radius:
+            if euclidean_distance(player_ship.space_object.get_position(), station.position) <= player_ship.interaction_radius:
                 return station
         return None

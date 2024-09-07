@@ -68,8 +68,8 @@ def get_closest_field(solar_system, position, is_at_field=False):
 
 def get_closest_station(solar_system, player_ship, is_at_station=False):
     if is_at_station:
-        return solar_system.sort_stations('asc', 'distance', player_ship.position)[1]
-    return solar_system.sort_stations('asc', 'distance', player_ship.position)[0]
+        return solar_system.sort_stations('asc', 'distance', player_ship.space_object.get_position())[1]
+    return solar_system.sort_stations('asc', 'distance', player_ship.space_object.get_position())[0]
 
 
 def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time):

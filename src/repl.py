@@ -1,6 +1,6 @@
 from src.command_handlers import handle_refuel_command, handle_sell_command, handle_buy_command, handle_travel_command, \
     handle_mine_command, display_help, handle_scan_command, handle_docking_command, handle_undocking_command, \
-    handle_add_creds_command, handle_upgrade_command
+    handle_add_creds_command
 from src.classes.game import Game
 from src.helpers import format_seconds, take_input
 
@@ -43,7 +43,8 @@ def command_interpreter(game: Game, cmd: str, args: list[str]) -> bool:
             handle_undocking_command(game.player_ship)
             return True
         case 'up' | 'upgrade':
-            handle_upgrade_command(game, args)
+            #handle_upgrade_command(game, args)
+            print("Sorry, this command is broken, try again next update.")
             return True
         case 'ao' | 'add_ore':
             print("Sorry, this command is broken, try again next update.")

@@ -241,17 +241,17 @@ def handle_closest_travel(player_ship: Ship, solar_system, args, time):
     object_type = args[1] if len(args) == 2 else None
 
     # Get closest field and station
-    closest_field = get_closest_field(solar_system, player_ship.position,
-                                      solar_system.is_object_within_an_asteroid_field_radius(player_ship.position))
+    closest_field = get_closest_field(solar_system, player_ship.space_object.get_position(),
+                                      solar_system.is_object_within_an_asteroid_field_radius(player_ship.space_object.get_position()) is not None)
     closest_station = get_closest_station(solar_system, player_ship,
                                           solar_system.get_object_within_interaction_radius(player_ship) is not None)
 
     if not object_type:
         # Ask user for input to choose between field or station
         print(
-            f"Closest field is Field {closest_field.id} at {euclidean_distance(player_ship.position, closest_field.position)} AUs from here.")
+            f"Closest field is Field {closest_field.id} at {euclidean_distance(player_ship.space_object.get_position(), closest_field.position)} AUs from here.")
         print(
-            f"Closest station is Station {closest_station.id} at {euclidean_distance(player_ship.position, closest_station.position)} AUs from here.")
+            f"Closest station is Station {closest_station.id} at {euclidean_distance(player_ship.space_object.get_position(), closest_station.position)} AUs from here.")
         time = prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time)
 
     elif object_type in ['field', 'f']:
@@ -425,7 +425,7 @@ def handle_add_creds_command(game, args):
     game.player_credits += amount
     print(f"{amount} credits added to your credits.")
 
-
+# TODO: Fix upgrades
 def handle_upgrade_command(game: Game, args):
     """Handles the upgrade command."""
 
@@ -454,10 +454,10 @@ def handle_upgrade_command(game: Game, args):
             print(f"You do not have enough credits to upgrade this stat: need {price}")
             return
         multiplier = data.upgrade_data["speed"]["multiplier"]
-        old_stat = game.player_ship.speed
-        game.player_ship.speed = round(old_stat * multiplier, 2)
+        old_stat = game.player_ship.moves.get_speed()
+        game.player_ship.moves.set_speed(round(old_stat * multiplier, 4))
         game.player_credits -= price
-        print(f"Upgraded from {old_stat} to {game.player_ship.speed}AU³/s for 5000 credits.")
+        print(f"Upgraded from {old_stat} to {game.player_ship.moves.get_speed()}AU³/s for 5000 credits.")
     elif args[0] == "mining_speed":
         price = data.upgrade_data["mining_speed"]["price"]
         if game.player_credits < price:
@@ -465,7 +465,7 @@ def handle_upgrade_command(game: Game, args):
             return
         multiplier = data.upgrade_data["mining_speed"]["multiplier"]
         old_stat = game.player_ship.mining_speed
-        game.player_ship.mining_speed = round(old_stat * multiplier, 2)
+        game.player_ship.mining_speed = round(old_stat * multiplier, 5)
         game.player_credits -= price
         print(f"Upgraded from {old_stat} to {game.player_ship.mining_speed}AU³/s for 10000 credits.")
     elif args[0] == "cargo_capacity":
