@@ -11,12 +11,12 @@ Please note that this project is in a **very early stage** of development. Many 
 1. **Clone the repository:**
    For Linux or MacOs:
    ```bash
-   git clone https://github.com/yourusername/space-miner.git && cd space-miner
+   git clone https://github.com/MyriadColors/space-miner.git && cd repl-space-miner
    ```
    
    For Windows:
    ```powershell
-   git clone https://github.com/yourusername/space-miner.git && cd space-miner
+   git clone https://github.com/MyriadColors/space-miner.git && cd repl-space-miner
    ```
 
 2. **Install the dependencies:**
@@ -41,7 +41,7 @@ Once you start the game, you’ll be greeted with a welcome message and a comman
 ### Available Commands
 
 - **help**: Displays a list of available commands.
-- **travel (or move) [x y] or ['closest']**: Travel to the specified coordinates in the solar system.
+- **travel ['closest'] ['station' or 'field']**: Travel to the closest object in the solar system.
 - **mine [time]**: Mine for ores in the asteroid field at your current location for the specified time.
 - **refuel [amount]**: Refuel your spaceship at a station.
 - **status (or st)**: Displays the current status of your ship, including position, fuel, cargo, and credits.
