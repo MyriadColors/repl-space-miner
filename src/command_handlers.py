@@ -469,17 +469,14 @@ def command_exit(term: PygameTerminal):
     term.running = False
 
 
-def command_color(args, term):
-    if PygameTerminal.args_length(args) != 2:
-        term.write("Usage: color <type> <color>")
-        return
+def command_color(color_type: str, color: str, term):
 
-    color_type = args[0]
+    color_type = color_type
     if color_type not in ["bg", "fg"]:
         term.write(f"Invalid type: {color_type}")
         return
 
-    color = args[1]
+    color = color
     if not color_data.does_color_exist(color):
         term.write(f"Invalid color: {color}")
         return
@@ -513,3 +510,7 @@ def command_reset(self, type_of_reset: str):
         self.fg_color = self.default_fg_color
         self.bg_color = self.default_bg_color
         self.clear(self)
+
+def clear(term):
+    """Clear the terminal screen."""
+    term.terminal_lines.clear()

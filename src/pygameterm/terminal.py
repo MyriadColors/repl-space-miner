@@ -161,11 +161,6 @@ class PygameTerminal:
             self.draw_terminal()
             self.clock.tick(self.clock_tick_rate)
 
-    @staticmethod
-    def clear(terminal):
-        """Clear the terminal screen."""
-        terminal.terminal_lines.clear()
-
     def handle_events(self):
         """Handle events."""
         for event in pygame.event.get():
