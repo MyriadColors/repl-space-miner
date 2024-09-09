@@ -1,18 +1,11 @@
-from src.classes.game import Game
-from src.helpers import take_input
 from src.repl import start_repl
-from src.command_handlers import display_welcome_message
 from pygame import mixer
-
 
 def main():
     mixer.init()
     mixer.music.load("Decoherence.mp3")
     mixer.music.play(-1)
-    display_welcome_message()
-    ship_name = take_input("Enter your ship name: ").strip()
-    game = Game(ship_name)
-    start_repl(game)
+    start_repl()
 
 if __name__ == "__main__":
     main()

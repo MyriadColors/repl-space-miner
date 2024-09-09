@@ -57,11 +57,11 @@ class Station:
                 self.ore_cargo[ore_type].quantity += 1
                 self.ore_cargo_volume += round(self.ores_available[ore_type].volume, 2)
 
-    def get_ore_by_name(self, name) -> (bool, OreCargo):
+    def get_ore_by_name(self, name) -> OreCargo | None:
         for ore_cargo in self.ore_cargo:
-            if ore_cargo.ore.name == name:
-                return True, ore_cargo
-        return False, None
+            if ore_cargo.ore.name.lower() == name.lower():
+                return ore_cargo
+        return None
 
     def calculate_cargo(self):
         occupancy = 0

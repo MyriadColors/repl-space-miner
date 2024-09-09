@@ -1,88 +1,160 @@
-from src.command_handlers import handle_refuel_command, handle_sell_command, handle_buy_command, handle_travel_command, \
-    handle_mine_command, display_help, handle_scan_command, handle_docking_command, handle_undocking_command, \
-    handle_add_creds_command
 from src.classes.game import Game
-from src.helpers import format_seconds, take_input
+from src.command_handlers import refuel_command, sell_command, travel_command, scan_command, display_help, command_dock, \
+    command_undock, display_time_and_status, mine_command, buy_command, add_creds_command, \
+    command_exit, command_color, command_reset
+from src.pygameterm.terminal import PygameTerminal, Argument
 
-def command_interpreter(game: Game, cmd: str, args: list[str]) -> bool:
-    """Interprets the command and executes it."""
-    match cmd:
-        case 'q' | 'quit':
-            return False
-        case 'refuel' | 'r':
-            handle_refuel_command(game.player_ship, game, args)
-            return True
-        case 'sell' | 's':
-            handle_sell_command(game)
-            return True
-        case 'buy' | 'b':
-            handle_buy_command(game, args)
-            return True
-        case 'move' | 'travel' | 'mo' | 't':
-            game.global_time = handle_travel_command(game.player_ship,
-                                                     game.solar_system, args,
-                                                     game.global_time)
-            return True
-        case 'mine' | 'mi':
-            game.global_time = handle_mine_command(game.player_ship,
-                                                   game.solar_system, args,
-                                                   game.global_time)
-            return True
-        case 's' | 'scan':
-            handle_scan_command(game.player_ship, game, args)
-            return True
-        case 'st' | 'status':
-            print(game.player_ship.status_to_string())
-            print(f"Credits: {game.player_credits}")
-            print(f"Time: {format_seconds(game.global_time)}s")
-            return True
-        case 'do' | 'dock':
-            handle_docking_command(game.player_ship, game)
-            return True
-        case 'ud' | 'undock':
-            handle_undocking_command(game.player_ship)
-            return True
-        case 'up' | 'upgrade':
-            #handle_upgrade_command(game, args)
-            print("Sorry, this command is broken, try again next update.")
-            return True
-        case 'ao' | 'add_ore':
-            print("Sorry, this command is broken, try again next update.")
-            # handle_add_ore_command(game.player_ship, args)
-            return True
-        case 'ac' | 'add_creds':
-            handle_add_creds_command(game, args)
-            return True
-        case "reset_name" | 'rn':
-            new_name = take_input("Enter new name").strip()
-            if len(new_name) == 0:
-                print("Invalid name. Please enter a valid name.")
-            game.player_ship.set_ship_name(new_name)
-            return True
-        case 'help':
-            display_help()
-            return True
-        case _:
-            print("Invalid command. Please enter a valid command.")
-            return True
+def register_commands(terminal: PygameTerminal):
+    terminal.register_command(
+        ["refuel", "ref"],
+        refuel_command,
+        argument_list=[
+            Argument(
+                name="amount",
+                type=float,
+                is_optional=False,
+                custom_validator=lambda x: isinstance(x, float) and x > 0,
+            )
+        ]
+    )
 
-def command_parser(input_cmd: list[str]) -> (bool, str, list[str]):
-    """Parses the input string into a command and a list of arguments."""
-    if len(input_cmd) == 0:
-        return False, "", []
-    cmd = input_cmd[0]
-    args = input_cmd[1:]
-    return True, cmd, args
+    terminal.register_command(
+        ["sell", "sl"],
+        sell_command,
+    )
 
-def start_repl(game):
-    display_help()
-    while True:
+    terminal.register_command(
+        ["buy", "by"],
+        buy_command,
+        argument_list=[
+            Argument(
+                name="item_name",
+                type=str,
+                is_optional=False
+            ),
+            Argument(
+                name="amount",
+                type=int,
+                is_optional=False,
+                custom_validator=lambda x: int(x) > 0
+            ),
+        ]
+    )
 
-        input_cmd = take_input(">> ").strip().lower().split(" ")
-        result, cmd, args = command_parser(input_cmd)
+    terminal.register_command(
+        ["travel", "tr"],  # Include "tr" as an abbreviation
+        travel_command,
+        argument_list=[
+            Argument(
+                name="sort_type",
+                type=str,
+                is_optional=False,
+                custom_validator=lambda x: x in ["closest", "c"]
+            ),
+            Argument(
+                name="object_type",
+                type=str,
+                is_optional=False,
+                custom_validator=lambda x: x in ["field", "station", "f", "s"]
+            ),
+        ]
+    )
 
-        loop_command = command_interpreter(game, cmd, args)
-        if loop_command:
-            continue
-        else:
-            break
+    terminal.register_command(
+        ["scan", "sc"],
+        scan_command,
+        argument_list=[
+            Argument(
+                name="quantity_of_objects",
+                type=int,
+                is_optional=False,
+            ),
+        ]
+    )
+
+    # command_reset
+    terminal.register_command(
+        ["reset", "rs"],
+        command_reset,
+        argument_list=[
+            Argument(
+                name="type_of_reset",
+                type=str,
+                is_optional=False
+            )
+        ]
+    )
+
+    terminal.register_command(
+        ["quit", "exit", "q", "e"],
+        command_exit
+    )
+
+    terminal.register_command(
+        ["color", "crl"],
+        command_color,
+        argument_list=[
+            Argument(
+                name="color-type",
+                type=str,
+                is_optional=False
+            ),
+            Argument(
+                name="color",
+                type=str,
+                is_optional=False
+            )
+        ]
+    )
+
+    terminal.register_command(
+        ["help", "h"],
+        display_help,
+    )
+
+    terminal.register_command(
+        ["dock", "do"],
+        command_dock,
+    )
+
+    terminal.register_command(
+        ["undock", "ud"],
+        command_undock,
+    )
+
+    terminal.register_command(
+        ["status", "st"],
+        display_time_and_status,
+    )
+
+    terminal.register_command(
+        ["mine", "mi"],
+        mine_command,
+        argument_list=[
+            Argument(
+                name="time",
+                type=int,
+                is_optional=False
+            )
+        ]
+    )
+
+    terminal.register_command(
+        ["add_creds", "ac"],
+        add_creds_command,
+        argument_list=[
+            Argument(
+                name="amount",
+                type=int,
+                is_optional=False
+            )
+        ]
+    )
+
+
+def start_repl():
+    game: Game = Game()
+    terminal = PygameTerminal(game, 1400, 1000, 28, "Welcome to the Space Trader CLI game!")
+    register_commands(terminal)
+    terminal.run()
+

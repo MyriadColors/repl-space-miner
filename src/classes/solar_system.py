@@ -17,6 +17,9 @@ class SolarSystem:
         self.generate_fields()
         self.generate_stations()
 
+    def get_size(self):
+        return self.size
+
     def generate_fields(self):
         for _ in range(self.field_quantity):
             selected_ores = []
