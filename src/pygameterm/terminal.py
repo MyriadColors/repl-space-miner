@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
 from math import floor
 from typing import Callable, Any
+
 import pygame
 from pygame import Color
+
 
 @dataclass
 class Argument:
@@ -62,12 +64,14 @@ class Command:
             raise ValueError(message)
         return self.function(*args, term=terminal)
 
+
 def typeof(value):
     return type(value)
 
 
 class PygameTerminal:
-    def __init__(self, app_state, width: int = 1024, height: int = 600, font_size: int = 32, initial_message: str = "") -> None:
+    def __init__(self, app_state, width: int = 1024, height: int = 600, font_size: int = 28,
+                 initial_message: str = "") -> None:
         """
         Initialize the Pygame Terminal Emulator.
 
@@ -105,12 +109,33 @@ class PygameTerminal:
         self.input_prompt: str = ""
         self.input_callback: Callable | None = None
         self.line_margin_height = 5
-        self.lines_on_screen = floor(self.height / (self.font.get_height() + self.line_margin_height)) -2
-
+        self.font_size = font_size
+        self.set_monospace_font()
+        self.lines_on_screen = floor(self.height / (self.font.get_height() + self.line_margin_height)) - 2
 
         # Command registry
         # add some default commands
         self.commands: dict[str, Command] = {}
+
+    def set_monospace_font(self):
+        try:
+            # Try to use 'Courier' font, which is available on most systems
+            self.font = pygame.font.SysFont('courier', self.font_size)
+        except Exception as e:
+            print(e)
+            try:
+                # If 'Courier' is not available, try 'monospace'
+                self.font = pygame.font.SysFont('monospace', self.font_size)
+            except Exception as e:
+                print(e)
+                # If both fail, fall back to the default font
+                print("Warning: Monospace font not found. Using default font.")
+                self.font = pygame.font.Font(None, self.font_size)
+
+    def set_font_size(self, font_size: int) -> None:
+        """Set the font size."""
+        self.font_size = font_size
+        self.set_monospace_font()
 
     def color_current_line(self):
         pass
@@ -136,10 +161,6 @@ class PygameTerminal:
             self.clock.tick(self.clock_tick_rate)
 
         return self.current_line
-
-    def set_font_size(self, font_size: int) -> None:
-        """Set the font size."""
-        self.font = pygame.font.Font(None, font_size)
 
     def set_font_name(self, font_name: str) -> None:
         """Set the font name."""
@@ -384,7 +405,7 @@ class PygameTerminal:
         input_args = parts[1:]
 
         if command_name in self.commands:
-            #print(f"Debug: {command_name} {input_args} found")
+            # print(f"Debug: {command_name} {input_args} found")
             command_struct: Command = self.commands[command_name]
 
             try:
