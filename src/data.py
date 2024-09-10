@@ -1,11 +1,7 @@
 from dataclasses import dataclass
 from random import choice
 
-from src.classes.ore import MagnetonOre, JonniteOre, HeronOre, CyclonOre, OxyniteOre, VariteOre, AngionOre, AscorbonOre, PyrogenOre, \
-    Ore
-
-ORES = [PyrogenOre(), AscorbonOre(), AngionOre(), VariteOre(), OxyniteOre(),
-        CyclonOre(), HeronOre(), JonniteOre(), MagnetonOre()]
+from src.classes.ore import Ore
 
 # This will be used to generate random names
 name_parts = [
@@ -39,7 +35,8 @@ def generate_random_name(parts_num: int) -> str:
 class OreCargo:
     ore: Ore
     quantity: int
-    price: float
+    buy_price: float
+    sell_price: float
 
 
 upgrade_data: dict = {
