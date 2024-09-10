@@ -3,7 +3,8 @@ from math import floor
 from typing import Callable, Any
 
 import pygame
-from pygame import Color
+
+from src.pygameterm import color_data
 
 
 @dataclass
@@ -71,7 +72,8 @@ def typeof(value):
 
 class PygameTerminal:
     def __init__(self, app_state, width: int = 1024, height: int = 600, font_size: int = 28,
-                 initial_message: str = "") -> None:
+                 initial_message: str = "", default_bg_color: pygame.Color = color_data.color['black'],
+                 default_fg_color: pygame.Color = color_data.color['white']) -> None:
         """
         Initialize the Pygame Terminal Emulator.
 
@@ -80,6 +82,7 @@ class PygameTerminal:
         :param font_size: The font size of the terminal emulator window.
         :param initial_message: The initial message to display in the terminal emulator.
         """
+        self.rendered_lines_cache = {}
         self.terminal_margin_bottom = 40
         self.terminal_margin_left = 10
         self.terminal_margin_top = 10
@@ -92,9 +95,9 @@ class PygameTerminal:
         self.height: int = height
         self.screen: pygame.Surface = pygame.display.set_mode((self.width, self.height))
         self.font: pygame.font.Font = pygame.font.Font(None, font_size)
-        self.default_bg_color: pygame.color.Color = Color(0, 0, 0)
+        self.default_bg_color: pygame.color.Color = default_bg_color
         self.bg_color: pygame.color.Color = self.default_bg_color
-        self.default_fg_color: pygame.color.Color = Color(255, 255, 255)
+        self.default_fg_color: pygame.color.Color = default_fg_color
         self.fg_color: pygame.color.Color = self.default_fg_color
         self.custom_line_color = None
         self.terminal_lines: list[str] = [initial_message]
@@ -372,27 +375,33 @@ class PygameTerminal:
 
     def draw_terminal(self):
         """Renders the terminal interface on the screen."""
+
         self.screen.fill(self.bg_color)
+
+        # Draw previous terminal lines
         y = self.terminal_margin_top
         for line in self.terminal_lines[-self.lines_on_screen:]:
-            text = self.font.render(line, True,
-                                    self.fg_color if self.custom_line_color is None else self.custom_line_color)
-            self.screen.blit(text, (self.terminal_margin_left, y))
+            text_color = self.custom_line_color if self.custom_line_color else self.fg_color
+            rendered_text = self.font.render(line, True, text_color)
+            self.screen.blit(rendered_text, (self.terminal_margin_left, y))
             y += self.font.get_height() + self.line_margin_height
 
-        # Draw the current input line
-        if self.input_mode:
-            prompt = self.input_prompt + " " + self.current_line
-        else:
-            prompt = "> " + self.current_line
-        text = self.font.render(prompt, True, self.fg_color)
-        self.screen.blit(text, (self.terminal_margin_left, self.height - self.terminal_margin_bottom))
+        # Draw current input line
+        prompt = self.input_prompt + " " + self.current_line if self.input_mode else "> " + self.current_line
+        rendered_prompt = self.font.render(prompt, True, self.fg_color)
+        self.screen.blit(rendered_prompt, (self.terminal_margin_left, self.height - self.terminal_margin_bottom))
 
-        # Draw the cursor
-        cursor_x = self.terminal_margin_left + \
-                   self.font.size(prompt[:len(prompt) - len(self.current_line) + self.cursor_pos])[0]
-        pygame.draw.line(self.screen, self.fg_color, (cursor_x, self.height - self.terminal_margin_bottom),
-                         (cursor_x, self.height - self.terminal_margin_top), self.line_width)
+        # Draw cursor
+        cursor_x = self.terminal_margin_left + self.font.size(
+            prompt[:len(prompt) - len(self.current_line) + self.cursor_pos]
+        )[0]
+        pygame.draw.line(
+            self.screen,
+            self.fg_color,
+            (cursor_x, self.height - self.terminal_margin_bottom),
+            (cursor_x, self.height - self.terminal_margin_top),
+            self.line_width
+        )
 
         pygame.display.flip()
 
@@ -413,14 +422,6 @@ class PygameTerminal:
                     if i < len(input_args):
                         value = input_args[i]
                         arg_type = arg.type
-
-                        # Check if the value satisfies the expected type
-                        if not self.check_type(value, arg_type):
-                            raise ValueError(f"Invalid type for argument {arg.name}: {value} ({arg_type})")
-
-                        # Apply custom validator if it exists
-                        if arg.custom_validator and not arg.custom_validator(value):
-                            raise ValueError(f"Custom validation failed for argument {arg.name}")
                     elif not arg.is_optional:
                         raise ValueError(f"Missing required argument: {arg.name}")
 
