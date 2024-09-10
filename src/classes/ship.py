@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from typing import Tuple
-
 from pygame import Vector2
 from src.classes.asteroid import Asteroid
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
@@ -86,27 +84,27 @@ class Ship:
         fuel_consumed = round(distance * self.fuel_consumption, 3)
         return distance, time, fuel_consumed
 
-    def travel(self, terminal: PygameTerminal, destination: Vector2):
+    def travel(self, term: PygameTerminal, destination: Vector2):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
-        current_time = terminal.app_state.global_time
+        global_time = term.app_state.global_time
 
-        terminal.write(f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel.")
+        term.write(f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel.")
 
         if self.fuel - fuel_consumed < 0:
-            terminal.write("Not enough fuel to travel. Please refuel.")
-            return current_time
+            term.write("Not enough fuel to travel. Please refuel.")
+            return
 
-        confirm = terminal.prompt_user(f"Confirm travel? (y/n)")
+        confirm = term.prompt_user(f"Confirm travel? (y/n)")
 
         if confirm != "y":
-            terminal.write("Travel cancelled.")
-            return current_time
+            term.write("Travel cancelled.")
+            return
 
         self.consume_fuel(fuel_consumed)
         self.space_object.set_position(destination)
-        terminal.app_state.global_time += travel_time
+        global_time += travel_time
 
-        return f"The ship has arrived at {vector_to_string(destination)}"
+        term.write(f"The ship has arrived at {vector_to_string(destination)}")
 
     def status_to_string(self) -> list[str]:
         ore_units_on_cargohold = sum([ore_cargo.quantity for ore_cargo in self.cargohold])
@@ -165,7 +163,7 @@ class Ship:
             if ore_cargo:
                 ore_cargo.quantity += 1
             else:
-                ores_mined.append(OreCargo(ore, 1, ore.base_value))
+                ores_mined.append(OreCargo(ore, 1, ore.base_value, ore.base_value))
 
             asteroid_being_mined.volume -= ore.volume
             self.cargohold_occupied += ore.volume
