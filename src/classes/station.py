@@ -13,7 +13,7 @@ class Station:
         self.fueltank: float = self.fueltank_cap / helpers.rnd_int(1, 4)
         self.fuel_price: float = helpers.rnd_float(8, 20)
         self.ores_available: list[Ore] = []
-        self.ore_cargo: list[OreCargo] = []  # ore, quantity, price
+        self.ore_cargo: list[OreCargo] = []
         self.ore_cargo_volume: float = 0.0
         self.ore_capacity: float = helpers.rnd_float(25_000, 75_000)
         self.visited: bool = False
@@ -21,10 +21,15 @@ class Station:
         self.generate_ore_cargo_instances()
         self.generate_ore_cargo()
 
-    def get_ore_price(self, ore_name):
+    def get_ore_buy_price(self, ore_name):
         for ore_cargo in self.ore_cargo:
             if ore_cargo.ore.name == ore_name:
-                return ore_cargo.price
+                return ore_cargo.buy_price
+
+    def get_ore_sell_price(self, ore_name):
+        for ore_cargo in self.ore_cargo:
+            if ore_cargo.ore.name == ore_name:
+                return ore_cargo.sell_price
 
     def is_ore_available(self, ore_to_check: OreCargo):
         for ore_cargo in self.ore_cargo:
@@ -45,8 +50,9 @@ class Station:
         # create the OreCargo instances
         for ore in self.ores_available:
             ore_quantity: int = 0
-            ore_price: float = ore.base_value * rnd_float(0.8, 1.2)
-            ore_cargo = OreCargo(ore, ore_quantity, ore_price)
+            ore_buy_price: float = ore.base_value * rnd_float(0.75, 1.25)
+            ore_sell_price: float = ore_buy_price * rnd_float(0.5, 1.0)
+            ore_cargo = OreCargo(ore, ore_quantity, ore_buy_price, ore_sell_price)
 
             self.ore_cargo.append(ore_cargo)
     def generate_ore_cargo(self):
@@ -69,11 +75,18 @@ class Station:
             occupancy += ore_cargo.quantity
         return occupancy
 
-    def get_ore_price_to_string(self):
+    def get_ore_buy_price_to_string(self):
         string = ""
         for ore_cargo in self.ore_cargo:
-            string += f"{ore_cargo.ore.name}: {ore_cargo.price}\n"
+            string += f"{ore_cargo.ore.name}: {ore_cargo.buy_price}\n"
         return string
+
+    def get_ore_sell_price_to_string(self):
+        string = ""
+        for ore_cargo in self.ore_cargo:
+            string += f"{ore_cargo.ore.name}: {ore_cargo.sell_price}\n"
+        return string
+
 
     def get_ore_info_to_string(self):
         string = ""
@@ -94,7 +107,7 @@ class Station:
         return "\n".join([ore.to_string() for ore in self.ores_available])
 
     def to_string(self):
-        return f"{self.name}\nPosition: {self.position}\nID: {self.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_price_to_string()}"
+        return f"{self.name}\nPosition: {self.position}\nID: {self.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"
 
     def buy_fuel(self, player_ship, amount):
         print(f"Price: {amount * self.fuel_price} credits ({self.fuel_price} credits per m³)")
