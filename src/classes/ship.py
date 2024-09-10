@@ -1,9 +1,11 @@
 from dataclasses import dataclass
+
 from pygame import Vector2
+
 from src.classes.asteroid import Asteroid
-from src.helpers import euclidean_distance, vector_to_string, format_seconds
 from src.classes.station import Station
 from src.data import OreCargo
+from src.helpers import euclidean_distance, vector_to_string, format_seconds
 from src.pygameterm.terminal import PygameTerminal
 
 
@@ -21,6 +23,7 @@ class IsSystemObject:
     def get_id(self):
         return self.id
 
+
 @dataclass
 class CanMove:
     speed: float
@@ -30,6 +33,7 @@ class CanMove:
 
     def set_speed(self, new_speed):
         self.speed = new_speed
+
 
 class Ship:
     def __init__(self, position: Vector2, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
@@ -43,7 +47,7 @@ class Ship:
         self.cargohold_capacity: float = cargo_capacity
         self.value: float = value
         self.mining_speed: float = mining_speed
-        self.interaction_radius: float = 0.001 # Radius around the player ship where it can interact with other objects
+        self.interaction_radius: float = 0.001  # Radius around the player ship where it can interact with other objects
         self.is_docked: bool = False
         self.docked_at: Station | None = None
         self.ship_name: str = name
@@ -86,7 +90,6 @@ class Ship:
 
     def travel(self, term: PygameTerminal, destination: Vector2):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
-        global_time = term.app_state.global_time
 
         term.write(f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel.")
 
@@ -102,7 +105,7 @@ class Ship:
 
         self.consume_fuel(fuel_consumed)
         self.space_object.set_position(destination)
-        global_time += travel_time
+        term.app_state.global_time += travel_time
 
         term.write(f"The ship has arrived at {vector_to_string(destination)}")
 
