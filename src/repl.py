@@ -1,7 +1,8 @@
 from src.classes.game import Game
 from src.command_handlers import refuel_command, sell_command, travel_command, scan_command, display_help, command_dock, \
-    command_undock, display_time_and_status, mine_command, buy_command, add_creds_command, \
-    command_exit, command_color, command_reset, clear
+    command_undock, display_time_and_status, mine_command, buy_command, add_creds_debug_command, \
+    command_exit, command_color, command_reset, clear, add_ore_debug_command, direct_travel_command
+from src.pygameterm import color_data
 from src.pygameterm.terminal import PygameTerminal, Argument
 
 def register_commands(terminal: PygameTerminal):
@@ -110,6 +111,30 @@ def register_commands(terminal: PygameTerminal):
     terminal.register_command(
         ["help", "h"],
         display_help,
+        argument_list=[
+            Argument(
+                name="command_name",
+                type=str,
+                is_optional=True
+            )
+        ]
+    )
+
+    terminal.register_command(
+        ['direct_travel', 'dtr'],
+        direct_travel_command,
+        argument_list=[
+            Argument(
+                name="destination_x",
+                type=float,
+                is_optional=False
+            ),
+            Argument(
+                name="destination_y",
+                type=float,
+                is_optional=False
+            )
+        ]
     )
 
     terminal.register_command(
@@ -141,7 +166,7 @@ def register_commands(terminal: PygameTerminal):
 
     terminal.register_command(
         ["add_creds", "ac"],
-        add_creds_command,
+        add_creds_debug_command,
         argument_list=[
             Argument(
                 name="amount",
@@ -154,6 +179,23 @@ def register_commands(terminal: PygameTerminal):
     terminal.register_command(
         ['clear', 'cl'],
         clear
+    )
+
+    terminal.register_command(
+        ['add_ore', 'ao'],
+        add_ore_debug_command,
+        argument_list=[
+            Argument(
+                name="amount",
+                type=int,
+                is_optional=False
+            ),
+            Argument(
+                name="ore_name",
+                type=str,
+                is_optional=False
+            )
+        ],
     )
 
 
