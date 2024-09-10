@@ -510,6 +510,9 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
         term.write("  color (co) <bg|fg> <color_name>: Change the terminal colors.")
         term.write("  reset (rs) <color|bg|fg|text|history|all>: Reset terminal settings.")
         term.write("  clear (cl): Clear the terminal screen.")
+        term.write("  debug (dm): Enable the Debug Mode")
+        term.write("  add_credits (ac): Add credits to your account (debug mode command)")
+        term.write("  add_ores (ao): Add ores to your ship (debug mode command)")
         term.write("  exit: Exit the game.")
     else:
         # Display specific help for the given command
@@ -571,6 +574,18 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
         elif command_name == "clear" or command_name == "cl":
             term.write("clear (cl):")
             term.write("  Clears the terminal screen.")
+        elif command_name == "debug" or command_name == "dm":
+            term.write("debug (dm):")
+            term.write("  Enables or Disables the Debug Mode.")
+        elif command_name == "add_credits" or command_name == "ac":
+            term.write("add_credits (ac):")
+            term.write("  Adds the specified amount of credits to your account.")
+            term.write("  Example: add_credits 100")
+            term.write("  Needs Debug Mode to be Enabled")
+        elif command_name == "add_ores" or command_name == "ao":
+            term.write("  Adds the specified amount of ores to your account.")
+            term.write("  Example: add_ores 100 Pyrogen")
+            term.write("  Needs Debug Mode to be Enabled")
         elif command_name == "exit":
             term.write("exit:")
             term.write("  Exits the game.")
