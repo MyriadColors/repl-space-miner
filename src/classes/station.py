@@ -3,6 +3,8 @@ from src import helpers
 from src.data import OreCargo
 from src.helpers import take_input, rnd_float, rnd_int
 from src.classes.ore import Ore
+from src.pygameterm.terminal import PygameTerminal
+
 
 class Station:
     def __init__(self, name, station_id, position):
@@ -50,8 +52,8 @@ class Station:
         # create the OreCargo instances
         for ore in self.ores_available:
             ore_quantity: int = 0
-            ore_buy_price: float = ore.base_value * rnd_float(0.75, 1.25)
-            ore_sell_price: float = ore_buy_price * rnd_float(0.5, 1.0)
+            ore_buy_price: float = round(ore.base_value * rnd_float(0.75, 1.25), 2)
+            ore_sell_price: float = round(ore_buy_price * rnd_float(0.5, 1.0), 2)
             ore_cargo = OreCargo(ore, ore_quantity, ore_buy_price, ore_sell_price)
 
             self.ore_cargo.append(ore_cargo)
@@ -103,9 +105,14 @@ class Station:
             return f"{self.name}, Position: {self.position}, ID: {self.id}"
         return f"{self.name}, Position: {self.position}, ID: {self.id}, Distance: {self.position.distance_to(position):.3f} AU"
 
-    def ores_available_to_string(self):
-        return "\n".join([ore.to_string() for ore in self.ores_available])
-
+    def ores_available_to_string(self, term: PygameTerminal):
+        for ore_cargo in self.ore_cargo:
+            term.write("----------------------------------")
+            term.write(f"Ore:       {ore_cargo.ore.name}")
+            term.write(f"Volume:    {ore_cargo.ore.volume}")
+            term.write(f"Sell for:  {ore_cargo.sell_price}")
+            term.write(f"Buy at:    {ore_cargo.buy_price}")
+            term.write("----------------------------------")
     def to_string(self):
         return f"{self.name}\nPosition: {self.position}\nID: {self.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"
 

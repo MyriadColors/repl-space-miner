@@ -414,14 +414,12 @@ class PygameTerminal:
         input_args = parts[1:]
 
         if command_name in self.commands:
-            # print(f"Debug: {command_name} {input_args} found")
             command_struct: Command = self.commands[command_name]
 
             try:
                 for i, arg in enumerate(command_struct.arguments):
                     if i < len(input_args):
-                        value = input_args[i]
-                        arg_type = arg.type
+                        pass
                     elif not arg.is_optional:
                         raise ValueError(f"Missing required argument: {arg.name}")
 

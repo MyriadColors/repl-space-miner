@@ -1,10 +1,13 @@
+from pygame import Vector2
+
 from src import helpers
 from src.classes.asteroid import AsteroidField
+from src.classes.game import Game
 from src.classes.ore import Ore
 from src.classes.station import Station
 from src.data import OreCargo
 from src.helpers import take_input, rnd_float, rnd_int, get_closest_field, get_closest_station, euclidean_distance, \
-    prompt_for_closest_travel_choice, format_seconds
+    format_seconds, prompt_for_closest_travel_choice
 from src.pygameterm import color_data
 from src.pygameterm.terminal import PygameTerminal
 
@@ -213,13 +216,12 @@ def travel_command(*args, term: PygameTerminal):
 
     # Handle 'closest' command
     if args[0] == "closest":
-        global_time = closest_travel(term, args[1], global_time)
-        return global_time
+        closest_travel(term, args[1])
     else:
         term.write("Invalid argument. Please enter 'closest' to travel to the closest field or station.")
 
 
-def closest_travel(term: PygameTerminal, object_type, time):
+def closest_travel(term: PygameTerminal, object_type):
     """Handles travel to the closest field or station."""
     game: Game = term.app_state
     # Get the closest field and station
@@ -236,25 +238,19 @@ def closest_travel(term: PygameTerminal, object_type, time):
             f"Closest field is Field {closest_field.id} at {euclidean_distance(game.player_ship.space_object.get_position(), closest_field.position)} AUs from here.")
         term.write(
             f"Closest station is Station {closest_station.id} at {euclidean_distance(game.player_ship.space_object.get_position(), closest_station.position)} AUs from here.")
-        time = prompt_for_closest_travel_choice(game.player_ship, closest_field, closest_station, time)
+        prompt_for_closest_travel_choice(game.player_ship, closest_field, closest_station,  game.global_time, term)
 
     elif object_type in ['field', 'f']:
         field_position: Vector2 = closest_field.position
-        time = term.app_state.player_ship.travel(term, field_position)
+        term.app_state.player_ship.travel(term, field_position)
 
     elif object_type in ['station', 's']:
         station_position: Vector2 = closest_station.position
-        time = term.app_state.player_ship.travel(term, station_position)
+        term.app_state.player_ship.travel(term, station_position)
     else:
         term.write("Invalid object type. Use 'field' or 'station'.")
 
-    return time
-
-
-from pygame import Vector2
-
-from src.classes.game import Game
-from src.pygameterm.terminal import PygameTerminal
+    return
 
 
 def direct_travel_command(destination_x: str, destination_y: str, term: PygameTerminal):
@@ -275,7 +271,7 @@ def direct_travel_command(destination_x: str, destination_y: str, term: PygameTe
     game.player_ship.travel(term, Vector2(x, y))
 
 
-def mine_command(time_to_mine, term: PygameTerminal):
+def mine_command(time_to_mine = None, mine_until_full = None, term: PygameTerminal = None):
     """Handles the mine command."""
     game: Game = term.app_state
 
@@ -287,14 +283,14 @@ def mine_command(time_to_mine, term: PygameTerminal):
     try:
         time_to_mine = int(time_to_mine)
         asteroid_field = game.solar_system.get_field_by_position(game.player_ship.space_object.get_position())
-        game.player_ship.mine_belt(term, asteroid_field, time_to_mine)
+        game.player_ship.mine_belt(term, asteroid_field, time_to_mine, mine_until_full)
 
     except ValueError:
         term.write("Invalid time. Please enter a valid number.")
 
 
 def command_dock(term: PygameTerminal):
-    """Handles the dock and undock commands."""
+    """Handles the dock commands."""
 
     def on_dock_complete():
         term.write("Dock complete.")
@@ -302,7 +298,7 @@ def command_dock(term: PygameTerminal):
         station_to_dock: Station = game.solar_system.get_object_within_interaction_radius(game.player_ship)
         term.write(f"Docked at {station_to_dock.name}.")
         term.write(f"This station has: ")
-        term.write(station_to_dock.ores_available_to_string())
+        term.write(station_to_dock.ores_available_to_string(term))
 
     game: Game = term.app_state
     if game.player_ship.is_docked:
@@ -339,7 +335,7 @@ def command_undock(term: PygameTerminal):
         end_value=1.0,
         step=0.5,
         message_template="Undocking in... {}",
-        wait_time=0.5,
+        wait_time=0.1,
         on_complete=on_undock_complete
     )
 
@@ -400,15 +396,19 @@ def add_ore_debug_command(amount: str, ore_name: str, term: PygameTerminal):
 def add_creds_debug_command(amount: str, term: PygameTerminal):
     """Handles the add credits command."""
     game: Game = term.app_state
-    amount = int(amount)
-    if amount < 0:
-        term.write("You have entered a negative number, this means you are in debt.")
-        term.write("Are you sure? (y/n)")
-        confirm = take_input(">> ").strip()
-        if confirm != "y":
-            return
-    game.player_credits += amount
-    term.write(f"{amount} credits added to your credits.")
+    if game.debug_flag:
+        amount = int(amount)
+        if amount < 0:
+            term.write("You have entered a negative number, this means you are in debt.")
+            term.write("Are you sure? (y/n)")
+            confirm = take_input(">> ").strip()
+            if confirm != "y":
+                return
+        game.player_credits += amount
+        term.write(f"{amount} credits added to your credits.")
+    else:
+        term.write("Debug commands can only be used through the use of the 'debug' ('dm') command.")
+        return
 
 
 def display_status(term: PygameTerminal):
@@ -488,6 +488,16 @@ def clear(term):
     """Clear the terminal screen."""
     term.terminal_lines.clear()
 
+
+def debug_mode_command(term):
+    """Handles the debug mode command."""
+    game: Game = term.game
+    if game.debug_mode:
+        game.debug_mode = False
+        term.write("Debug mode disabled.")
+    else:
+        game.debug_mode = True
+        term.write("Debug mode enabled.")
 
 def display_help(command_name: str = None, term: PygameTerminal = None):
     """Displays the help message."""

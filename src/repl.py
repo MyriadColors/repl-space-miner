@@ -159,23 +159,17 @@ def register_commands(terminal: PygameTerminal):
             Argument(
                 name="time",
                 type=int,
-                is_optional=False
-            )
-        ]
-    )
+                is_optional=True
+            ),
 
-    terminal.register_command(
-        ["add_creds", "ac"],
-        add_creds_debug_command,
-        argument_list=[
             Argument(
-                name="amount",
-                type=int,
-                is_optional=False
+                name="uf",
+                type=str,
+                is_optional=True
             )
         ]
     )
-
+    
     terminal.register_command(
         ['clear', 'cl'],
         clear
@@ -223,7 +217,7 @@ def start_repl():
         game,
         1400,
         950,
-        20,
+        18,
         "Welcome to the Space Trader CLI game!",
         default_bg_color=color_data.color["gray64"],
         default_fg_color=color_data.color["green128"],
