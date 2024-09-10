@@ -18,9 +18,6 @@ def refuel_command(term: PygameTerminal, amount: float):
         return
 
     station = game.solar_system.get_object_within_interaction_radius(game)
-    if amount <= 0:
-        term.write("Invalid amount. Please enter a positive number.")
-        return
 
     if game.player_ship.fuel + amount > game.player_ship.max_fuel:
         term.write(
@@ -62,62 +59,59 @@ def barter(term: PygameTerminal, price: float) -> (float, bool):
 def sell_command(term: PygameTerminal):
     """Handles the sell command."""
     game: Game = term.app_state
+
     if not game.player_ship.is_docked:
         term.write("Cannot sell while not docked.")
-        print("Debug: Cannot sell while not docked.")
         return
 
-    station: Station = game.solar_system.get_object_within_interaction_radius(game.player_ship)
+    station = game.solar_system.get_object_within_interaction_radius(game.player_ship)
     if station.ore_cargo_volume >= station.ore_capacity:
-        term.write("Cannot sell because the station's ore cargo is full, look for another one.")
-        print("Debug: Cannot sell because the station's ore cargo is full, look for another one.")
+        term.write("Cannot sell because the station's ore cargo is full. Look for another one.")
         return
 
-    ores_sold: list[OreCargo] = []
-
-    # Get the ores to sell
-    # remember that player_ship.cargohold is a set
+    sellable_ores: list[OreCargo] = []
     for ore_cargo in game.player_ship.cargohold:
-        if ore_cargo.quantity > 0:
-            if ore_cargo.ore.id not in [ore.id for ore in station.ores_available]:
-                term.write(f"Cannot sell {ore_cargo.ore.name} because it is not available.", debug_flag=True)
-                continue
+        # Check if the player has this ore, if the station accepts this ore and if the station has enough capacity
+        if ore_cargo.quantity > 0 and ore_cargo.ore.id in [ore.id for ore in station.ores_available] and \
+                ore_cargo.ore.volume <= station.ore_capacity - station.ore_cargo_volume:
+            sellable_ores.append(ore_cargo)
 
-            if ore_cargo.ore.volume > station.ore_capacity - station.ore_cargo_volume:
-                term.write(f"Cannot sell {ore_cargo.ore.name} because the station's ore cargo is full.",
-                           debug_flag=True)
-                continue
-
-            ores_sold.append(ore_cargo)
-    if len(ores_sold) == 0:
-        term.write("No ores to sell.", debug_flag=True)
+    if not sellable_ores:
+        term.write("No ores to sell.")
         return
-    for ore_cargo in ores_sold:
+
+    # Display the ores to be sold
+    term.write("Ores to be sold:")
+    for ore_cargo in sellable_ores:
         term.write(ore_cargo.ore.to_string())
 
-    ore_names: set[str] = {ore.ore.name for ore in ores_sold}
-    total_value: float = 0.0
-    for ore_sold in ores_sold:
-        total_value += (ore_sold.quantity * ore_sold.sell_price)
-    total_volume = sum([ore_sold.quantity * ore_sold.ore.volume for ore_sold in ores_sold])
-    total_units = sum([ore_sold.quantity for ore_sold in ores_sold])
-    term.write(f"Ores to be sold: {', '.join(ore_names)}", debug_flag=True)
-    term.write(f"Total value: {total_value} credits", debug_flag=True)
-    term.write(f"Total volume: {total_volume} m³", debug_flag=True)
-    term.write(f"Total units: {total_units}", debug_flag=True)
-    confirm = term.prompt_user("Are you sure you want to sell these ores? y/n, debug_flag=True")
-    if confirm != "y":
-        term.write("Sell cancelled.", debug_flag=True)
+    total_value = sum(ore_cargo.quantity * ore_cargo.sell_price for ore_cargo in sellable_ores)
+    total_volume = sum(ore_cargo.quantity * ore_cargo.ore.volume for ore_cargo in sellable_ores)
+    total_units = sum(ore_cargo.quantity for ore_cargo in sellable_ores)
+
+    term.write(f"Total value: {total_value:.2f} credits")
+    term.write(f"Total volume: {total_volume:.2f} m³")
+    term.write(f"Total units: {total_units}")
+
+    confirm = term.prompt_user("Are you sure you want to sell these ores? (y/n)")
+    if confirm.lower() != "y":
+        term.write("Sell cancelled.")
         return
-    game.player_credits = round(game.player_credits + total_value, 2)
+
+    # Update game state
+    game.player_credits += total_value
     station.ore_cargo_volume += total_volume
-    for player_ore_cargo in game.player_ship.cargohold:
-        if player_ore_cargo.ore.id in [ore.ore.id for ore in ores_sold]:
-            player_ore_cargo.quantity -= total_units
+
+    # Remove sold ores from the player's cargo hold
+    for ore_cargo in sellable_ores:
+        player_ore_cargo = game.player_ship.get_ore_cargo_by_id(ore_cargo.ore.id)
+        if player_ore_cargo:
+            player_ore_cargo.quantity -= ore_cargo.quantity
+
     game.player_ship.cargohold = [cargo for cargo in game.player_ship.cargohold if cargo.quantity > 0]
     game.player_ship.calculate_cargo_occupancy()
 
-    term.write(f"Sold {total_units} units of {', '.join(ore_names)} for {total_value} credits.", debug_flag=True)
+    term.write(f"Sold {total_units} units for {total_value:.2f} credits.")
 
 
 def buy_command(item_name: str, amount: str, term: PygameTerminal):
@@ -280,6 +274,7 @@ def direct_travel_command(destination_x: str, destination_y: str, term: PygameTe
 
     game.player_ship.travel(term, Vector2(x, y))
 
+
 def mine_command(time_to_mine, term: PygameTerminal):
     """Handles the mine command."""
     game: Game = term.app_state
@@ -401,6 +396,7 @@ def add_ore_debug_command(amount: str, ore_name: str, term: PygameTerminal):
 
     display_status(term)
 
+
 def add_creds_debug_command(amount: str, term: PygameTerminal):
     """Handles the add credits command."""
     game: Game = term.app_state
@@ -420,6 +416,7 @@ def display_status(term: PygameTerminal):
     term.write(f"Credits: {game.player_credits}")
     for status in game.player_ship.status_to_string():
         term.write(status)
+
 
 def display_time_and_status(term: PygameTerminal):
     """Displays the current time and the player's ship status."""
