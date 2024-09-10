@@ -127,7 +127,7 @@ class Ship:
     def get_docked_station(self) -> Station | None:
         return self.docked_at
 
-    def mine_belt(self, terminal: PygameTerminal, asteroid_field, time_to_mine):
+    def mine_belt(self, terminal: PygameTerminal, asteroid_field, time_to_mine, mine_until_full):
         if len(asteroid_field.asteroids) == 0:
             terminal.write("This field is empty.")
             return
@@ -139,34 +139,41 @@ class Ship:
         asteroid_being_mined: Asteroid | None = None
         ores_mined: list[OreCargo] = []
         time_spent = 0
+        mined_volume = 0  # Track the accumulated volume of mined material
 
-        while time_spent < time_to_mine:
-            if self.is_cargo_full():
-                terminal.write("Your cargo is now full.")
-                break
-
+        # Combined loop condition
+        while (not mine_until_full and time_spent < time_to_mine) or (mine_until_full and not self.is_cargo_full()):
             if asteroid_being_mined is None or asteroid_being_mined.volume <= 0:
-                asteroid_being_mined = next((asteroid for asteroid in asteroid_field.asteroids if asteroid.volume > 0),
-                                            None)
+                asteroid_being_mined = next(
+                    (asteroid for asteroid in asteroid_field.asteroids if asteroid.volume > 0),
+                    None)
                 if asteroid_being_mined is None:
                     terminal.write("This field is empty.")
                     break
 
             ore = asteroid_being_mined.ore
-            if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
-                terminal.write(f"Cannot mine this ore because the {ore.name} ore is too voluminous for the ship's cargohold.")
-                terminal.write("In the future you may be able to try again with another ore.")
-                break
 
-            # Mine the ore
-            ore_cargo = next((cargo for cargo in ores_mined if cargo.ore.id == ore.id), None)
-            if ore_cargo:
-                ore_cargo.quantity += 1
-            else:
-                ores_mined.append(OreCargo(ore, 1, ore.base_value, ore.base_value))
+            # Only mine if enough material has been mined for a whole unit
+            if mined_volume >= ore.volume:
+                if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
+                    terminal.write(
+                        f"Cannot mine this ore because the {ore.name} ore is too voluminous for the ship's cargohold.")
+                    terminal.write("In the future you may be able to try again with another ore.")
+                    break
 
-            asteroid_being_mined.volume -= ore.volume
-            self.cargohold_occupied += ore.volume
+                # Mine the ore
+                ore_cargo = next((cargo for cargo in ores_mined if cargo.ore.id == ore.id), None)
+                if ore_cargo:
+                    ore_cargo.quantity += 1
+                else:
+                    ores_mined.append(OreCargo(ore, 1, ore.base_value, ore.base_value))
+
+                asteroid_being_mined.volume -= ore.volume
+                self.cargohold_occupied += ore.volume
+                mined_volume -= ore.volume  # Reset mined_volume after mining a unit
+
+            # Simulate mining based on mining speed
+            mined_volume += self.mining_speed
             time_spent += 1
 
         total_volume = sum(ore_cargo.quantity * ore_cargo.ore.volume for ore_cargo in ores_mined)
