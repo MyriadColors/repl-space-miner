@@ -1,8 +1,10 @@
 import math
 import random
+
 from pygame import Vector2
-import src.data as data
+
 from src.classes.ore import Ore
+
 
 def euclidean_distance(v1: Vector2, v2: Vector2):
     return round(math.sqrt((v1.x - v2.x) ** 2 + (v1.y - v2.y) ** 2), 2)
@@ -11,8 +13,10 @@ def euclidean_distance(v1: Vector2, v2: Vector2):
 def rnd_float(min_val, max_val):
     return min_val + random.random() * (max_val - min_val)
 
+
 def rnd_int(min_val, max_val):
     return random.randint(min_val, max_val)
+
 
 def rnd_vector(min_val, max_val):
     return Vector2(rnd_float(min_val, max_val), rnd_float(min_val, max_val))
@@ -54,9 +58,9 @@ def format_seconds(seconds: float):
 
 
 def select_random_ore() -> Ore:
-    rnd_index = random.randint(0, len(data.ORES) - 1)
+    rnd_index = random.randint(0, len(ORES) - 1)
 
-    return data.ORES[rnd_index]
+    return ORES[rnd_index]
 
 
 def get_closest_field(solar_system, position, is_at_field=False):
@@ -89,3 +93,25 @@ def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station
 
     print("Too many invalid attempts. Aborting.")
     return time
+
+
+from src.classes.ore import ORES
+
+
+def get_ore_by_id_or_name(identifier: str | int) -> Ore | None:
+    """Returns an Ore from the ORES dictionary based on its ID or name.
+
+    Args:
+        identifier: The ID (int) or name (str) of the ore.
+
+    Returns:
+        The corresponding Ore object if found, otherwise None.
+    """
+
+    if isinstance(identifier, int):
+        return ORES.get(identifier)
+    elif isinstance(identifier, str):
+        for ore_id, ore in ORES.items():
+            if ore.name.lower() == identifier.lower():
+                return ore
+    return None
