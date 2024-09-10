@@ -159,7 +159,15 @@ def register_commands(terminal: PygameTerminal):
 
 def start_repl():
     game: Game = Game()
-    terminal = PygameTerminal(game, 1400, 1000, 28, "Welcome to the Space Trader CLI game!")
+    terminal = PygameTerminal(
+        game,
+        1400,
+        950,
+        20,
+        "Welcome to the Space Trader CLI game!",
+        default_bg_color=color_data.color["gray64"],
+        default_fg_color=color_data.color["green128"],
+    )
     register_commands(terminal)
     terminal.run()
 
