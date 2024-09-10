@@ -4,6 +4,7 @@ import random
 from pygame import Vector2
 
 from src.classes.ore import Ore
+from src.pygameterm.terminal import PygameTerminal
 
 
 def euclidean_distance(v1: Vector2, v2: Vector2):
@@ -76,23 +77,20 @@ def get_closest_station(solar_system, player_ship, is_at_station=False):
     return solar_system.sort_stations('asc', 'distance', player_ship.space_object.get_position())[0]
 
 
-def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time):
+def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time, term: PygameTerminal):
     """Prompts the player to choose between the closest field or station."""
-
-    print("Do you wish to go to the closest 1. (f)ield or the closest 2. (s)tation?")
     tries = 3
     while tries > 0:
-        response = take_input(">> ")
+        response = term.prompt_user("Do you wish to go to the closest 1. (f)ield or the closest 2. (s)tation?")
         if response in ["1", "f", "field"]:
             return player_ship.travel(closest_field.position, time)
         elif response in ["2", "s", "station"]:
             return player_ship.travel(closest_station.position, time)
         else:
-            print("Invalid response.")
+            term.write("Invalid response.")
             tries -= 1
 
-    print("Too many invalid attempts. Aborting.")
-    return time
+    term.write("Too many invalid attempts. Aborting.")
 
 
 from src.classes.ore import ORES
