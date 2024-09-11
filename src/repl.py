@@ -229,7 +229,7 @@ def start_repl(args_input):
         18,
         "Welcome to the Space Trader CLI game!",
         default_bg_color=color_data.color["gray64"],
-        default_fg_color=color_data.color["green128"],
+        default_fg_color=color_data.color["green144"],
     )
 
     init_music(terminal) if not game.mute_flag else None
