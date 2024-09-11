@@ -1,7 +1,8 @@
 from src.classes.game import Game
 from src.command_handlers import refuel_command, sell_command, travel_command, scan_command, display_help, command_dock, \
     command_undock, display_time_and_status, mine_command, buy_command, add_creds_debug_command, \
-    command_exit, command_color, command_reset, clear, add_ore_debug_command, direct_travel_command, debug_mode_command
+    command_exit, command_color, command_reset, clear, add_ore_debug_command, direct_travel_command, debug_mode_command, \
+    toggle_sound_command, init_music
 from src.pygameterm import color_data
 from src.pygameterm.terminal import PygameTerminal, Argument
 
@@ -205,14 +206,22 @@ def register_commands(terminal: PygameTerminal):
             name="amount",
             type=int,
             is_optional=False
-        )
-    ]
-        
+            )
+        ]
+    )
+
+    terminal.register_command(
+        ["toggle_sound", "ts"],
+        toggle_sound_command,
     )
 
 
-def start_repl():
-    game: Game = Game()
+def start_repl(args_input):
+    game = Game(
+        debug_flag=True if args_input.debug else False,
+        mute_flag=True if args_input.mute else False
+    )
+
     terminal = PygameTerminal(
         game,
         1400,
@@ -222,6 +231,7 @@ def start_repl():
         default_bg_color=color_data.color["gray64"],
         default_fg_color=color_data.color["green128"],
     )
+
+    init_music(terminal) if not game.mute_flag else None
     register_commands(terminal)
     terminal.run()
-

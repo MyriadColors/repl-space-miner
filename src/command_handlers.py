@@ -491,12 +491,12 @@ def clear(term):
 
 def debug_mode_command(term):
     """Handles the debug mode command."""
-    game: Game = term.game
-    if game.debug_mode:
-        game.debug_mode = False
+    game: Game = term.app_state
+    if game.debug_flag:
+        game.debug_flag = False
         term.write("Debug mode disabled.")
     else:
-        game.debug_mode = True
+        game.debug_flag = True
         term.write("Debug mode enabled.")
 
 def display_help(command_name: str = None, term: PygameTerminal = None):
@@ -601,3 +601,40 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
             term.write("  Exits the game.")
         else:
             term.write(f"Unknown command: {command_name}")
+
+
+def init_music(term: PygameTerminal):
+    from pygame import mixer
+
+    game: Game = term.app_state
+
+    mixer.init()
+    mixer.music.load("Decoherence.mp3")
+    mixer.music.play(-1)
+    game.mute_flag = False
+    game.sound_init = True
+    term.write("Sound init.")
+
+def pause_sound(term: PygameTerminal):
+    from pygame import mixer
+    mixer.music.pause()
+    term.write(f"Sound disabled.")
+
+def unpause_sound(term: PygameTerminal):
+    from pygame import mixer
+    mixer.music.unpause()
+    term.write("Sound enabled.")
+
+def toggle_sound_command(term: PygameTerminal):
+    game: Game = term.app_state
+
+    if game.mute_flag:
+        if not game.sound_init:
+            init_music(term)
+        else:
+            unpause_sound(term)
+        game.mute_flag = False
+    else:
+        game.mute_flag = True
+        pause_sound(term)
+
