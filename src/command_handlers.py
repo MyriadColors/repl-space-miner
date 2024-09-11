@@ -499,6 +499,41 @@ def debug_mode_command(term):
         game.debug_flag = True
         term.write("Debug mode enabled.")
 
+def init_music(term: PygameTerminal):
+    from pygame import mixer
+
+    game: Game = term.app_state
+
+    mixer.init()
+    mixer.music.load("Decoherence.mp3")
+    mixer.music.play(-1)
+    game.mute_flag = False
+    game.sound_init = True
+    term.write("Sound init.")
+
+def pause_sound(term: PygameTerminal):
+    from pygame import mixer
+    mixer.music.pause()
+    term.write(f"Sound disabled.")
+
+def unpause_sound(term: PygameTerminal):
+    from pygame import mixer
+    mixer.music.unpause()
+    term.write("Sound enabled.")
+
+def toggle_sound_command(term: PygameTerminal):
+    game: Game = term.app_state
+
+    if game.mute_flag:
+        if not game.sound_init:
+            init_music(term)
+        else:
+            unpause_sound(term)
+        game.mute_flag = False
+    else:
+        game.mute_flag = True
+        pause_sound(term)
+
 def display_help(command_name: str = None, term: PygameTerminal = None):
     """Displays the help message."""
 
@@ -521,6 +556,7 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
         term.write("  reset (rs) <color|bg|fg|text|history|all>: Reset terminal settings.")
         term.write("  clear (cl): Clear the terminal screen.")
         term.write("  debug (dm): Enable the Debug Mode")
+        term.write("  toggle_sound (ts): Enable or disable the game's sound.")
         term.write("  add_credits (ac): Add credits to your account (debug mode command)")
         term.write("  add_ores (ao): Add ores to your ship (debug mode command)")
         term.write("  exit: Exit the game.")
@@ -587,6 +623,9 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
         elif command_name == "debug" or command_name == "dm":
             term.write("debug (dm):")
             term.write("  Enables or Disables the Debug Mode.")
+        elif command_name == "toggle_sound" or command_name == "ts":
+            term.write("toggle_sound (ts):")
+            term.write("  Toggles the game's sound effects and music on or off.")
         elif command_name == "add_credits" or command_name == "ac":
             term.write("add_credits (ac):")
             term.write("  Adds the specified amount of credits to your account.")
@@ -601,40 +640,3 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
             term.write("  Exits the game.")
         else:
             term.write(f"Unknown command: {command_name}")
-
-
-def init_music(term: PygameTerminal):
-    from pygame import mixer
-
-    game: Game = term.app_state
-
-    mixer.init()
-    mixer.music.load("Decoherence.mp3")
-    mixer.music.play(-1)
-    game.mute_flag = False
-    game.sound_init = True
-    term.write("Sound init.")
-
-def pause_sound(term: PygameTerminal):
-    from pygame import mixer
-    mixer.music.pause()
-    term.write(f"Sound disabled.")
-
-def unpause_sound(term: PygameTerminal):
-    from pygame import mixer
-    mixer.music.unpause()
-    term.write("Sound enabled.")
-
-def toggle_sound_command(term: PygameTerminal):
-    game: Game = term.app_state
-
-    if game.mute_flag:
-        if not game.sound_init:
-            init_music(term)
-        else:
-            unpause_sound(term)
-        game.mute_flag = False
-    else:
-        game.mute_flag = True
-        pause_sound(term)
-
