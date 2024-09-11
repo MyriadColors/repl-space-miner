@@ -544,14 +544,14 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
         term.write("  status (st): Display your ship's status, credits, and time.")
         term.write("  scan (sc) <quantity>: Scan for nearby asteroid fields and stations.")
         term.write("  travel (tr) closest <field|station>: Travel to the closest asteroid field or station.")
-        term.write("  travel (tr) <x> <y>: Travel to specific coordinates in the solar system.")
+        term.write("  direct_travel (dtr) <x> <y>: Travel to specific coordinates in the solar system.")
         term.write("  mine (mi) <time>: Mine for ores at the current asteroid field.")
         term.write("  dock (do): Dock with the nearest station.")
         term.write("  undock (ud): Undock from the current station.")
         term.write("  buy (by) <ore_name> <amount>: Buy ores from the docked station.")
         term.write("  sell (sl): Sell ores at the docked station.")
         term.write("  refuel (ref) <amount>: Refuel your ship at the docked station.")
-        term.write("  upgrade: View and purchase ship upgrades.")  # Assuming you'll add an upgrade command
+        term.write("  upgrade: View and purchase ship upgrades.")
         term.write("  color (co) <bg|fg> <color_name>: Change the terminal colors.")
         term.write("  reset (rs) <color|bg|fg|text|history|all>: Reset terminal settings.")
         term.write("  clear (cl): Clear the terminal screen.")
@@ -561,7 +561,6 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
         term.write("  add_ores (ao): Add ores to your ship (debug mode command)")
         term.write("  exit: Exit the game.")
     else:
-        # Display specific help for the given command
         command_name = command_name.lower()
         if command_name == "status" or command_name == "st":
             term.write("status (st):")
@@ -574,7 +573,8 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
             term.write("travel (tr) closest <field|station>:")
             term.write("  Travels to the closest asteroid field or station.")
             term.write("  Example: travel closest field")
-            term.write("travel (tr) <x> <y>:")
+        elif command_name == "direct_travel" or command_name == "dtr":
+            term.write("travel_direct (dtr) <x> <y>:")
             term.write("  Travels to the specified coordinates in the solar system.")
             term.write("  Example: travel 10.5 20.3")
         elif command_name == "mine" or command_name == "mi":
