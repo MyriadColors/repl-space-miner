@@ -116,6 +116,10 @@ class PygameTerminal:
         self.set_monospace_font()
         self.lines_on_screen = floor(self.height / (self.font.get_height() + self.line_margin_height)) - 2
 
+        # Extensions
+        self.illustration_window = None
+        self.custom_event_handlers = {}
+
         # Command registry
         # add some default commands
         self.commands: dict[str, Command] = {}
@@ -195,6 +199,11 @@ class PygameTerminal:
                     self.handle_input_keydown(event)
                 else:
                     self.handle_keydown(event)
+            # Handle custom events
+            elif event.type >= pygame.USEREVENT:
+                event_name = pygame.event.event_name(event.type)
+                if event_name in self.custom_event_handlers:
+                    self.custom_event_handlers[event_name](event) # Pass the event object
 
     def handle_return(self):
         """Handle the return key."""
@@ -288,23 +297,6 @@ class PygameTerminal:
             self.terminal_lines.append(text)  # In case it's the first line
 
         self.draw_terminal()
-
-    def progress_bar(self, total, current, bar_length=30):
-        """
-        Display a progress bar that updates in-place.
-
-        :param total: The total number of steps.
-        :param current: The current step.
-        :param bar_length: The length of the progress bar.
-        """
-        progress = current / total
-        block = int(round(bar_length * progress))
-        bar = "#" * block + "-" * (bar_length - block)
-        percentage = progress * 100
-        progress_message = f"Progress: [{bar}] {percentage:.2f}%"
-
-        # Write the progress bar in place
-        self.write_in_place(progress_message)
 
     def wait(self, duration_ms: int):
         """
@@ -490,3 +482,161 @@ class PygameTerminal:
             return len(args[0])
         else:
             return 0
+
+    # --- Extensions ---
+
+    def create_illustration_window(self, width, height):
+        self.illustration_window = pygame.display.set_mode((width, height))
+
+    def close_illustration_window(self):
+        if self.illustration_window:
+            pygame.display.set_mode((self.width, self.height))  # Restore original window
+            self.illustration_window = None
+
+    def show_illustration(self, image_path):
+        if self.illustration_window:
+            try:
+                image = pygame.image.load(image_path)
+                self.illustration_window.blit(image, (0, 0))
+                pygame.display.flip()  # Update illustration window
+            except Exception as e:
+                self.write(f"Error loading illustration: {e}")
+
+    def register_event_handler(self, event_name, handler):
+        # Generate a unique event type id
+        event_type = pygame.USEREVENT + len(self.custom_event_handlers)
+        pygame.event.EventType(event_type, {'event_name': event_name})  # Register the event type
+        self.custom_event_handlers[event_name] = handler
+
+    def trigger_event(self, event_name, *args, **kwargs):
+        # Find the event type id associated with the event name
+        for event_type in range(pygame.USEREVENT, pygame.NUMEVENTS):
+            if pygame.event.event_name(event_type) == event_name:
+                event = pygame.event.Event(event_type, *args, **kwargs)
+                pygame.event.post(event)
+                return
+
+        self.write(f"Error: Event '{event_name}' not registered.")
+
+
+    def draw_table(self, data, headers, x=None, y=None, column_widths=None, cell_padding=5, border_width=1,
+                   border_color=pygame.Color('white'), header_bg_color=pygame.Color('gray')):
+
+        # Calculate positions if not provided
+        if x is None:
+            x = self.terminal_margin_left
+        if y is None:
+            y = self.terminal_margin_top
+
+        num_columns = len(headers)
+        num_rows = len(data) + 1  # +1 for header row
+
+        # Calculate column widths automatically if not provided
+        if column_widths is None:
+            column_widths = [self.font.size(str(max([row[i] for row in data + [headers]], key=lambda x: len(str(x)))))[0] +
+                             2 * cell_padding for i in range(num_columns)]
+
+        # Calculate total table width and height
+        table_width = sum(column_widths) + (num_columns + 1) * border_width
+        table_height = num_rows * (self.font.get_height() + 2 * cell_padding) + (num_rows + 1) * border_width
+
+        # Draw border
+        pygame.draw.rect(self.screen, border_color, (x, y, table_width, table_height), border_width)
+
+        # Draw header row
+        current_x = x + border_width
+        for i, header in enumerate(headers):
+            header_rect = pygame.Rect(current_x, y + border_width, column_widths[i],
+                                      self.font.get_height() + 2 * cell_padding)
+            pygame.draw.rect(self.screen, header_bg_color, header_rect)
+
+            header_surface = self.font.render(str(header), True, self.fg_color)
+            header_rect.x += cell_padding  # Adjust for cell padding
+            header_rect.y += cell_padding
+            self.screen.blit(header_surface, header_rect)
+            current_x += column_widths[i] + border_width
+
+        # Draw data rows
+        current_y = y + self.font.get_height() + 2 * cell_padding + 2 * border_width
+        for row in data:
+            current_x = x + border_width
+            for i, cell in enumerate(row):
+                cell_rect = pygame.Rect(current_x, current_y, column_widths[i],
+                                         self.font.get_height() + 2 * cell_padding)
+                cell_surface = self.font.render(str(cell), True, self.fg_color)
+                cell_rect.x += cell_padding
+                cell_rect.y += cell_padding
+                self.screen.blit(cell_surface, cell_rect)
+                current_x += column_widths[i] + border_width
+            current_y += self.font.get_height() + 2 * cell_padding + border_width
+
+        pygame.display.flip()
+
+
+    def draw_menu(self, menu_options, x=None, y=None, selected_index=0, item_padding=5,
+                  border_width=1, border_color=pygame.Color('white'),
+                  selected_bg_color=pygame.Color('gray')):
+        if x is None:
+            x = self.terminal_margin_left
+        if y is None:
+            y = self.terminal_margin_top
+
+        menu_width = max(self.font.size(option)[0] for option in menu_options) + 2 * item_padding
+        menu_height = len(menu_options) * (self.font.get_height() + 2 * item_padding) + 2 * border_width
+
+        # Draw border
+        pygame.draw.rect(self.screen, border_color, (x, y, menu_width, menu_height), border_width)
+
+        current_y = y + border_width + item_padding
+        for i, option in enumerate(menu_options):
+            if i == selected_index:
+                # Draw selected item background
+                pygame.draw.rect(self.screen, selected_bg_color,
+                                 (x + border_width, current_y - item_padding, menu_width - 2 * border_width,
+                                  self.font.get_height() + 2 * item_padding))
+
+            option_surface = self.font.render(option, True, self.fg_color)
+            self.screen.blit(option_surface, (x + border_width + item_padding, current_y))
+            current_y += self.font.get_height() + 2 * item_padding
+
+        pygame.display.flip()
+
+    @staticmethod
+    def handle_menu_input(event, menu_options, selected_index):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                selected_index = (selected_index - 1) % len(menu_options)
+            elif event.key == pygame.K_DOWN:
+                selected_index = (selected_index + 1) % len(menu_options)
+            elif event.key == pygame.K_RETURN:
+                # Return the selected option
+                return selected_index, menu_options[selected_index]
+
+        return selected_index, None
+
+    def draw_progress_bar(self, current, total, x=None, y=None, width=200, height=20,
+                          bg_color=pygame.Color('gray'), fg_color=pygame.Color('green')):
+        if x is None:
+            x = self.terminal_margin_left
+        if y is None:
+            y = self.terminal_margin_top
+
+        progress = current / total
+        progress_width = int(width * progress)
+
+        # Draw background
+        pygame.draw.rect(self.screen, bg_color, (x, y, width, height))
+
+        # Draw progress
+        pygame.draw.rect(self.screen, fg_color, (x, y, progress_width, height))
+
+        # Display percentage (optional)
+        percentage_text = self.font.render(f"{int(progress * 100)}%", True, self.fg_color)
+        text_rect = percentage_text.get_rect(center=(x + width // 2, y + height // 2))
+        self.screen.blit(percentage_text, text_rect)
+
+        pygame.display.flip()
+
+    def update_progress_bar(self, current, total, x=None, y=None, width=200, height=20,
+                              bg_color=pygame.Color('gray'), fg_color=pygame.Color('green')):
+        self.draw_progress_bar(current, total, x, y, width, height, bg_color, fg_color)
