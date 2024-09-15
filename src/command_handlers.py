@@ -41,7 +41,7 @@ def refuel_command(term: PygameTerminal, amount: float):
     term.write(f"Refueled with {round(amount, 2)} m3 for {round(price, 2)} credits.")
 
 
-def barter(term: PygameTerminal, price: float) -> (float, bool):
+def barter(term: PygameTerminal, price: float) -> tuple[float, bool]:
     """Handles the bartering process and returns the potentially discounted price and a bartering success flag."""
     confirm = term.prompt_user("Want to barter for a discount? y/n")
     bartering_flag = False  # Initialize the flag
