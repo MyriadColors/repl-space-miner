@@ -667,3 +667,21 @@ class PygameTerminal:
     def update_progress_bar(self, current, total, x=None, y=None, width=200, height=20,
                             bg_color=pygame.Color('gray'), fg_color=pygame.Color('green')):
         self.draw_progress_bar(current, total, x, y, width, height, bg_color, fg_color)
+
+    def handle_tab(self):
+        """Handle tab key for command completion."""
+        if not self.current_line:
+            return
+
+        parts = self.current_line.split()
+        if len(parts) == 1:
+            # Complete command
+            possible_commands = [cmd for cmd in self.commands if cmd.startswith(parts[0])]
+            if len(possible_commands) == 1:
+                self.current_line = possible_commands[0] + " "
+                self.cursor_pos = len(self.current_line)
+            elif len(possible_commands) > 1:
+                self.write(" ".join(possible_commands))
+        else:
+            # Complete arguments (you'd need to implement this based on your command structure)
+            pass
