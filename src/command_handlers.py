@@ -496,6 +496,10 @@ def clear(term):
     """Clear the terminal screen."""
     term.terminal_lines.clear()
 
+def scan_field_command(term: PygameTerminal):
+    """Handles the scan field command."""
+    game: Game = term.app_state
+    game.player_ship.scan_field(term)
 
 def debug_mode_command(term):
     """Handles the debug mode command."""

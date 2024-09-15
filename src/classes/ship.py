@@ -217,3 +217,25 @@ class Ship:
 
     def is_cargo_full(self) -> bool:
         return self.cargohold_occupied == self.cargohold_capacity
+    
+    def check_field_presence(self, term: PygameTerminal) -> Tuple[bool, Optional[AsteroidField]]:
+        game = term.app_state
+        
+        for field in game.solar_system.asteroid_fields:
+            if self.interaction_radius > euclidean_distance(self.space_object.position, field.position):
+                return True, field
+        return False, None
+
+    def scan_field(self, term: PygameTerminal):
+        """Scans the field and returns the ores available."""
+        game = term.app_state
+        fields: list[AsteroidField] = game.solar_system.asteroid_fields
+        
+        is_inside_field, field = self.check_field_presence(term)
+        
+        if not is_inside_field:
+            term.write("You are not inside a field.")
+            return
+        
+        for ore in field.ores_available:
+            term.write(f"{ore.name} - {ore.volume} m3")
