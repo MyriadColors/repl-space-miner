@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-
+from typing import Optional, Tuple
 from pygame import Vector2
 
-from src.classes.asteroid import Asteroid
+from src.classes.asteroid import Asteroid, AsteroidField
+from src.classes.ore import get_ore_by_name
 from src.classes.station import Station
 from src.data import OreCargo
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
@@ -37,27 +38,24 @@ class CanMove:
 
 class Ship:
     def __init__(self, position: Vector2, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
-        self.space_object: IsSystemObject = IsSystemObject(position, 0)
-        self.moves: CanMove = CanMove(speed)  # in AU/s
-        self.fuel: float = max_fuel  # in m3
-        self.max_fuel: float = max_fuel  # in m3
-        self.fuel_consumption: float = fuel_consumption  # in m3/AU
-        self.cargohold: list[OreCargo] = []
-        self.cargohold_occupied: float = 0
-        self.cargohold_capacity: float = cargo_capacity
-        self.value: float = value
-        self.mining_speed: float = mining_speed
-        self.interaction_radius: float = 0.001  # Radius around the player ship where it can interact with other objects
-        self.is_docked: bool = False
-        self.docked_at: Station | None = None
-        self.ship_name: str = name
+        self.space_object = IsSystemObject(position, 0)
+        self.moves = CanMove(speed)  # in AU/s
+        self.fuel = max_fuel  # in m3
+        self.max_fuel = max_fuel  # in m3
+        self.fuel_consumption = fuel_consumption  # in m3/AU
+        self.cargohold = []
+        self.cargohold_occupied = 0
+        self.cargohold_capacity = cargo_capacity
+        self.value = value
+        self.mining_speed = mining_speed
+        self.interaction_radius = 0.001  # Radius around the player ship where it can interact with other objects
+        self.is_docked = False
+        self.docked_at = None
+        self.ship_name = name
         self.calculate_cargo_occupancy()
 
     def get_ore_cargo_by_id(self, ore_id: int) -> OreCargo | None:
-        for ore_cargo in self.cargohold:
-            if ore_cargo.ore.id == ore_id:
-                return ore_cargo
-        return None
+        return next((cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None)
 
     def set_ship_name(self, new_name):
         self.ship_name = new_name
@@ -77,14 +75,14 @@ class Ship:
         self.fuel -= value
 
     def move_unit(self):
-        self.space_object.get_position().x += self.moves.get_speed()
+        self.space_object.position.x += self.moves.speed
 
     def refuel(self, value):
         self.fuel += value
 
     def calculate_travel_data(self, destination: Vector2):
-        distance = round(euclidean_distance(self.space_object.get_position(), destination), 3)
-        time = round(distance / self.moves.get_speed(), 3)
+        distance = round(euclidean_distance(self.space_object.position, destination), 3)
+        time = round(distance / self.moves.speed, 3)
         fuel_consumed = round(distance * self.fuel_consumption, 3)
         return distance, time, fuel_consumed
 
@@ -104,28 +102,26 @@ class Ship:
             return
 
         self.consume_fuel(fuel_consumed)
-        self.space_object.set_position(destination)
+        self.space_object.position = destination
         term.app_state.global_time += travel_time
 
         term.write(f"The ship has arrived at {vector_to_string(destination)}")
 
     def status_to_string(self) -> list[str]:
-        ore_units_on_cargohold = sum([ore_cargo.quantity for ore_cargo in self.cargohold])
-        docked_at: Station | None
+        ore_units_on_cargohold = sum(cargo.quantity for cargo in self.cargohold)
         docked_at_name = 'Not docked' if self.docked_at is None else self.docked_at.name
-        return [f"Ship Name: {self.ship_name}",
-                f"Position: {vector_to_string(self.space_object.get_position())}",
-                f"Speed: {format(self.moves.get_speed(), '2f')} AU/s",
-                f"m/s Fuel: {round(self.fuel, 2)}/{self.max_fuel} m3",
-                f"Cargohold: {round(self.cargohold_occupied, 2)}/{self.cargohold_capacity} m3",
-                f"Amount of Ores: {ore_units_on_cargohold}",
-                f"Docked at: {docked_at_name}"]
+        return [
+            f"Ship Name: {self.ship_name}",
+            f"Position: {vector_to_string(self.space_object.position)}",
+            f"Speed: {self.moves.speed:.2f} AU/s",
+            f"Fuel: {self.fuel:.2f}/{self.max_fuel} m3",
+            f"Cargohold: {self.cargohold_occupied:.2f}/{self.cargohold_capacity} m3",
+            f"Amount of Ores: {ore_units_on_cargohold}",
+            f"Docked at: {docked_at_name}"
+        ]
 
     def cargo_to_string(self, term: PygameTerminal):
-        output = ""
-        for ore_cargo in self.cargohold:
-            output += f"{ore_cargo.quantity} units of {ore_cargo.ore.name}{term.new_line()}"
-        return output
+        return "\n".join(f"{cargo.quantity} units of {cargo.ore.name}" for cargo in self.cargohold)
 
     def get_docked_station(self) -> Station | None:
         return self.docked_at
@@ -210,10 +206,7 @@ class Ship:
         terminal.app_state.global_time += time_spent
 
     def calculate_cargo_occupancy(self):
-        total_volume: float = 0
-        for ore_cargo in self.cargohold:
-            total_volume += ore_cargo.quantity * ore_cargo.ore.volume
-        self.cargohold_occupied = total_volume
+        self.cargohold_occupied = sum(cargo.quantity * cargo.ore.volume for cargo in self.cargohold)
 
     def is_cargo_full(self) -> bool:
         return self.cargohold_occupied == self.cargohold_capacity
