@@ -32,32 +32,49 @@ class Command:
         self.number_of_arguments = len(self.arguments)
 
     def validate_arguments(self, args):
-        if len(args) < len([arg for arg in self.arguments if not arg.is_optional]):
+        required_args = [arg for arg in self.arguments if not arg.is_optional]
+        if len(args) < len(required_args):
             return False, "Not enough arguments provided."
-
         if len(args) > len(self.arguments):
             return False, "Too many arguments provided."
 
-        for i, (arg, value) in enumerate(zip(self.arguments, args)):
-            try:
-                if arg.type == int:
-                    int(value)
-                elif arg.type == float:
-                    float(value)
-                elif arg.type == bool:
-                    value = value.lower()
-                    if value not in ('true', 'false', '1', '0'):
-                        return False, f"Argument {i + 1} ({arg.name}) must be a boolean value (true/false or 1/0)."
-                elif arg.type == str:
-                    pass
-                else:
-                    # For any other types, we'll just check if it's not empty
-                    if not value:
-                        return False, f"Argument {i + 1} ({arg.name}) cannot be empty."
-            except ValueError:
-                return False, f"Argument {i + 1} ({arg.name}) must be of type {arg.type.__name__}."
+        for i, (arg, value) in enumerate(zip(self.arguments, args), start=1):
+            if arg.type == int:
+                if not self._is_valid_int(value):
+                    return False, f"Argument {i} ({arg.name}) must be an integer."
+            elif arg.type == float:
+                if not self._is_valid_float(value):
+                    return False, f"Argument {i} ({arg.name}) must be a float."
+            elif arg.type == bool:
+                if not self._is_valid_bool(value):
+                    return False, f"Argument {i} ({arg.name}) must be a boolean value (true/false or 1/0)."
+            elif arg.type == str:
+                pass
+            else:
+                if not value:
+                    return False, f"Argument {i} ({arg.name}) cannot be empty."
 
         return True, ""
+
+    @staticmethod
+    def _is_valid_int(value):
+        try:
+            int(value)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def _is_valid_float(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def _is_valid_bool(value):
+        return value.lower() in ('true', 'false', '1', '0')
 
     def __call__(self, *args, terminal: 'PygameTerminal'):
         valid, message = self.validate_arguments(args)
@@ -82,7 +99,6 @@ class PygameTerminal:
         :param font_size: The font size of the terminal emulator window.
         :param initial_message: The initial message to display in the terminal emulator.
         """
-        self.rendered_lines_cache = {}
         self.terminal_margin_bottom = 40
         self.terminal_margin_left = 10
         self.terminal_margin_top = 10
@@ -91,9 +107,9 @@ class PygameTerminal:
         pygame.init()
         pygame.display.set_caption("Pygame Terminal Emulator")
         self.app_state = app_state  # This is the state of the application, this will be passed to commands by default
-        self.width: int = width
-        self.height: int = height
-        self.screen: pygame.Surface = pygame.display.set_mode((self.width, self.height))
+        self.width: int = width # The width of the terminal emulator window
+        self.height: int = height # The height of the terminal emulator window
+        self.screen: pygame.Surface = pygame.display.set_mode((self.width, self.height)) # The screen surface of the terminal emulator window
         self.font: pygame.font.Font = pygame.font.Font(None, font_size)
         self.default_bg_color: pygame.color.Color = default_bg_color
         self.bg_color: pygame.color.Color = self.default_bg_color
@@ -118,7 +134,7 @@ class PygameTerminal:
         self.illustration_window = None
         self.custom_event_handlers = {}
         pygame.key.set_repeat(500, 50)
-
+        
         # Command registry
         self.commands: dict[str, Command] = {}
 
@@ -255,7 +271,7 @@ class PygameTerminal:
             self.cursor_pos = len(self.current_line)
 
     def handle_printable(self, char):
-        """Handle printable characters."""
+        """Handle r characters with autocompletion."""
         self.current_line = self.current_line[:self.cursor_pos] + char + self.current_line[self.cursor_pos:]
         self.cursor_pos += 1
 
@@ -293,6 +309,10 @@ class PygameTerminal:
             self.handle_down_arrow()
         elif event_param.unicode.isprintable():
             self.handle_printable(event_param.unicode)
+        elif event_param.key == pygame.K_TAB:
+            self.handle_tab()
+        else:
+            self.write(f"Key {event_param.key} not recognized")
 
     @staticmethod
     def handle_keyup():
@@ -380,33 +400,28 @@ class PygameTerminal:
 
     def draw_terminal(self):
         """Renders the terminal interface on the screen."""
-
         self.screen.fill(self.bg_color)
 
         # Draw previous terminal lines
-        y = self.terminal_margin_top
+        line_y = self.terminal_margin_top
         for line in self.terminal_lines[-self.lines_on_screen:]:
-            text_color = self.custom_line_color if self.custom_line_color else self.fg_color
-            rendered_text = self.font.render(line, True, text_color)
-            self.screen.blit(rendered_text, (self.terminal_margin_left, y))
-            y += self.font.get_height() + self.line_margin_height
+            line_color = self.custom_line_color or self.fg_color
+            line_surface = self.font.render(line, True, line_color)
+            self.screen.blit(line_surface, (self.terminal_margin_left, line_y))
+            line_y += self.font.get_height() + self.line_margin_height
 
         # Draw current input line
-        prompt = self.input_prompt + " " + self.current_line if self.input_mode else "> " + self.current_line
-        rendered_prompt = self.font.render(prompt, True, self.fg_color)
-        self.screen.blit(rendered_prompt, (self.terminal_margin_left, self.height - self.terminal_margin_bottom))
+        input_prompt = self.input_prompt if self.input_mode else "> "
+        input_line = input_prompt + self.current_line
+        input_surface = self.font.render(input_line, True, self.fg_color)
+        input_y = self.height - self.terminal_margin_bottom
+        self.screen.blit(input_surface, (self.terminal_margin_left, input_y))
 
         # Draw cursor
-        cursor_x = self.terminal_margin_left + self.font.size(
-            prompt[:len(prompt) - len(self.current_line) + self.cursor_pos]
-        )[0]
-        pygame.draw.line(
-            self.screen,
-            self.fg_color,
-            (cursor_x, self.height - self.terminal_margin_bottom),
-            (cursor_x, self.height - self.terminal_margin_top),
-            self.line_width
-        )
+        cursor_x = self.terminal_margin_left + self.font.size(input_prompt + self.current_line[:self.cursor_pos])[0]
+        cursor_top = input_y
+        cursor_bottom = self.height - self.terminal_margin_top
+        pygame.draw.line(self.screen, self.fg_color, (cursor_x, cursor_top), (cursor_x, cursor_bottom), self.line_width)
 
         pygame.display.flip()
 
@@ -531,7 +546,6 @@ class PygameTerminal:
 
         self.write(f"Error: Event '{event_name}' not registered.")
 
-
     def draw_table(self, data, headers, x=None, y=None, column_widths=None, cell_padding=5, border_width=1,
                    border_color=pygame.Color('white'), header_bg_color=pygame.Color('gray')):
 
@@ -546,8 +560,9 @@ class PygameTerminal:
 
         # Calculate column widths automatically if not provided
         if column_widths is None:
-            column_widths = [self.font.size(str(max([row[i] for row in data + [headers]], key=lambda x: len(str(x)))))[0] +
-                             2 * cell_padding for i in range(num_columns)]
+            column_widths = [
+                self.font.size(str(max([row[i] for row in data + [headers]], key=lambda x: len(str(x)))))[0] +
+                2 * cell_padding for i in range(num_columns)]
 
         # Calculate total table width and height
         table_width = sum(column_widths) + (num_columns + 1) * border_width
@@ -575,7 +590,7 @@ class PygameTerminal:
             current_x = x + border_width
             for i, cell in enumerate(row):
                 cell_rect = pygame.Rect(current_x, current_y, column_widths[i],
-                                         self.font.get_height() + 2 * cell_padding)
+                                        self.font.get_height() + 2 * cell_padding)
                 cell_surface = self.font.render(str(cell), True, self.fg_color)
                 cell_rect.x += cell_padding
                 cell_rect.y += cell_padding
@@ -584,7 +599,6 @@ class PygameTerminal:
             current_y += self.font.get_height() + 2 * cell_padding + border_width
 
         pygame.display.flip()
-
 
     def draw_menu(self, menu_options, x=None, y=None, selected_index=0, item_padding=5,
                   border_width=1, border_color=pygame.Color('white'),
@@ -651,5 +665,5 @@ class PygameTerminal:
         pygame.display.flip()
 
     def update_progress_bar(self, current, total, x=None, y=None, width=200, height=20,
-                              bg_color=pygame.Color('gray'), fg_color=pygame.Color('green')):
+                            bg_color=pygame.Color('gray'), fg_color=pygame.Color('green')):
         self.draw_progress_bar(current, total, x, y, width, height, bg_color, fg_color)
