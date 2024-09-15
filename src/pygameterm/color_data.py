@@ -65,6 +65,9 @@ color = {
     "blue224" : (0, 0, 224),
     "blue240" : (0, 0, 240),
     "blue" : (0, 0, 255),
+    "pastel_green" : (83, 145, 84),
+    "pastel_blue" : (80, 106, 136),
+    "pastel_red" : (129, 39, 23),
 }
 
 def get_color(color_str: str):
