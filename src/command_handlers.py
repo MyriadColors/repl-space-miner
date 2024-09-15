@@ -271,7 +271,7 @@ def direct_travel_command(destination_x: str, destination_y: str, term: PygameTe
     game.player_ship.travel(term, Vector2(x, y))
 
 
-def mine_command(time_to_mine = None, mine_until_full = None, term: PygameTerminal = None):
+def mine_command(time_to_mine = None, mine_until_full = None, ore_selected = None, term: PygameTerminal = None):
     """Handles the mine command."""
     game: Game = term.app_state
 
@@ -283,7 +283,15 @@ def mine_command(time_to_mine = None, mine_until_full = None, term: PygameTermin
     try:
         time_to_mine = int(time_to_mine)
         asteroid_field = game.solar_system.get_field_by_position(game.player_ship.space_object.get_position())
-        game.player_ship.mine_belt(term, asteroid_field, time_to_mine, mine_until_full)
+        
+        if ore_selected:
+            # Convert comma-separated string to list of ore names
+            ore_selected = [ore.strip() for ore in ore_selected.split(',')]
+        else:
+            # If no ores specified, mine all available ores, set to None
+            ore_selected = None
+
+        game.player_ship.mine_belt(term, asteroid_field, time_to_mine, mine_until_full, ore_selected)
 
     except ValueError:
         term.write("Invalid time. Please enter a valid number.")

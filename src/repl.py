@@ -1,5 +1,5 @@
 from src.classes.game import Game
-from src.command_handlers import refuel_command, sell_command, travel_command, scan_command, display_help, command_dock, \
+from src.command_handlers import refuel_command, scan_field_command, sell_command, travel_command, scan_command, display_help, command_dock, \
     command_undock, display_time_and_status, mine_command, buy_command, add_creds_debug_command, \
     command_exit, command_color, command_reset, clear, add_ore_debug_command, direct_travel_command, debug_mode_command, \
     toggle_sound_command, init_music
@@ -158,17 +158,28 @@ def register_commands(terminal: PygameTerminal):
         mine_command,
         argument_list=[
             Argument(
-                name="time",
+                name="time", # Time to mine
                 type=int,
                 is_optional=True
             ),
 
             Argument(
-                name="uf",
+                name="uf", # Mine until full
+                type=str,
+                is_optional=True
+            ),
+            Argument(
+                name="ores", # Ores to mine
                 type=str,
                 is_optional=True
             )
         ]
+    )
+    
+    # COmmand to scan the asteroid field,r eturning the ores available
+    terminal.register_command(
+        ["scan_field", "scf"],
+        scan_field_command,
     )
     
     terminal.register_command(

@@ -30,3 +30,9 @@ ORES = {
     7: Ore("Jonnite", 7250.0, 16, [], 7),
     8: Ore("Magneton", 580.0, 1.2, [], 8),
 }
+
+def get_ore_by_name(name: str) -> Ore | None:
+    for ore in ORES.values():
+        if ore.name.lower() == name.lower():
+            return ore
+    return None
