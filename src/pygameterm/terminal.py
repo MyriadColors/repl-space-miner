@@ -115,13 +115,11 @@ class PygameTerminal:
         self.font_size = font_size
         self.set_monospace_font()
         self.lines_on_screen = floor(self.height / (self.font.get_height() + self.line_margin_height)) - 2
-
-        # Extensions
         self.illustration_window = None
         self.custom_event_handlers = {}
+        pygame.key.set_repeat(500, 50)
 
         # Command registry
-        # add some default commands
         self.commands: dict[str, Command] = {}
 
     def set_monospace_font(self):
@@ -199,11 +197,16 @@ class PygameTerminal:
                     self.handle_input_keydown(event)
                 else:
                     self.handle_keydown(event)
+            elif event.type == pygame.KEYUP:
+                if self.input_mode:
+                    self.handle_input_keyup()  # Handle key releases
+                else:
+                    self.handle_keyup()  # Handle key releases
             # Handle custom events
             elif event.type >= pygame.USEREVENT:
                 event_name = pygame.event.event_name(event.type)
                 if event_name in self.custom_event_handlers:
-                    self.custom_event_handlers[event_name](event) # Pass the event object
+                    self.custom_event_handlers[event_name](event)  # Pass the event object
 
     def handle_return(self):
         """Handle the return key."""
@@ -269,6 +272,11 @@ class PygameTerminal:
         elif event.unicode.isprintable():
             self.handle_printable(event.unicode)
 
+    @staticmethod
+    def handle_input_keyup():
+        """Handle key releases during input mode."""
+        pygame.key.set_repeat()  # Disable key repeat on key release
+
     def handle_keydown(self, event_param):
         """Handle key presses."""
         if event_param.key == pygame.K_RETURN or event_param.key == pygame.K_KP_ENTER:
@@ -285,6 +293,11 @@ class PygameTerminal:
             self.handle_down_arrow()
         elif event_param.unicode.isprintable():
             self.handle_printable(event_param.unicode)
+
+    @staticmethod
+    def handle_keyup():
+        """Handle key releases."""
+        pygame.key.set_repeat()  # Disable key repeat on key release
 
     def write_in_place(self, text):
         """
