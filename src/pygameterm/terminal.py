@@ -107,9 +107,10 @@ class PygameTerminal:
         pygame.init()
         pygame.display.set_caption("Pygame Terminal Emulator")
         self.app_state = app_state  # This is the state of the application, this will be passed to commands by default
-        self.width: int = width # The width of the terminal emulator window
-        self.height: int = height # The height of the terminal emulator window
-        self.screen: pygame.Surface = pygame.display.set_mode((self.width, self.height)) # The screen surface of the terminal emulator window
+        self.width: int = width  # The width of the terminal emulator window
+        self.height: int = height  # The height of the terminal emulator window
+        self.screen: pygame.Surface = pygame.display.set_mode(
+            (self.width, self.height))  # The screen surface of the terminal emulator window
         self.font: pygame.font.Font = pygame.font.Font(None, font_size)
         self.default_bg_color: pygame.color.Color = default_bg_color
         self.bg_color: pygame.color.Color = self.default_bg_color
@@ -134,7 +135,7 @@ class PygameTerminal:
         self.illustration_window = None
         self.custom_event_handlers = {}
         pygame.key.set_repeat(500, 50)
-        
+
         # Command registry
         self.commands: dict[str, Command] = {}
 

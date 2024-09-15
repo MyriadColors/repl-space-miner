@@ -1,7 +1,10 @@
 import random
+
 from pygame import Vector2
-from src.helpers import rnd_float, meters_cubed_to_km_cubed
+
 from src.classes.ore import Ore
+from src.helpers import rnd_float, meters_cubed_to_km_cubed
+
 
 class Asteroid:
     def __init__(self, name, volume, ore):
@@ -18,6 +21,7 @@ class Asteroid:
 
 class AsteroidField:
     belt_counter: int = 0
+
     def __init__(self, asteroid_quantity, ores_available, radius, position):
         self.asteroid_quantity: int = asteroid_quantity
         self.ores_available: list[Ore] = ores_available

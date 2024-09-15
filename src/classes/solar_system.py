@@ -1,9 +1,11 @@
 import random
+
+from pygame import Vector2
+
 from src import data
 from src.classes.asteroid import AsteroidField
-from src.helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore, rnd_int
 from src.classes.station import Station
-from pygame import Vector2
+from src.helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore, rnd_int
 
 
 class SolarSystem:
@@ -96,11 +98,10 @@ class SolarSystem:
         """Generate stations in the game world."""
         for i in range(random.randint(75, 200)):
             position = Vector2(random.uniform(-self.size, self.size),
-                                random.uniform(-self.size, self.size))
+                               random.uniform(-self.size, self.size))
             rnd_name = data.generate_random_name(rnd_int(2, 4))
             station = Station(f"Station {rnd_name}", i, position)
             self.stations.append(station)
-
 
     def sort_stations(self,
                       sort_order,
@@ -130,6 +131,7 @@ class SolarSystem:
             print("No stations found")
 
         return sorted_stations
+
     @staticmethod
     def sort_objects_by_distance(objects, position):
         """Sort objects by distance."""
@@ -140,7 +142,7 @@ class SolarSystem:
 
     def scan_system_objects(self, player_position, amount) -> list:
         """Scan the system for objects within a certain distance."""
-        sorted_fields  = self.sort_fields('des', 'd', player_position)
+        sorted_fields = self.sort_fields('des', 'd', player_position)
         sorted_stations = self.sort_stations('des', 'd', player_position)
 
         scanned_objects = sorted_fields + sorted_stations
@@ -150,12 +152,14 @@ class SolarSystem:
 
     def is_object_within_interaction_radius(self, player_ship):
         for station in self.stations:
-            if euclidean_distance(player_ship.space_object.get_position(), station.position) <= player_ship.interaction_radius:
+            if euclidean_distance(player_ship.space_object.get_position(),
+                                  station.position) <= player_ship.interaction_radius:
                 return True
         return False
 
     def get_object_within_interaction_radius(self, player_ship):
         for station in self.stations:
-            if euclidean_distance(player_ship.space_object.get_position(), station.position) <= player_ship.interaction_radius:
+            if euclidean_distance(player_ship.space_object.get_position(),
+                                  station.position) <= player_ship.interaction_radius:
                 return station
         return None

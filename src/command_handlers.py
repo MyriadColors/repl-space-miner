@@ -238,7 +238,7 @@ def closest_travel(term: PygameTerminal, object_type):
             f"Closest field is Field {closest_field.id} at {euclidean_distance(game.player_ship.space_object.get_position(), closest_field.position)} AUs from here.")
         term.write(
             f"Closest station is Station {closest_station.id} at {euclidean_distance(game.player_ship.space_object.get_position(), closest_station.position)} AUs from here.")
-        prompt_for_closest_travel_choice(game.player_ship, closest_field, closest_station,  game.global_time, term)
+        prompt_for_closest_travel_choice(game.player_ship, closest_field, closest_station, game.global_time, term)
 
     elif object_type in ['field', 'f']:
         field_position: Vector2 = closest_field.position
@@ -271,7 +271,7 @@ def direct_travel_command(destination_x: str, destination_y: str, term: PygameTe
     game.player_ship.travel(term, Vector2(x, y))
 
 
-def mine_command(time_to_mine = None, mine_until_full = None, ore_selected = None, term: PygameTerminal = None):
+def mine_command(time_to_mine=None, mine_until_full=None, ore_selected=None, term: PygameTerminal = None):
     """Handles the mine command."""
     game: Game = term.app_state
 
@@ -283,7 +283,7 @@ def mine_command(time_to_mine = None, mine_until_full = None, ore_selected = Non
     try:
         time_to_mine = int(time_to_mine)
         asteroid_field = game.solar_system.get_field_by_position(game.player_ship.space_object.get_position())
-        
+
         if ore_selected:
             # Convert comma-separated string to list of ore names
             ore_selected = [ore.strip() for ore in ore_selected.split(',')]
@@ -496,10 +496,12 @@ def clear(term):
     """Clear the terminal screen."""
     term.terminal_lines.clear()
 
+
 def scan_field_command(term: PygameTerminal):
     """Handles the scan field command."""
     game: Game = term.app_state
     game.player_ship.scan_field(term)
+
 
 def debug_mode_command(term):
     """Handles the debug mode command."""
@@ -510,6 +512,7 @@ def debug_mode_command(term):
     else:
         game.debug_flag = True
         term.write("Debug mode enabled.")
+
 
 def init_music(term: PygameTerminal):
     from pygame import mixer
@@ -523,15 +526,18 @@ def init_music(term: PygameTerminal):
     game.sound_init = True
     term.write("Sound init.")
 
+
 def pause_sound(term: PygameTerminal):
     from pygame import mixer
     mixer.music.pause()
     term.write(f"Sound disabled.")
 
+
 def unpause_sound(term: PygameTerminal):
     from pygame import mixer
     mixer.music.unpause()
     term.write("Sound enabled.")
+
 
 def toggle_sound_command(term: PygameTerminal):
     game: Game = term.app_state
@@ -545,6 +551,7 @@ def toggle_sound_command(term: PygameTerminal):
     else:
         game.mute_flag = True
         pause_sound(term)
+
 
 def display_help(command_name: str = None, term: PygameTerminal = None):
     """Displays the help message."""

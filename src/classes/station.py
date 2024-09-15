@@ -1,8 +1,9 @@
 from pygame import Vector2
+
 from src import helpers
+from src.classes.ore import Ore
 from src.data import OreCargo
 from src.helpers import take_input, rnd_float, rnd_int
-from src.classes.ore import Ore
 from src.pygameterm.terminal import PygameTerminal
 
 
@@ -57,6 +58,7 @@ class Station:
             ore_cargo = OreCargo(ore, ore_quantity, ore_buy_price, ore_sell_price)
 
             self.ore_cargo.append(ore_cargo)
+
     def generate_ore_cargo(self):
         # Fill the cargo until the capacity is filled
         while self.ore_cargo_volume < self.ore_capacity / rnd_int(2, 4):
@@ -89,7 +91,6 @@ class Station:
             string += f"{ore_cargo.ore.name}: {ore_cargo.sell_price}\n"
         return string
 
-
     def get_ore_info_to_string(self):
         string = ""
         for ore in self.ores_available:
@@ -113,6 +114,7 @@ class Station:
             term.write(f"Sell for:  {ore_cargo.sell_price}")
             term.write(f"Buy at:    {ore_cargo.buy_price}")
             term.write("----------------------------------")
+
     def to_string(self):
         return f"{self.name}\nPosition: {self.position}\nID: {self.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"
 

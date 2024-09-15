@@ -92,9 +92,7 @@ def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station
 
     term.write("Too many invalid attempts. Aborting.")
 
-
 from src.classes.ore import ORES
-
 
 def get_ore_by_id_or_name(identifier: str | int) -> Ore | None:
     """Returns an Ore from the ORES dictionary based on its ID or name.
