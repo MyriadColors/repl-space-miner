@@ -603,29 +603,46 @@ class PygameTerminal:
     def draw_menu(self, menu_options, x=None, y=None, selected_index=0, item_padding=5,
                   border_width=1, border_color=pygame.Color('white'),
                   selected_bg_color=pygame.Color('gray')):
-        if x is None:
-            x = self.terminal_margin_left
-        if y is None:
-            y = self.terminal_margin_top
+        """
+        Draws a menu with the given options on the screen.
 
+        Args:
+            menu_options (list): A list of strings representing the menu options.
+            x (int, optional): The x-coordinate of the top-left corner of the menu. Defaults to None.
+            y (int, optional): The y-coordinate of the top-left corner of the menu. Defaults to None.
+            selected_index (int, optional): The index of the currently selected menu option. Defaults to 0.
+            item_padding (int, optional): The padding around each menu item. Defaults to 5.
+            border_width (int, optional): The width of the menu border. Defaults to 1.
+            border_color (pygame.Color, optional): The color of the menu border. Defaults to white.
+            selected_bg_color (pygame.Color, optional): The background color of the selected menu item. Defaults to gray.
+        """
+        x = x if x is not None else self.terminal_margin_left
+        y = y if y is not None else self.terminal_margin_top
+
+        # Calculate dimensions of the menu
         menu_width = max(self.font.size(option)[0] for option in menu_options) + 2 * item_padding
         menu_height = len(menu_options) * (self.font.get_height() + 2 * item_padding) + 2 * border_width
 
-        # Draw border
+        # Draw the menu border
         pygame.draw.rect(self.screen, border_color, (x, y, menu_width, menu_height), border_width)
 
+        # Position for the first menu item
         current_y = y + border_width + item_padding
-        for i, option in enumerate(menu_options):
-            if i == selected_index:
-                # Draw selected item background
+
+        # Render each menu option
+        for index, option in enumerate(menu_options):
+            # Highlight the selected menu item
+            if index == selected_index:
                 pygame.draw.rect(self.screen, selected_bg_color,
                                  (x + border_width, current_y - item_padding, menu_width - 2 * border_width,
                                   self.font.get_height() + 2 * item_padding))
 
+            # Render the menu option text
             option_surface = self.font.render(option, True, self.fg_color)
             self.screen.blit(option_surface, (x + border_width + item_padding, current_y))
             current_y += self.font.get_height() + 2 * item_padding
 
+        # Update the display to show the menu
         pygame.display.flip()
 
     @staticmethod
@@ -674,14 +691,10 @@ class PygameTerminal:
             return
 
         parts = self.current_line.split()
-        if len(parts) == 1:
-            # Complete command
-            possible_commands = [cmd for cmd in self.commands if cmd.startswith(parts[0])]
-            if len(possible_commands) == 1:
-                self.current_line = possible_commands[0] + " "
-                self.cursor_pos = len(self.current_line)
-            elif len(possible_commands) > 1:
-                self.write(" ".join(possible_commands))
-        else:
-            # Complete arguments (you'd need to implement this based on your command structure)
-            pass
+        # Complete command
+        possible_commands = [cmd for cmd in self.commands if cmd.startswith(parts[0])]
+        if len(possible_commands) == 1:
+            self.current_line = possible_commands[0] + " "
+            self.cursor_pos = len(self.current_line)
+        elif len(possible_commands) > 1:
+            self.write(" ".join(possible_commands))
