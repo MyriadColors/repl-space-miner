@@ -134,7 +134,7 @@ class PygameTerminal:
         self.lines_on_screen = floor(self.height / (self.font.get_height() + self.line_margin_height)) - 2
         self.illustration_window = None
         self.custom_event_handlers = {}
-        pygame.key.set_repeat(500, 50)
+        pygame.key.set_repeat(250, 25)
 
         # Command registry
         self.commands: dict[str, Command] = {}
@@ -500,8 +500,10 @@ class PygameTerminal:
             self.commands[name] = Command(function=command_function, arguments=argument_struct_list_with_index)
 
     def write(self, text: str, debug_flag: bool = False):
-        """Write text to the terminal."""
-        self.terminal_lines.append(text)
+        """Write text to the terminal, interpreting '\n' as a newline."""
+        lines = text.split('\n')
+        for line in lines:
+            self.terminal_lines.append(line)
         if debug_flag:
             print(f"Debug: {text}")
 

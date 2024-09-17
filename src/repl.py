@@ -1,8 +1,9 @@
-from src.classes.game import Game
+from src.classes.game import Character, Game
+from src.classes.ship import Ship
 from src.command_handlers import refuel_command, scan_field_command, sell_command, travel_command, scan_command, display_help, command_dock, \
     command_undock, display_time_and_status, mine_command, buy_command, add_creds_debug_command, \
     command_exit, command_color, command_reset, clear, add_ore_debug_command, direct_travel_command, debug_mode_command, \
-    toggle_sound_command, init_music
+    toggle_sound_command, init_music, create_character, create_ship
 from src.pygameterm import color_data
 from src.pygameterm.terminal import PygameTerminal, Argument
 
@@ -151,6 +152,13 @@ def register_commands(terminal: PygameTerminal):
     terminal.register_command(
         ["status", "st"],
         display_time_and_status,
+        argument_list=[
+            Argument(
+                name="selection_flag",
+                type=str,
+                is_optional=True
+            )
+        ]
     )
 
     terminal.register_command(
@@ -226,11 +234,28 @@ def register_commands(terminal: PygameTerminal):
         toggle_sound_command,
     )
 
+def IntroScreen(terminal: PygameTerminal):
+    terminal.write("Welcome to the Space Trader CLI game!")
+    terminal.write("This is the placeholder intro screen.")
+    terminal.write("In the future there will be background story and lore here.")
+    
+    game: Game = terminal.app_state
+    
+    if not game.skipc:
+        terminal.write("Now the character and ship customization will begin.")
+        create_character(terminal)
+        create_ship(terminal)
+    else:
+        terminal.write("Skipping character and ship customization.")
+        game.player_character = Character(name="Player", age=25, sex="male", background="Belter")
+        game.player_ship = Ship(game.rnd_station.position, 0.0001, 100, 0.05, 100,
+                                    100, 0.01, "Player's Ship")
 
 def start_repl(args_input):
     game = Game(
         debug_flag=True if args_input.debug else False,
-        mute_flag=True if args_input.mute else False
+        mute_flag=True if args_input.mute else False,
+        skip_customization=True if args_input.skipc else False
     )
 
     terminal = PygameTerminal(
@@ -245,4 +270,5 @@ def start_repl(args_input):
 
     init_music(terminal) if not game.mute_flag else None
     register_commands(terminal)
+    IntroScreen(terminal)
     terminal.run()

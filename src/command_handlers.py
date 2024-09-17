@@ -2,8 +2,9 @@ from pygame import Vector2
 
 from src import helpers
 from src.classes.asteroid import AsteroidField
-from src.classes.game import Game
+from src.classes.game import Character, Game
 from src.classes.ore import Ore
+from src.classes.ship import Ship
 from src.classes.station import Station
 from src.data import OreCargo
 from src.helpers import take_input, rnd_float, rnd_int, get_closest_field, get_closest_station, euclidean_distance, \
@@ -37,7 +38,7 @@ def refuel_command(term: PygameTerminal, amount: float):
         return
 
     game.player_ship.refuel(amount)
-    game.player_credits -= price
+    game.player_character.credits -= price
     term.write(f"Refueled with {round(amount, 2)} m3 for {round(price, 2)} credits.")
 
 
@@ -102,7 +103,7 @@ def sell_command(term: PygameTerminal):
         return
 
     # Update game state
-    game.player_credits += total_value
+    game.player_character.credits += total_value
     station.ore_cargo_volume += total_volume
 
     # Remove sold ores from the player's cargo hold
@@ -140,7 +141,7 @@ def buy_command(item_name: str, amount: str, term: PygameTerminal):
         # Handle bartering logic
         price, bartering_flag = barter(term, price)
 
-        if price > game.player_credits:
+        if price > game.player_character.credits:
             term.write(f"Cannot buy {amount} {item_name} because you don't have enough credits.")
             return
 
@@ -191,12 +192,12 @@ def update_ore_quantities(term: PygameTerminal, ore_cargo: OreCargo, ore_name: s
 
     # Only deduct credits if buying from a station
     if station:
-        game.player_credits -= price
+        game.player_character.credits -= price
 
         # Reporting for station purchases
         term.write(f"Report: {amount} {ore_name} bought for {price} credits.")
         term.write(f"Station Ore Report:\n{station.ore_cargo_volume} tons of ore remaining")
-        term.write(f"Your new credit balance: {game.player_credits} credits")
+        term.write(f"Your new credit balance: {game.player_character.credits} credits")
     else:
         # Reporting for other ore updates (e.g., debug commands)
         term.write(f"Updated player ship cargo with {amount} {ore_name}.")
@@ -412,7 +413,7 @@ def add_creds_debug_command(amount: str, term: PygameTerminal):
             confirm = take_input(">> ").strip()
             if confirm != "y":
                 return
-        game.player_credits += amount
+        game.player_character.credits += amount
         term.write(f"{amount} credits added to your credits.")
     else:
         term.write("Debug commands can only be used through the use of the 'debug' ('dm') command.")
@@ -421,20 +422,37 @@ def add_creds_debug_command(amount: str, term: PygameTerminal):
 
 def display_status(term: PygameTerminal):
     game: Game = term.app_state
-    term.write(f"Credits: {game.player_credits}")
+    term.write("Player Status:")
+    for status in game.player_character.status_to_string():
+        term.write(status)
+    term.write("")
+    term.write("Ship Status:")
     for status in game.player_ship.status_to_string():
         term.write(status)
+    
 
 
-def display_time_and_status(term: PygameTerminal):
+def display_time_and_status(selection_flag: str = None, term: PygameTerminal = None):
     """Displays the current time and the player's ship status."""
     game: Game = term.app_state
-    time_string = f"Time: {format_seconds(term.app_state.global_time)}s"
+    time_string = f"Time: {format_seconds(game.global_time)}s"
     term.write(time_string)
-    term.write(f"Credits: {game.player_credits}")
-    for status in game.player_ship.status_to_string():
-        term.write(status)
+    player_character: Character = game.player_character
+    player_ship: Ship = game.player_ship
+    if selection_flag is None:
+        selection_flag = "both"
 
+    if selection_flag in ["player", "both"]:
+        term.write("========= Player Status =========")
+        for status in player_character.to_string():
+            term.write(status)
+
+    if selection_flag in ["ship", "both"]:
+        term.write("========= Ship Status =========")
+        for status in player_ship.status_to_string():
+            term.write(status)
+
+    term.write("=================================")
 
 def command_exit(term: PygameTerminal):
     """Exit the term."""
@@ -552,34 +570,60 @@ def toggle_sound_command(term: PygameTerminal):
         game.mute_flag = True
         pause_sound(term)
 
+def create_character(term: PygameTerminal):
+        game: Game = term.app_state
+        name = term.prompt_user("Enter name (if empty, it will default to 'Player'): ")
+        while True:
+            age = term.prompt_user("Enter age (form 18 to 40): ")
+            if 18 <= int(age) <= 40:
+                break
+            else:
+                term.write("Invalid age. Please enter an age between 18 and 40.")
+        while True:
+            sex = term.prompt_user("Enter sex (male or female): ")
+            if sex in ["male", "female"]:
+                break
+            else:
+                term.write("Invalid sex. Please enter male or female.")
+        while True:
+            background = term.prompt_user("Enter background (Belter, Corpo, Agent, Jovian, Pirate): ")
+            if background in ["Belter", "Corpo", "Agent", "Jovian", "Pirate"]:
+                break
+            else:
+                term.write("Invalid background. Please enter Belter, Corpo, Agent, Jovian, or Pirate.")
+        game.player_character = Character(name, age, sex, background)
+
+def create_ship(term: PygameTerminal):
+    game: Game = term.app_state
+    shipname = term.prompt_user("Enter ship name: ")
+    game.player_ship = Ship(game.rnd_station.position, 0.0001, 100, 0.05, 100,
+                                    100, 0.01, shipname)
+
 
 def display_help(command_name: str = None, term: PygameTerminal = None):
-    """Displays the help message."""
-
-    if command_name is None:
-        # Display general help
-        term.write("Welcome to Space Miner! Explore, mine, trade, and upgrade your ship.")
-        term.write("Available commands (type 'help <command>' for more details):")
-        term.write("  status (st): Display your ship's status, credits, and time.")
-        term.write("  scan (sc) <quantity>: Scan for nearby asteroid fields and stations.")
-        term.write("  travel (tr) closest <field|station>: Travel to the closest asteroid field or station.")
-        term.write("  direct_travel (dtr) <x> <y>: Travel to specific coordinates in the solar system.")
-        term.write("  mine (mi) <time>: Mine for ores at the current asteroid field.")
-        term.write("  dock (do): Dock with the nearest station.")
-        term.write("  undock (ud): Undock from the current station.")
-        term.write("  buy (by) <ore_name> <amount>: Buy ores from the docked station.")
-        term.write("  sell (sl): Sell ores at the docked station.")
-        term.write("  refuel (ref) <amount>: Refuel your ship at the docked station.")
-        term.write("  upgrade: View and purchase ship upgrades.")
-        term.write("  color (co) <bg|fg> <color_name>: Change the terminal colors.")
-        term.write("  reset (rs) <color|bg|fg|text|history|all>: Reset terminal settings.")
-        term.write("  clear (cl): Clear the terminal screen.")
-        term.write("  debug (dm): Enable the Debug Mode")
-        term.write("  toggle_sound (ts): Enable or disable the game's sound.")
-        term.write("  add_credits (ac): Add credits to your account (debug mode command)")
-        term.write("  add_ores (ao): Add ores to your ship (debug mode command)")
-        term.write("  exit: Exit the game.")
-    else:
+    # Display general help
+    term.write("Welcome to Space Miner! Explore, mine, trade, and upgrade your ship.")
+    term.write("Available commands (type 'help <command>' for more details):")
+    term.write("  status (st): Display your ship's status, credits, and time.")
+    term.write("  scan (sc) <quantity>: Scan for nearby asteroid fields and stations.")
+    term.write("  travel (tr) closest <field|station>: Travel to the closest asteroid field or station.")
+    term.write("  direct_travel (dtr) <x> <y>: Travel to specific coordinates in the solar system.")
+    term.write("  mine (mi) <time>: Mine for ores at the current asteroid field.")
+    term.write("  dock (do): Dock with the nearest station.")
+    term.write("  undock (ud): Undock from the current station.")
+    term.write("  buy (by) <ore_name> <amount>: Buy ores from the docked station.")
+    term.write("  sell (sl): Sell ores at the docked station.")
+    term.write("  refuel (ref) <amount>: Refuel your ship at the docked station.")
+    term.write("  upgrade: View and purchase ship upgrades.")
+    term.write("  color (co) <bg|fg> <color_name>: Change the terminal colors.")
+    term.write("  reset (rs) <color|bg|fg|text|history|all>: Reset terminal settings.")
+    term.write("  clear (cl): Clear the terminal screen.")
+    term.write("  debug (dm): Enable the Debug Mode")
+    term.write("  toggle_sound (ts): Enable or disable the game's sound.")
+    term.write("  add_credits (ac): Add credits to your account (debug mode command)")
+    term.write("  add_ores (ao): Add ores to your ship (debug mode command)")
+    term.write("  exit: Exit the game.")
+    if command_name:
         command_name = command_name.lower()
         if command_name == "status" or command_name == "st":
             term.write("status (st):")
