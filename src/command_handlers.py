@@ -573,6 +573,8 @@ def toggle_sound_command(term: PygameTerminal):
 def create_character(term: PygameTerminal):
         game: Game = term.app_state
         name = term.prompt_user("Enter name (if empty, it will default to 'Player'): ")
+        if name == "":
+            name = "Player"
         while True:
             age = term.prompt_user("Enter age (form 18 to 40): ")
             if 18 <= int(age) <= 40:

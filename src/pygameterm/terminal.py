@@ -6,6 +6,11 @@ import pygame
 
 from src.pygameterm import color_data
 
+@dataclass
+class TerminalLine:
+    text: str
+    fg_color: pygame.Color | None = None
+    bg_color: pygame.Color | None = None
 
 @dataclass
 class Argument:
@@ -117,7 +122,7 @@ class PygameTerminal:
         self.default_fg_color: pygame.color.Color = default_fg_color
         self.fg_color: pygame.color.Color = self.default_fg_color
         self.custom_line_color = None
-        self.terminal_lines: list[str] = [initial_message]
+        self.terminal_lines: list[TerminalLine] = [TerminalLine(initial_message)]
         self.current_line: str = ""
         self.cursor_pos: int = 0
         self.command_history: list[str] = []
@@ -183,7 +188,42 @@ class PygameTerminal:
             self.clock.tick(self.clock_tick_rate)
 
         return self.current_line
+    
+    def prompt_multiple_choice(self, prompt: str, options: list[str]) -> int:
+        """
+        Query the user for input and return the result.
 
+        :param prompt: The prompt to display to the user
+        :param options: The list of options to display to the user
+        :return: The index of the option selected by the user
+        """
+        for i, option in enumerate(options):
+            self.write(f"{i + 1}. {option}")
+        self.input_mode = True
+        self.input_prompt = prompt
+        self.current_line = ""
+        self.cursor_pos = 0
+        
+        while self.input_mode:
+            self.handle_events()
+            self.draw_terminal()
+            self.clock.tick(self.clock_tick_rate)
+            if self.current_line.isdigit():
+                selected_index = int(self.current_line)
+                if 0 <= selected_index < len(options):
+                    self.input_mode = False
+                else:
+                    self.write("Invalid selection. Please enter a number corresponding to the options.")
+                    self.current_line = ""
+                    self.cursor_pos = 0
+            elif self.current_line:
+                self.write("Invalid input. Please enter a number.")
+                self.current_line = ""
+                self.cursor_pos = 0
+
+        return selected_index
+        
+        
     def set_font_name(self, font_name: str) -> None:
         """Set the font name."""
         self.font = pygame.font.Font(font_name, self.font.get_height())
@@ -224,6 +264,21 @@ class PygameTerminal:
                 event_name = pygame.event.event_name(event.type)
                 if event_name in self.custom_event_handlers:
                     self.custom_event_handlers[event_name](event)  # Pass the event object
+
+    def wait_for_input(self):
+        """Hangs until the user presses enter"""
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        waiting = False
+            self.draw_terminal()
+            pygame.display.flip()
+            pygame.time.Clock().tick(self.clock_tick_rate)
 
     def handle_return(self):
         """Handle the return key."""
@@ -406,8 +461,9 @@ class PygameTerminal:
         # Draw previous terminal lines
         line_y = self.terminal_margin_top
         for line in self.terminal_lines[-self.lines_on_screen:]:
-            line_color = self.custom_line_color or self.fg_color
-            line_surface = self.font.render(line, True, line_color)
+            line_fg_color = line.fg_color or self.fg_color
+            line_bg_color = line.bg_color or self.bg_color
+            line_surface = self.font.render(line.text, True, line_fg_color, line_bg_color)
             self.screen.blit(line_surface, (self.terminal_margin_left, line_y))
             line_y += self.font.get_height() + self.line_margin_height
 
@@ -499,11 +555,11 @@ class PygameTerminal:
 
             self.commands[name] = Command(function=command_function, arguments=argument_struct_list_with_index)
 
-    def write(self, text: str, debug_flag: bool = False):
+    def write(self, text: str, fg_color: pygame.Color | None = None, bg_color: pygame.Color | None = None, debug_flag: bool = False):
         """Write text to the terminal, interpreting '\n' as a newline."""
         lines = text.split('\n')
         for line in lines:
-            self.terminal_lines.append(line)
+            self.terminal_lines.append(TerminalLine(line, fg_color, bg_color))
         if debug_flag:
             print(f"Debug: {text}")
 
@@ -513,8 +569,6 @@ class PygameTerminal:
             return len(args[0])
         else:
             return 0
-
-    # --- Extensions ---
 
     def create_illustration_window(self, width, height):
         self.illustration_window = pygame.display.set_mode((width, height))
