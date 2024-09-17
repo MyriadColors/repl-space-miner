@@ -4,7 +4,7 @@ from src.classes.game import Character, Game
 from src.command_handlers import refuel_command, scan_field_command, sell_command, travel_command, scan_command, display_help, command_dock, \
     command_undock, display_time_and_status, mine_command, buy_command, add_creds_debug_command, \
     command_exit, command_color, command_reset, clear, add_ore_debug_command, direct_travel_command, debug_mode_command, \
-    toggle_sound_command, init_music, create_character, create_ship
+    toggle_sound_command, init_music
 from src.pygameterm import color_data
 from src.pygameterm.terminal import PygameTerminal, Argument
 

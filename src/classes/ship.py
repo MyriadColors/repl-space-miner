@@ -54,7 +54,7 @@ class Ship:
         self.docked_at = None
         self.ship_name = name
         self.calculate_cargo_occupancy()
-
+    
     def get_ore_cargo_by_id(self, ore_id: int) -> OreCargo | None:
         return next((cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None)
 

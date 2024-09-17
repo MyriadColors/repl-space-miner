@@ -570,66 +570,56 @@ def toggle_sound_command(term: PygameTerminal):
         game.mute_flag = True
         pause_sound(term)
 
-def create_character(term: PygameTerminal):
-        game: Game = term.app_state
-        name = term.prompt_user("Enter name (if empty, it will default to 'Player'): ")
-        if name == "":
-            name = "Player"
-        while True:
-            age = term.prompt_user("Enter age (form 18 to 40): ")
-            if 18 <= int(age) <= 40:
-                break
-            else:
-                term.write("Invalid age. Please enter an age between 18 and 40.")
-        while True:
-            sex = term.prompt_user("Enter sex (male or female): ")
-            if sex in ["male", "female"]:
-                break
-            else:
-                term.write("Invalid sex. Please enter male or female.")
-        while True:
-            background = term.prompt_user("Enter background (Belter, Corpo, Agent, Jovian, Pirate): ")
-            if background in ["Belter", "Corpo", "Agent", "Jovian", "Pirate"]:
-                break
-            else:
-                term.write("Invalid background. Please enter Belter, Corpo, Agent, Jovian, or Pirate.")
-        game.player_character = Character(name, age, sex, background)
-
-def create_ship(term: PygameTerminal):
-    game: Game = term.app_state
-    shipname = term.prompt_user("Enter ship name: ")
-    game.player_ship = Ship(game.rnd_station.position, 0.0001, 100, 0.05, 100,
-                                    100, 0.01, shipname)
-
-
 def display_help(command_name: str = None, term: PygameTerminal = None):
     # Display general help
     term.write("Welcome to Space Miner! Explore, mine, trade, and upgrade your ship.")
     term.write("Available commands (type 'help <command>' for more details):")
-    term.write("  status (st): Display your ship's status, credits, and time.")
-    term.write("  scan (sc) <quantity>: Scan for nearby asteroid fields and stations.")
-    term.write("  travel (tr) closest <field|station>: Travel to the closest asteroid field or station.")
-    term.write("  direct_travel (dtr) <x> <y>: Travel to specific coordinates in the solar system.")
-    term.write("  mine (mi) <time>: Mine for ores at the current asteroid field.")
-    term.write("  dock (do): Dock with the nearest station.")
-    term.write("  undock (ud): Undock from the current station.")
-    term.write("  buy (by) <ore_name> <amount>: Buy ores from the docked station.")
-    term.write("  sell (sl): Sell ores at the docked station.")
-    term.write("  refuel (ref) <amount>: Refuel your ship at the docked station.")
-    term.write("  upgrade: View and purchase ship upgrades.")
-    term.write("  color (co) <bg|fg> <color_name>: Change the terminal colors.")
-    term.write("  reset (rs) <color|bg|fg|text|history|all>: Reset terminal settings.")
-    term.write("  clear (cl): Clear the terminal screen.")
-    term.write("  debug (dm): Enable the Debug Mode")
-    term.write("  toggle_sound (ts): Enable or disable the game's sound.")
-    term.write("  add_credits (ac): Add credits to your account (debug mode command)")
-    term.write("  add_ores (ao): Add ores to your ship (debug mode command)")
-    term.write("  exit: Exit the game.")
+
+    game: Game = term.app_state
+    player_ship: Ship = game.player_ship
+    
+    station = game.solar_system.get_object_within_interaction_radius(player_ship)
+    if station is not None:
+        is_docked = player_ship.is_docked
+    else:
+        is_docked = False
+    field = game.solar_system.get_field_by_position(player_ship.space_object.get_position())
+    
+    location = "field" if field is not None else "station" if station is not None else "none"
+
+    def write_command(command, description, allowed: bool):
+        color = color_data.get_color("blue128") if allowed else color_data.get_color("red128")
+        term.write(description, fg_color=color)
+
+    write_command("status (st) <selection_flag>", "Displays your current credits, ship status (fuel, cargo, location), and time elapsed.", True)
+    write_command("scan (sc) <quantity>", "Scan for nearby asteroid fields and stations.", True)
+    write_command("scan_field (scf)", "Scan for nearby asteroid fields and stations.", True)
+    write_command("travel (tr) closest <field|station>", "Travel to the closest asteroid field or station.", True)
+    write_command("direct_travel (dtr) <x> <y>", "Travel to specific coordinates in the solar system.", True)
+    write_command("mine (mi) <time> <until_full> <ore_name: optional>", "Mine for ores at the current asteroid field.", True if location == "field" else False)
+    write_command("dock (do)", "Dock with the nearest station.", True if not is_docked else False)
+    write_command("undock (ud)", "Undock from the current station.", True if is_docked else False)
+    write_command("buy (by) <ore_name> <amount>", "Buy ores from the docked station.", True if is_docked else False)
+    write_command("sell (sl)", "Sell ores at the docked station.", True if is_docked else False)
+    write_command("refuel (ref) <amount>", "Refuel your ship at the docked station.", True if is_docked else False)
+    write_command("upgrade", "View and purchase ship upgrades.", True if is_docked else False)
+    write_command("color (co) <bg|fg> <color_name>", "Change the terminal colors.", True)
+    write_command("reset (rs) <color|bg|fg|text|history|all>", "Reset terminal settings.", True)
+    write_command("clear (cl)", "Clear the terminal screen.", True)
+    write_command("debug (dm)", "Enable the Debug Mode", True)
+    write_command("toggle_sound (ts)", "Enable or disable the game's sound.", True)
+    write_command("add_credits (ac)", "Add credits to your account (debug mode command)", game.debug_flag)
+    write_command("add_ores (ao)", "Add ores to your ship (debug mode command)", game.debug_flag)
+    write_command("exit", "Exit the game.", True)
+
     if command_name:
         command_name = command_name.lower()
         if command_name == "status" or command_name == "st":
             term.write("status (st):")
             term.write("  Displays your current credits, ship status (fuel, cargo, location), and time elapsed.")
+            term.write("  Options:")
+            term.write("    selection_flag: (optional) 'player', 'ship', or 'both' (default is 'both').")
+            term.write("    Example: status both")
         elif command_name == "scan" or command_name == "sc":
             term.write("scan (sc) <quantity>:")
             term.write("  Scans for the specified number of nearby asteroid fields and stations.")
@@ -644,9 +634,15 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
             term.write("  Example: travel 10.5 20.3")
         elif command_name == "mine" or command_name == "mi":
             term.write("mine (mi) <time>:")
-            term.write("  Mines for ores at the current asteroid field for the specified amount of time.")
+            term.write("  Mines for ores at the current asteroid field for the specified amount of time, if you want to mine until full, you can do so by adding 'until_full'.")
+            term.write("  If you want to mine for a specific ore, you can add the ore name to the command.")
             term.write("  You must be within an asteroid field to mine.")
-            term.write("  Example: mine 60 (mines for 60 seconds)")
+            term.write("  Options:")
+            term.write("    time: The amount of time to mine for in seconds.")
+            term.write("    until_full: If you want to mine until the cargo hold is full, you can do so by adding 'until_full'.")
+            term.write("    ore_name: If you want to mine for a specific ore, you can add the ore name to the command.")
+            term.write("  Example: mine 60 until_full")
+            term.write("  Example: mine 60 Pyrogen")
         elif command_name == "dock" or command_name == "do":
             term.write("dock (do):")
             term.write("  Docks with the nearest station if you are within range.")
