@@ -25,8 +25,8 @@ class TestPygameTerminal(unittest.TestCase):
     # Test 2
     def test_write(self):
         """Test if the write method adds text to the terminal lines."""
-        self.terminal.write("Test Line 1")
-        self.terminal.write("Test Line 2")
+        self.terminal.writeLn("Test Line 1")
+        self.terminal.writeLn("Test Line 2")
         self.assertEqual(len(self.terminal.terminal_lines), 3)  # Including initial empty line
         self.assertEqual(self.terminal.terminal_lines[-2], "Test Line 1")
         self.assertEqual(self.terminal.terminal_lines[-1], "Test Line 2")
@@ -89,7 +89,7 @@ class TestPygameTerminal(unittest.TestCase):
     def test_register_command(self):
         """Test registering a command."""
         def test_command(term: PygameTerminal):
-            term.write("Command executed")
+            term.writeLn("Command executed")
 
         self.terminal.register_command(
             command_names=['test', 't'],
@@ -105,7 +105,7 @@ class TestPygameTerminal(unittest.TestCase):
         """Test processing a registered command."""
 
         def test_command(arg1: str, term: PygameTerminal):
-            term.write(f"Command executed with argument: {arg1}")
+            term.writeLn(f"Command executed with argument: {arg1}")
 
         self.terminal.register_command(
             command_names=['test', 't'],

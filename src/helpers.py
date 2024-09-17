@@ -87,10 +87,10 @@ def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station
         elif response in ["2", "s", "station"]:
             return player_ship.travel(closest_station.position, time)
         else:
-            term.write("Invalid response.")
+            term.writeLn("Invalid response.")
             tries -= 1
 
-    term.write("Too many invalid attempts. Aborting.")
+    term.writeLn("Too many invalid attempts. Aborting.")
 
 from src.classes.ore import ORES
 

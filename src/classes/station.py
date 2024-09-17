@@ -108,12 +108,12 @@ class Station:
 
     def ores_available_to_string(self, term: PygameTerminal):
         for ore_cargo in self.ore_cargo:
-            term.write("----------------------------------")
-            term.write(f"Ore:       {ore_cargo.ore.name}")
-            term.write(f"Volume:    {ore_cargo.ore.volume}")
-            term.write(f"Sell for:  {ore_cargo.sell_price}")
-            term.write(f"Buy at:    {ore_cargo.buy_price}")
-            term.write("----------------------------------")
+            term.writeLn("----------------------------------")
+            term.writeLn(f"Ore:       {ore_cargo.ore.name}")
+            term.writeLn(f"Volume:    {ore_cargo.ore.volume}")
+            term.writeLn(f"Sell for:  {ore_cargo.sell_price}")
+            term.writeLn(f"Buy at:    {ore_cargo.buy_price}")
+            term.writeLn("----------------------------------")
 
     def to_string(self):
         return f"{self.name}\nPosition: {self.position}\nID: {self.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"

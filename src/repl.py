@@ -258,7 +258,7 @@ def start_repl(args_input):
     if game.skipc:
         game.player_character = Character(name="Player", age=25, sex="male", background="Belter")
         game.player_ship = Ship(game.rnd_station.position, 0.0001, 100, 0.05, 100, 100, 0.01, "Player's Ship")
-        terminal.write("Skipping character and ship customization and starting the game.")
+        terminal.writeLn("Skipping character and ship customization and starting the game.")
     else:
         IntroEvent(terminal)
         if not game.player_character:

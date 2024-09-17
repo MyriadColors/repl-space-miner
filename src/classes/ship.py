@@ -90,23 +90,23 @@ class Ship:
     def travel(self, term: PygameTerminal, destination: Vector2):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
 
-        term.write(f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel.")
+        term.writeLn(f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel.")
 
         if self.fuel - fuel_consumed < 0:
-            term.write("Not enough fuel to travel. Please refuel.")
+            term.writeLn("Not enough fuel to travel. Please refuel.")
             return
 
         confirm = term.prompt_user(f"Confirm travel? (y/n)")
 
         if confirm != "y":
-            term.write("Travel cancelled.")
+            term.writeLn("Travel cancelled.")
             return
 
         self.consume_fuel(fuel_consumed)
         self.space_object.position = destination
         term.app_state.global_time += travel_time
 
-        term.write(f"The ship has arrived at {vector_to_string(destination)}")
+        term.writeLn(f"The ship has arrived at {vector_to_string(destination)}")
 
     def status_to_string(self) -> list[str]:
         ore_units_on_cargohold = sum(cargo.quantity for cargo in self.cargohold)
@@ -130,11 +130,11 @@ class Ship:
     def mine_belt(self, terminal: PygameTerminal, asteroid_field, time_to_mine, mine_until_full,
                   ores_selected_list: str | None):
         if not asteroid_field.asteroids:
-            terminal.write("This field is empty.")
+            terminal.writeLn("This field is empty.")
             return
 
         if self.is_cargo_full():
-            terminal.write("You have no cargo space left.")
+            terminal.writeLn("You have no cargo space left.")
             return
 
         # Check if the specified ores are available in the asteroid field
@@ -142,7 +142,7 @@ class Ship:
             available_ores = {ore.name.lower() for ore in asteroid_field.ores_available}
             invalid_ores = [ore for ore in ores_selected_list if ore.lower() not in available_ores]
             if invalid_ores:
-                terminal.write(f"The following ores are not available in this field: {', '.join(invalid_ores)}")
+                terminal.writeLn(f"The following ores are not available in this field: {', '.join(invalid_ores)}")
                 return
 
         asteroid_being_mined: Asteroid | None = None
@@ -155,7 +155,7 @@ class Ship:
                 asteroid_being_mined = next((asteroid for asteroid in asteroid_field.asteroids if asteroid.volume > 0),
                                             None)
                 if asteroid_being_mined is None:
-                    terminal.write("This field is empty.")
+                    terminal.writeLn("This field is empty.")
                     break
 
             ore = asteroid_being_mined.ore
@@ -171,9 +171,9 @@ class Ship:
 
             if mined_volume >= ore.volume:
                 if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
-                    terminal.write(
+                    terminal.writeLn(
                         f"Cannot mine this ore because the {ore.name} ore is too voluminous for the ship's cargohold.")
-                    terminal.write("In the future you may be able to try again with another ore.")
+                    terminal.writeLn("In the future you may be able to try again with another ore.")
                     break
 
                 ore_cargo = next((cargo for cargo in ores_mined if cargo.ore.id == ore.id), None)
@@ -201,12 +201,12 @@ class Ship:
                 self.cargohold.append(ore_cargo)
 
         if total_quantity > 0:
-            terminal.write(f"Mined {total_quantity} units of {', '.join(ore_names)} for {total_volume:.2f} m³")
+            terminal.writeLn(f"Mined {total_quantity} units of {', '.join(ore_names)} for {total_volume:.2f} m³")
         else:
-            terminal.write("No ores were mined.")
+            terminal.writeLn("No ores were mined.")
 
         self.calculate_cargo_occupancy()
-        terminal.write(f"Time spent mining: {time_spent} seconds.")
+        terminal.writeLn(f"Time spent mining: {time_spent} seconds.")
         terminal.app_state.global_time += time_spent
 
     def calculate_cargo_occupancy(self):
@@ -231,8 +231,8 @@ class Ship:
         is_inside_field, field = self.check_field_presence(term)
 
         if not is_inside_field:
-            term.write("You are not inside a field.")
+            term.writeLn("You are not inside a field.")
             return
 
         for ore in field.ores_available:
-            term.write(f"{ore.name} - {ore.volume} m3")
+            term.writeLn(f"{ore.name} - {ore.volume} m3")

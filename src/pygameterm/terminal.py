@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from math import floor
+import re
 from typing import Callable, Any
 
 import pygame
@@ -198,7 +199,7 @@ class PygameTerminal:
         :return: The index of the option selected by the user
         """
         for i, option in enumerate(options):
-            self.write(f"{i + 1}. {option}")
+            self.writeLn(f"{i + 1}. {option}")
         self.input_mode = True
         self.input_prompt = prompt
         self.current_line = ""
@@ -213,11 +214,11 @@ class PygameTerminal:
                 if 0 <= selected_index < len(options):
                     self.input_mode = False
                 else:
-                    self.write("Invalid selection. Please enter a number corresponding to the options.")
+                    self.writeLn("Invalid selection. Please enter a number corresponding to the options.")
                     self.current_line = ""
                     self.cursor_pos = 0
             elif self.current_line:
-                self.write("Invalid input. Please enter a number.")
+                self.writeLn("Invalid input. Please enter a number.")
                 self.current_line = ""
                 self.cursor_pos = 0
 
@@ -266,19 +267,15 @@ class PygameTerminal:
                     self.custom_event_handlers[event_name](event)  # Pass the event object
 
     def wait_for_input(self):
-        """Hangs until the user presses enter"""
+        """hangs until the user presses enter"""
         waiting = True
         while waiting:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    return
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        waiting = False
-            self.draw_terminal()
-            pygame.display.flip()
-            pygame.time.Clock().tick(self.clock_tick_rate)
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    waiting = False
+                elif event.type == pygame.QUIT:
+                    self.running = False
+                    waiting = False
 
     def handle_return(self):
         """Handle the return key."""
@@ -327,7 +324,7 @@ class PygameTerminal:
             self.cursor_pos = len(self.current_line)
 
     def handle_printable(self, char):
-        """Handle r characters with autocompletion."""
+        """Handles characters with autocompletion."""
         self.current_line = self.current_line[:self.cursor_pos] + char + self.current_line[self.cursor_pos:]
         self.cursor_pos += 1
 
@@ -368,7 +365,7 @@ class PygameTerminal:
         elif event_param.key == pygame.K_TAB:
             self.handle_tab()
         else:
-            self.write(f"Key {event_param.key} not recognized")
+            self.writeLn(f"Key {event_param.key} not recognized")
 
     @staticmethod
     def handle_keyup():
@@ -429,7 +426,7 @@ class PygameTerminal:
         current_value = start_value
         while current_value >= end_value:
             message = message_template.format(current_value)
-            self.write(message)
+            self.writeLn(message)
             self.draw_terminal()
             pygame.display.flip()
 
@@ -443,10 +440,10 @@ class PygameTerminal:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             if can_interrupt:
-                                self.write("Operation interrupted by user.")
+                                self.writeLn("Operation interrupted by user.")
                                 return
                             else:
-                                self.write("Cannot interrupt.")
+                                self.writeLn("Cannot interrupt.")
 
                 # Control the frame rate
                 pygame.time.Clock().tick(self.clock_tick_rate)
@@ -503,11 +500,11 @@ class PygameTerminal:
                 # Execute the command with the original string arguments and pass the terminal
                 result = command_struct(*input_args, terminal=self)
                 if result is not None:
-                    self.write(str(result))
+                    self.writeLn(str(result))
             except ValueError as e:
-                self.write(str(e))
+                self.writeLn(str(e))
         else:
-            self.write(f"Command '{command_name}' not found")
+            self.writeLn(f"Command '{command_name}' not found")
 
     @staticmethod
     def check_type(value: str, expected_type: type) -> bool:
@@ -555,14 +552,20 @@ class PygameTerminal:
 
             self.commands[name] = Command(function=command_function, arguments=argument_struct_list_with_index)
 
-    def write(self, text: str, fg_color: pygame.Color | None = None, bg_color: pygame.Color | None = None, debug_flag: bool = False):
+    def writeLn(self, text: str, debug_flag: bool = False):
         """Write text to the terminal, interpreting '\n' as a newline."""
         lines = text.split('\n')
         for line in lines:
-            self.terminal_lines.append(TerminalLine(line, fg_color, bg_color))
+            self.terminal_lines.append(TerminalLine(line, self.fg_color, self.bg_color))
         if debug_flag:
-            print(f"Debug: {text}")
-
+            print(f"DEBUG: {text}")
+            
+    def write_colored_text(self, text: str, fg_color: pygame.Color | None = None, bg_color: pygame.Color | None = None):
+        """Write text to the terminal with specified colors."""
+        lines = text.split('\n')
+        for line in lines:
+            self.terminal_lines.append(TerminalLine(line, fg_color=fg_color, bg_color=bg_color))
+    
     @staticmethod
     def args_length(args):
         if args:
@@ -585,7 +588,7 @@ class PygameTerminal:
                 self.illustration_window.blit(image, (0, 0))
                 pygame.display.flip()  # Update illustration window
             except Exception as e:
-                self.write(f"Error loading illustration: {e}")
+                self.writeLn(f"Error loading illustration: {e}")
 
     def register_event_handler(self, event_name, handler):
         # Generate a unique event type id
@@ -601,7 +604,7 @@ class PygameTerminal:
                 pygame.event.post(event)
                 return
 
-        self.write(f"Error: Event '{event_name}' not registered.")
+        self.writeLn(f"Error: Event '{event_name}' not registered.")
 
     def draw_table(self, data, headers, x=None, y=None, column_widths=None, cell_padding=5, border_width=1,
                    border_color=pygame.Color('white'), header_bg_color=pygame.Color('gray')):
@@ -754,4 +757,4 @@ class PygameTerminal:
             self.current_line = possible_commands[0] + " "
             self.cursor_pos = len(self.current_line)
         elif len(possible_commands) > 1:
-            self.write(" ".join(possible_commands))
+            self.writeLn(" ".join(possible_commands))
