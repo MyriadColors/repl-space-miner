@@ -1,12 +1,14 @@
-from src.classes.ship import Ship
-from src.events import IntroEvent
 from src.classes.game import Character, Game
-from src.command_handlers import refuel_command, scan_field_command, sell_command, travel_command, scan_command, display_help, command_dock, \
+from src.classes.ship import Ship
+from src.command_handlers import refuel_command, scan_field_command, sell_command, travel_command, scan_command, \
+    display_help, command_dock, \
     command_undock, display_time_and_status, mine_command, buy_command, add_creds_debug_command, \
     command_exit, command_color, command_reset, clear, add_ore_debug_command, direct_travel_command, debug_mode_command, \
     toggle_sound_command, init_music
+from src.events import intro_event
 from src.pygameterm import color_data
 from src.pygameterm.terminal import PygameTerminal, Argument
+
 
 def register_commands(terminal: PygameTerminal):
     terminal.register_command(
@@ -167,30 +169,30 @@ def register_commands(terminal: PygameTerminal):
         mine_command,
         argument_list=[
             Argument(
-                name="time", # Time to mine
+                name="time",  # Time to mine
                 type=int,
                 is_optional=True
             ),
 
             Argument(
-                name="uf", # Mine until full
+                name="uf",  # Mine until full
                 type=str,
                 is_optional=True
             ),
             Argument(
-                name="ores", # Ores to mine
+                name="ores",  # Ores to mine
                 type=str,
                 is_optional=True
             )
         ]
     )
-    
+
     # COmmand to scan the asteroid field,r eturning the ores available
     terminal.register_command(
         ["scan_field", "scf"],
         scan_field_command,
     )
-    
+
     terminal.register_command(
         ['clear', 'cl'],
         clear
@@ -217,15 +219,15 @@ def register_commands(terminal: PygameTerminal):
             )
         ],
     )
-    
+
     terminal.register_command(
-    ["add_creds", "ac"],
-    add_creds_debug_command,
-    argument_list=[
-        Argument(
-            name="amount",
-            type=int,
-            is_optional=False
+        ["add_creds", "ac"],
+        add_creds_debug_command,
+        argument_list=[
+            Argument(
+                name="amount",
+                type=int,
+                is_optional=False
             )
         ]
     )
@@ -234,6 +236,7 @@ def register_commands(terminal: PygameTerminal):
         ["toggle_sound", "ts"],
         toggle_sound_command,
     )
+
 
 def start_repl(args_input):
     game = Game(
@@ -251,19 +254,18 @@ def start_repl(args_input):
         default_bg_color=color_data.color["gray64"],
         default_fg_color=color_data.color["green144"],
     )
-
     init_music(terminal) if not game.mute_flag else None
     register_commands(terminal)
-    
+
     if game.skipc:
         game.player_character = Character(name="Player", age=25, sex="male", background="Belter")
         game.player_ship = Ship(game.rnd_station.position, 0.0001, 100, 0.05, 100, 100, 0.01, "Player's Ship")
         terminal.writeLn("Skipping character and ship customization and starting the game.")
     else:
-        IntroEvent(terminal)
+        intro_event(terminal)
         if not game.player_character:
             game.player_character = Character(name="Player", age=25, sex="male", background="Belter")
         if not game.player_ship:
             game.player_ship = Ship(game.rnd_station.position, 0.0001, 100, 0.05, 100, 100, 0.01, "Player's Ship")
-        
+
     terminal.run()

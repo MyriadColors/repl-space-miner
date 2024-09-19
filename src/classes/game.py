@@ -2,7 +2,6 @@ from random import choice
 
 from src.classes.ship import Ship
 from src.classes.solar_system import SolarSystem
-from src.pygameterm.terminal import PygameTerminal
 
 class Character:
     def __init__(self, name: str, age: int, sex: str, background: str):
@@ -46,15 +45,15 @@ class Game:
         self.global_time: int = 0
         self.solar_system: SolarSystem = SolarSystem(200, 100)
         self.rnd_station = choice(self.solar_system.stations)
-        self.player_character: Character = None
-        self.player_ship: Ship = None
+        self.player_character: Character | None = None
+        self.player_ship: Ship | None = None
         self.debug_flag = debug_flag
         self.mute_flag = mute_flag
         self.skipc = skip_customization
         self.sound_init = True if not mute_flag else False  # If the mute flag is false, then sound_init is true
 
     def get_credits(self):
-        return round(self.player_credits, 2)
+        return round(self.player_character.credits, 2)
 
     def get_ship(self):
         return self.player_ship

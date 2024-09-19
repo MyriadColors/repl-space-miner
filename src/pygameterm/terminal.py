@@ -204,6 +204,7 @@ class PygameTerminal:
         self.input_prompt = prompt
         self.current_line = ""
         self.cursor_pos = 0
+        selected_index: int = 0
         
         while self.input_mode:
             self.handle_events()
@@ -265,17 +266,6 @@ class PygameTerminal:
                 event_name = pygame.event.event_name(event.type)
                 if event_name in self.custom_event_handlers:
                     self.custom_event_handlers[event_name](event)  # Pass the event object
-
-    def wait_for_input(self):
-        """hangs until the user presses enter"""
-        waiting = True
-        while waiting:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    waiting = False
-                elif event.type == pygame.QUIT:
-                    self.running = False
-                    waiting = False
 
     def handle_return(self):
         """Handle the return key."""
