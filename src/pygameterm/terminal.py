@@ -92,6 +92,35 @@ class Command:
 def typeof(value):
     return type(value)
 
+@dataclass
+class TerminalLine:
+    segments: list[tuple[str, pygame.Color | None, pygame.Color | None]] = field(default_factory=list)
+    default_fg: pygame.Color = field(default_factory=lambda: pygame.Color('white'))
+    default_bg: pygame.Color = field(default_factory=lambda: pygame.Color('black')) 
+
+    def add_segment(self, text: str, fg_color: pygame.Color | None = None, bg_color: pygame.Color | None = None):
+        self.segments.append((text, fg_color, bg_color))
+
+    def render(self, font: pygame.font.Font, x: int, y: int, screen: pygame.Surface):
+        current_x = x
+        for segment in self.segments:
+            if isinstance(segment, tuple):
+                text, fg_color, bg_color = segment
+            else:
+                text = segment
+                fg_color = self.default_fg
+                bg_color = self.default_bg
+
+            # Ensure fg_color and bg_color are valid
+            if not isinstance(fg_color, (pygame.Color, tuple)):  # Handle both pygame.Color and tuples
+                fg_color = self.default_fg  # Fallback to default
+            if not isinstance(bg_color, (pygame.Color, tuple)):
+                bg_color = self.default_bg
+
+            rendered_text = font.render(text, True, fg_color, bg_color)
+            screen.blit(rendered_text, (current_x, y))
+            current_x += rendered_text.get_width()
+        return y + font.get_height()
 
 class PygameTerminal:
     def __init__(self, app_state, width: int = 1024, height: int = 600, font_size: int = 28,
@@ -125,6 +154,7 @@ class PygameTerminal:
         self.custom_line_color = None
         self.terminal_lines: list[TerminalLine] = [TerminalLine(initial_message)]
         self.current_line: str = ""
+        self.segments: list[tuple[str, pygame.Color | None, pygame.Color | None]] = field(default_factory=list)
         self.cursor_pos: int = 0
         self.command_history: list[str] = []
         self.history_index: int = -1
@@ -445,26 +475,26 @@ class PygameTerminal:
         """Renders the terminal interface on the screen."""
         self.screen.fill(self.bg_color)
 
-        # Draw previous terminal lines
         line_y = self.terminal_margin_top
         for line in self.terminal_lines[-self.lines_on_screen:]:
-            line_fg_color = line.fg_color or self.fg_color
-            line_bg_color = line.bg_color or self.bg_color
-            line_surface = self.font.render(line.text, True, line_fg_color, line_bg_color)
-            self.screen.blit(line_surface, (self.terminal_margin_left, line_y))
-            line_y += self.font.get_height() + self.line_margin_height
+            line_y = line.render(self.font, self.terminal_margin_left, line_y, self.screen)
 
-        # Draw current input line
+
+        # Draw current input line (correctly positioned)
         input_prompt = self.input_prompt if self.input_mode else "> "
         input_line = input_prompt + self.current_line
-        input_surface = self.font.render(input_line, True, self.fg_color)
-        input_y = self.height - self.terminal_margin_bottom
-        self.screen.blit(input_surface, (self.terminal_margin_left, input_y))
 
-        # Draw cursor
+        current_line_segments = TerminalLine(default_fg=self.fg_color)
+        current_line_segments.add_segment(input_line)
+
+
+        input_y = self.height - self.terminal_margin_bottom  # Fixed input_y position
+        line_y = current_line_segments.render(self.font, self.terminal_margin_left, input_y, self.screen)  # Use input_y
+
+        # Draw cursor (correctly positioned)
         cursor_x = self.terminal_margin_left + self.font.size(input_prompt + self.current_line[:self.cursor_pos])[0]
-        cursor_top = input_y
-        cursor_bottom = self.height - self.terminal_margin_top
+        cursor_top = input_y  # Use input_y for consistent cursor position
+        cursor_bottom = input_y + self.font.get_height() # Cursor bottom at correct line height
         pygame.draw.line(self.screen, self.fg_color, (cursor_x, cursor_top), (cursor_x, cursor_bottom), self.line_width)
 
         pygame.display.flip()
@@ -542,13 +572,68 @@ class PygameTerminal:
 
             self.commands[name] = Command(function=command_function, arguments=argument_struct_list_with_index)
 
-    def writeLn(self, text: str, debug_flag: bool = False):
-        """Write text to the terminal, interpreting '\n' as a newline."""
-        lines = text.split('\n')
-        for line in lines:
-            self.terminal_lines.append(TerminalLine(line, self.fg_color, self.bg_color))
-        if debug_flag:
-            print(f"DEBUG: {text}")
+    def writeLn(self, formatted_text: str, debug_flag: bool = False):
+        """Writes formatted text to the terminal, supporting color tags and newlines."""
+        segments = self.parse_segments(formatted_text)  # Parse text into segments
+        line = TerminalLine(default_fg=self.fg_color, default_bg=self.bg_color)
+
+        for text, color in segments:
+            line.add_segment(text, color, self.bg_color)  # Add each segment to the line
+
+        # Append the processed line to the terminal lines
+        self.terminal_lines.append(line)
+
+    def parse_segments(self, text: str):
+        """Parses the input text into segments with their corresponding colors.
+
+        Returns a list of tuples where each tuple contains the text segment and its color.
+        """
+        segments = []
+        i = 0
+        current_fg = self.fg_color  # Start with the default foreground color
+
+        while i < len(text):
+            if text[i] == '<':
+                tag_start = i + 1
+                tag_end = text.find('>', tag_start)
+                if tag_end == -1:
+                    segments.append((text[i:], current_fg))  # Add remaining text as is
+                    break
+
+                tag = text[tag_start:tag_end]
+
+                # Check if it's a color tag
+                if tag.lower() in color_data.color:
+                    current_fg = color_data.color[tag.lower()]  # Change to the specified color
+                    i = tag_end + 1  # Move past the closing '>'
+                    
+                    # Start reading the text after the opening tag
+                    text_start = i
+                    text_end = text.find('<', text_start)
+                    
+                    if text_end == -1:
+                        text_end = len(text)
+                        
+                    # Get the text until the next tag or end of string
+                    text_segment = text[text_start:text_end]
+                    segments.append((text_segment, current_fg))  # Add colored segment
+                    current_fg = self.default_fg_color  # Reset to default color after processing colored text
+                    i = text_end  # Continue parsing from the end of the text segment
+                else:
+                    # If not a valid color tag, just add the segment as-is
+                    i = tag_end + 1  # Move past the closing '>'
+
+            else:
+                text_start = i
+                text_end = text.find('<', text_start)
+                if text_end == -1:
+                    text_end = len(text)
+
+                text_segment = text[text_start:text_end]
+                segments.append((text_segment, current_fg))  # Add the segment with the current color
+                i = text_end
+
+        return segments
             
     def write_colored_text(self, text: str, fg_color: pygame.Color | None = None, bg_color: pygame.Color | None = None):
         """Write text to the terminal with specified colors."""
