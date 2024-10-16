@@ -299,33 +299,26 @@ def mine_command(time_to_mine=None, mine_until_full=None, ore_selected=None, ter
 
 
 def command_dock(term: PygameTerminal):
-    """Handles the dock commands."""
-
-    def on_dock_complete():
-        term.writeLn("Dock complete.")
-        game.player_ship.dock_into_station(station)
-        station_to_dock: Station = game.solar_system.get_object_within_interaction_radius(game.player_ship)
-        term.writeLn(f"Docked at {station_to_dock.name}.")
-        term.writeLn(f"This station has: ")
-        term.writeLn(station_to_dock.ores_available_to_string(term))
-
+    """Handles the dock command."""
     game: Game = term.app_state
-    if game.player_ship.is_docked:
+    player_ship: Ship = game.player_ship
+    if player_ship.is_docked:
         term.writeLn("You are already docked.")
-    else:
-        station = game.solar_system.get_object_within_interaction_radius(game.player_ship)
-        if station is None:
-            term.writeLn("You must be close to a station to dock.")
-            return
+        return
+    target_station: Station | None = helpers.get_closest_station(game.solar_system, player_ship)
+    if target_station is None:
+        term.writeLn("There are no stations within range.")
+        return
+    on_dock_complete(term, station_to_dock=target_station)
+    
 
-        term.countdown_with_message(
-            start_value=5.0,
-            end_value=1.0,
-            step=0.5,
-            message_template="Docking in... {}",
-            wait_time=0.05,
-            on_complete=on_dock_complete
-        )
+def on_dock_complete(term: PygameTerminal, station_to_dock: Station):
+    """Callback function for when the docking countdown is complete."""
+    game: Game = term.app_state
+    player_ship: Ship = game.player_ship
+    player_ship.dock_into_station(station_to_dock)
+    term.writeLn(f"Docked with {station_to_dock.name}.")
+    term.writeLn(station_to_dock.ores_available_to_string(term))
 
 
 def command_undock(term: PygameTerminal):
@@ -423,7 +416,7 @@ def add_creds_debug_command(amount: str, term: PygameTerminal):
 def display_status(term: PygameTerminal):
     game: Game = term.app_state
     term.writeLn("Player Status:")
-    for status in game.player_character.status_to_string():
+    for status in game.player_character.to_string():
         term.writeLn(status)
     term.writeLn("")
     term.writeLn("Ship Status:")
