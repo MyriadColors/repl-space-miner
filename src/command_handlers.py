@@ -13,15 +13,22 @@ from src.pygameterm import color_data
 from src.pygameterm.terminal import PygameTerminal
 
 
-def refuel_command(term: PygameTerminal, amount: float):
-    """Handles the refuel command."""
+def refuel_command(term: PygameTerminal, amount: float) -> None:
+    """Handles the refuel command.
+
+    Args:
+        term (PygameTerminal): The Pygame terminal object.
+        amount (float): The amount of fuel to refuel.
+    Returns:
+        None
+    """
 
     game: Game = term.app_state
     if not game.player_ship.is_docked:
         term.writeLn("Cannot refuel while not docked.")
         return
 
-    station = game.solar_system.get_object_within_interaction_radius(game)
+    station: Station = game.solar_system.get_object_within_interaction_radius(game)
 
     if game.player_ship.fuel + amount > game.player_ship.max_fuel:
         term.writeLn(
@@ -29,10 +36,10 @@ def refuel_command(term: PygameTerminal, amount: float):
         )
         return
 
-    price = amount * station.fuel_price
+    price: float = amount * station.fuel_price
     term.writeLn(f"Total price for {round(amount, 2)}m³ of fuel: {round(price, 2)} credits.")
     term.writeLn("Are you sure you want to refuel? y/n")
-    confirm = take_input(">> ")
+    confirm: str = take_input(">> ")
     if confirm.lower() != "y":
         term.writeLn("Refuel cancelled.")
         return
@@ -43,15 +50,15 @@ def refuel_command(term: PygameTerminal, amount: float):
 
 
 def barter(term: PygameTerminal, price: float) -> tuple[float, bool]:
-    """Handles the bartering process and returns the potentially discounted price and a bartering success flag."""
+    """Handles the bartering process and returns the potentially discounted price as a float and a bartering success flag as a bool."""
     confirm = term.prompt_user("Want to barter for a discount? y/n")
-    bartering_flag = False  # Initialize the flag
+    bartering_flag: bool = False  # Initialize the flag
     if confirm.lower() == "y":
         bartering_flag = True  # Set the flag to True if bartering is attempted
-        rng_number = rnd_float(0, 1)
+        rng_number: float = rnd_float(0, 1)
         if rng_number < 0.5:
-            discount = rnd_int(10, 25)
-            new_price = price * (100 - discount) / 100
+            discount: int = rnd_int(10, 25)
+            new_price: float = price * (100 - discount) / 100
             term.writeLn(f"Bartered for {discount}% discount off the original price.")
             term.writeLn(f"New price: {new_price} credits")
             return new_price, bartering_flag  # Return both values
@@ -60,9 +67,16 @@ def barter(term: PygameTerminal, price: float) -> tuple[float, bool]:
     return price, bartering_flag  # Return original price and flag
 
 
-def sell_command(term: PygameTerminal):
-    """Handles the sell command."""
-    game: Game = term.app_state
+def sell_command(term: PygameTerminal) -> None:
+    """Handles the sell command.
+
+    Args:
+        term (PygameTerminal): The Pygame terminal object.
+
+    Returns:
+        None
+    """
+    game = term.app_state
 
     if not game.player_ship.is_docked:
         term.writeLn("Cannot sell while not docked.")
@@ -73,25 +87,25 @@ def sell_command(term: PygameTerminal):
         term.writeLn("Cannot sell because the station's ore cargo is full. Look for another one.")
         return
 
-    sellable_ores: list[OreCargo] = []
-    for ore_cargo in game.player_ship.cargohold:
-        # Check if the player has this ore, if the station accepts this ore and if the station has enough capacity
-        if ore_cargo.quantity > 0 and ore_cargo.ore.id in [ore.id for ore in station.ores_available] and \
-                ore_cargo.ore.volume <= station.ore_capacity - station.ore_cargo_volume:
-            sellable_ores.append(ore_cargo)
+    sellable_ores = [
+        ore_cargo
+        for ore_cargo in game.player_ship.cargohold
+        if ore_cargo.quantity > 0
+        and ore_cargo.ore.id in [ore.id for ore in station.ores_available]
+        and ore_cargo.ore.volume <= station.ore_capacity - station.ore_cargo_volume
+    ]
 
     if not sellable_ores:
         term.writeLn("No ores to sell.")
         return
 
-    # Display the ores to be sold
-    term.writeLn("Ores to be sold:")
-    for ore_cargo in sellable_ores:
-        term.writeLn(ore_cargo.ore.to_string())
-
     total_value = sum(ore_cargo.quantity * ore_cargo.sell_price for ore_cargo in sellable_ores)
     total_volume = sum(ore_cargo.quantity * ore_cargo.ore.volume for ore_cargo in sellable_ores)
     total_units = sum(ore_cargo.quantity for ore_cargo in sellable_ores)
+
+    term.writeLn("Ores to be sold:")
+    for ore_cargo in sellable_ores:
+        term.writeLn(ore_cargo.ore.to_string())
 
     term.writeLn(f"Total value: {total_value:.2f} credits")
     term.writeLn(f"Total volume: {total_volume:.2f} m³")
@@ -107,11 +121,6 @@ def sell_command(term: PygameTerminal):
     station.ore_cargo_volume += total_volume
 
     # Remove sold ores from the player's cargo hold
-    for ore_cargo in sellable_ores:
-        player_ore_cargo = game.player_ship.get_ore_cargo_by_id(ore_cargo.ore.id)
-        if player_ore_cargo:
-            player_ore_cargo.quantity -= ore_cargo.quantity
-
     game.player_ship.cargohold = [cargo for cargo in game.player_ship.cargohold if cargo.quantity > 0]
     game.player_ship.calculate_cargo_occupancy()
 
@@ -121,55 +130,66 @@ def sell_command(term: PygameTerminal):
 def buy_command(item_name: str, amount: str, term: PygameTerminal):
     game: Game = term.app_state
     station: Station | None = game.player_ship.get_docked_station()
+    
     if not station:
         term.writeLn("Must be docked to buy ore.")
         return
 
     try:
-        ore_cargo: OreCargo | None = station.get_ore_by_name(item_name)
-        if not ore_cargo:
-            term.writeLn(f"Cannot buy {item_name} because it is not available.")
-            return
-
         amount_number = int(amount)
-        total_volume: float = round(ore_cargo.ore.volume * amount_number, 2)
-        volume_of_ore_available: float = round(ore_cargo.quantity * ore_cargo.ore.volume, 2)
-        price: float = round(ore_cargo.buy_price * amount_number, 2)
-
-        term.writeLn(f"Price for {amount} {item_name}: {price} credits")
-
-        # Handle bartering logic
-        price, bartering_flag = barter(term, price)
-
-        if price > game.player_character.credits:
-            term.writeLn(f"Cannot buy {amount} {item_name} because you don't have enough credits.")
+        if amount_number <= 0:
+            term.writeLn("Quantity must be positive.")
             return
-
-        if total_volume > volume_of_ore_available:
-            term.writeLn(f"Cannot buy {amount} {item_name} because the station doesn't have enough ore in its cargo.")
-            confirm = term.prompt_user("Do you want to buy all available ore? y/n >> ")
-            if confirm.lower() == "y":
-                amount_number = int(volume_of_ore_available / ore_cargo.ore.volume)
-                price = round(ore_cargo.buy_price * amount_number, 2)
-                term.writeLn(f"Adjusting purchase to {amount_number} {item_name} for {price} credits.")
-            else:
-                term.writeLn("Buy cancelled.")
-                return
-
-        # Update ore quantities in the station and player's ship
-        update_ore_quantities(term, ore_cargo, item_name, amount_number, price, station)
-
     except ValueError:
         term.writeLn("Invalid amount. Please enter a valid number.")
         return
 
+    ore_cargo: OreCargo | None = station.get_ore_by_name(item_name)
+    if not ore_cargo:
+        term.writeLn(f"Cannot buy {item_name} because it is not available.")
+        return
+
+    total_volume = round(ore_cargo.ore.volume * amount_number, 2)
+    available_volume = round(ore_cargo.quantity * ore_cargo.ore.volume, 2)
+    price = round(ore_cargo.buy_price * amount_number, 2)
+
+    term.writeLn(f"Price for {amount_number} {item_name}: {price} credits")
+
+    # Handle bartering logic
+    price, _ = barter(term, price)
+
+    if price > game.player_character.credits:
+        term.writeLn(f"Cannot buy {amount_number} {item_name} because you don't have enough credits.")
+        return
+
+    if total_volume > available_volume:
+        term.writeLn(f"Cannot buy {amount_number} {item_name} because the station doesn't have enough ore in its cargo.")
+        confirm = term.prompt_user("Do you want to buy all available ore? y/n >> ")
+        if confirm.lower() == "y":
+            amount_number = int(available_volume / ore_cargo.ore.volume)
+            price = round(ore_cargo.buy_price * amount_number, 2)
+            term.writeLn(f"Adjusting purchase to {amount_number} {item_name} for {price} credits.")
+        else:
+            term.writeLn("Buy cancelled.")
+            return
+
+    # Update ore quantities in the station and player's ship
+    update_ore_quantities(term, ore_cargo, item_name, amount_number, price, station)
 
 def update_ore_quantities(term: PygameTerminal, ore_cargo: OreCargo, ore_name: str, amount: int, price: float,
-                          station: Station = None):
+                          station: Station | None = None) -> None:
     """Updates the quantities of ore.
 
     If a station is provided, it updates both the station and the player's ship.
     If no station is provided, it only updates the player's ship.
+
+    Args:
+        term (PygameTerminal): The PygameTerminal instance.
+        ore_cargo (OreCargo): The OreCargo instance to update.
+        ore_name (str): The name of the ore.
+        amount (int): The amount of ore to add or remove.
+        price (float): The price of the ore.
+        station (Station | None): The station to update, if any.
     """
     game: Game = term.app_state
 
@@ -203,10 +223,18 @@ def update_ore_quantities(term: PygameTerminal, ore_cargo: OreCargo, ore_name: s
         term.writeLn(f"Updated player ship cargo with {amount} {ore_name}.")
 
 
-def travel_command(*args, term: PygameTerminal):
-    """Handles the travel command."""
+def travel_command(*args: str, term: PygameTerminal) -> float:
+    """Handles the travel command.
+
+    Args:
+        args (str): The arguments for the travel command.
+        term (PygameTerminal): The PygameTerminal instance.
+
+    Returns:
+        float: The updated global time after the travel command.
+    """
     game: Game = term.app_state
-    global_time = game.global_time
+    global_time: float = game.global_time
     if game.player_ship.is_docked:
         term.writeLn("Cannot travel while docked.")
         return global_time
@@ -222,8 +250,16 @@ def travel_command(*args, term: PygameTerminal):
         term.writeLn("Invalid argument. Please enter 'closest' to travel to the closest field or station.")
 
 
-def closest_travel(term: PygameTerminal, object_type):
-    """Handles travel to the closest field or station."""
+def closest_travel(term: PygameTerminal, object_type: str) -> None:
+    """Handles travel to the closest field or station.
+
+    Args:
+        term (PygameTerminal): The PygameTerminal instance.
+        object_type (str): The type of object to travel to. Can be 'field', 'f', 'station', or 's'.
+
+    Returns:
+        None
+    """
     game: Game = term.app_state
     # Get the closest field and station
     closest_field: AsteroidField = get_closest_field(game.solar_system, game.player_ship.space_object.get_position(),
@@ -251,8 +287,6 @@ def closest_travel(term: PygameTerminal, object_type):
     else:
         term.writeLn("Invalid object type. Use 'field' or 'station'.")
 
-    return
-
 
 def direct_travel_command(destination_x: str, destination_y: str, term: PygameTerminal):
     """Handles direct coordinate travel."""
@@ -272,8 +306,15 @@ def direct_travel_command(destination_x: str, destination_y: str, term: PygameTe
     game.player_ship.travel(term, Vector2(x, y))
 
 
-def mine_command(time_to_mine=None, mine_until_full=None, ore_selected=None, term: PygameTerminal = None):
-    """Handles the mine command."""
+def mine_command(time_to_mine: int, mine_until_full: bool, ore_selected: List[str] | None, term: PygameTerminal) -> None:
+    """Handles the mine command.
+
+    Args:
+        time_to_mine (int): The amount of time to mine for in seconds.
+        mine_until_full (bool): If True, mine until the cargo hold is full.
+        ore_selected (List[str] | None): List of ore names to mine, or None to mine all available ores.
+        term (PygameTerminal): The PygameTerminal instance.
+    """
     game: Game = term.app_state
 
     if not game.solar_system.is_object_within_an_asteroid_field_radius(
@@ -282,14 +323,9 @@ def mine_command(time_to_mine=None, mine_until_full=None, ore_selected=None, ter
         return
 
     try:
-        time_to_mine = int(time_to_mine)
         asteroid_field = game.solar_system.get_field_by_position(game.player_ship.space_object.get_position())
 
-        if ore_selected:
-            # Convert comma-separated string to list of ore names
-            ore_selected = [ore.strip() for ore in ore_selected.split(',')]
-        else:
-            # If no ores specified, mine all available ores, set to None
+        if ore_selected is None:
             ore_selected = None
 
         game.player_ship.mine_belt(term, asteroid_field, time_to_mine, mine_until_full, ore_selected)
@@ -298,8 +334,15 @@ def mine_command(time_to_mine=None, mine_until_full=None, ore_selected=None, ter
         term.writeLn("Invalid time. Please enter a valid number.")
 
 
-def command_dock(term: PygameTerminal):
-    """Handles the dock command."""
+def command_dock(term: PygameTerminal) -> None:
+    """Handles the dock command.
+
+    Args:
+        term (PygameTerminal): The terminal instance for output.
+
+    Returns:
+        None
+    """
     game: Game = term.app_state
     player_ship: Ship = game.player_ship
     if player_ship.is_docked:
@@ -312,8 +355,13 @@ def command_dock(term: PygameTerminal):
     on_dock_complete(term, station_to_dock=target_station)
     
 
-def on_dock_complete(term: PygameTerminal, station_to_dock: Station):
-    """Callback function for when the docking countdown is complete."""
+def on_dock_complete(term: PygameTerminal, station_to_dock: Station) -> None:
+    """Callback function for when the docking countdown is complete.
+
+    Args:
+        term (PygameTerminal): The terminal instance for output.
+        station_to_dock (Station): The station to dock with.
+    """
     game: Game = term.app_state
     player_ship: Ship = game.player_ship
     player_ship.dock_into_station(station_to_dock)
@@ -321,14 +369,18 @@ def on_dock_complete(term: PygameTerminal, station_to_dock: Station):
     term.writeLn(station_to_dock.ores_available_to_string(term))
 
 
-def command_undock(term: PygameTerminal):
-    """Handles the undocking command."""
+def command_undock(term: PygameTerminal) -> None:
+    """Handles the undocking command.
+
+    Args:
+        term (PygameTerminal): The terminal instance for output.
+    """
     game: Game = term.app_state
     if not game.player_ship.is_docked:
         term.writeLn("You are not docked.")
         return
 
-    def on_undock_complete():
+    def on_undock_complete() -> None:
         game.player_ship.undock_from_station()
         term.writeLn("Undocked.")
 
@@ -342,12 +394,22 @@ def command_undock(term: PygameTerminal):
     )
 
 
-def scan_command(number, term: PygameTerminal):
-    """Handles the scan command."""
+def scan_command(number: str, term: PygameTerminal) -> None:
+    """Handles the scan command.
+
+    Args:
+        number (str): The number of objects to scan.
+        term (PygameTerminal): The terminal instance for output.
+
+    Returns:
+        None
+    """
     game: Game = term.app_state
-    amount_of_objects = int(number)
+    amount_of_objects: int = int(number)
     term.writeLn(f"Scanning for {amount_of_objects} objects...")
-    objects = game.solar_system.scan_system_objects(game.player_ship.space_object.get_position(), amount_of_objects)
+    objects: list[Station | AsteroidField] = game.solar_system.scan_system_objects(
+        game.player_ship.space_object.get_position(), amount_of_objects
+    )
     for i in range(amount_of_objects):
         term.writeLn(f"{i}. {objects[i].to_string_short(game.player_ship.space_object.get_position())}")
 
@@ -367,39 +429,48 @@ def scan_command(number, term: PygameTerminal):
         direct_travel_command(selected_object_position.x, selected_object_position.y, term=term)
 
 
-def add_ore_debug_command(amount: str, ore_name: str, term: PygameTerminal):
-    """Handles the add ore command. It will add ores to the player ship cargohold"""
+def add_ore_debug_command(amount: int, ore_name: str, term: PygameTerminal) -> None:
+    """Handles the add ore command. It will add ores to the player ship cargohold
+
+    Args:
+        amount (int): The amount of ore to add.
+        ore_name (str): The name of the ore to add.
+        term (PygameTerminal): The terminal instance for output.
+    """
     term.writeLn("This is a debug/cheat command: with great power comes great responsibility!")
     game: Game = term.app_state
 
-    amount_num = int(amount)
-    if amount_num < 0:
+    if amount < 0:
         term.writeLn("You have entered a negative number.")
+        return
 
     ore: Ore = helpers.get_ore_by_id_or_name(ore_name)
     if ore is None:
         term.writeLn(f"Invalid ore name: {ore_name}")
         return
 
-    total_volume = ore.volume * amount_num
+    total_volume = ore.volume * amount
     if total_volume > game.player_ship.cargohold_occupied:
         term.writeLn("You are trying to add more cargo than your ship's capacity.")
         term.writeLn("Since this is a debug command, i will allow you to do that.")
 
     # Create the ore cargo
-    ore_cargo: OreCargo = OreCargo(ore, amount_num, ore.base_value, ore.base_value)
+    ore_cargo: OreCargo = OreCargo(ore, amount, ore.base_value, ore.base_value)
 
     # Update ore quantities (this will add it to the cargohold)
-    update_ore_quantities(term, ore_cargo, ore_name, amount_num, ore.base_value)
+    update_ore_quantities(term, ore_cargo, ore_name, amount, ore.base_value)
 
     display_status(term)
 
+def add_creds_debug_command(amount: int, term: PygameTerminal) -> None:
+    """Handles the add credits command.
 
-def add_creds_debug_command(amount: str, term: PygameTerminal):
-    """Handles the add credits command."""
+    Args:
+        amount (int): The amount of credits to add.
+        term (PygameTerminal): The terminal instance for output.
+    """
     game: Game = term.app_state
     if game.debug_flag:
-        amount = int(amount)
         if amount < 0:
             term.writeLn("You have entered a negative number, this means you are in debt.")
             term.writeLn("Are you sure? (y/n)")
@@ -412,8 +483,12 @@ def add_creds_debug_command(amount: str, term: PygameTerminal):
         term.writeLn("Debug commands can only be used through the use of the 'debug' ('dm') command.")
         return
 
+def display_status(term: PygameTerminal) -> None:
+    """Displays the current status of the player character and ship.
 
-def display_status(term: PygameTerminal):
+    Args:
+        term (PygameTerminal): The terminal instance for output.
+    """
     game: Game = term.app_state
     term.writeLn("Player Status:")
     for status in game.player_character.to_string():
@@ -421,12 +496,17 @@ def display_status(term: PygameTerminal):
     term.writeLn("")
     term.writeLn("Ship Status:")
     for status in game.player_ship.status_to_string():
-        term.writeLn(status)
-    
+        term.writeLn(status)    
 
+def display_time_and_status(
+    selection_flag: Literal["player", "ship", "both"] = "both", term: PygameTerminal
+) -> None:
+    """Displays the current time and the player's ship status.
 
-def display_time_and_status(selection_flag: str = None, term: PygameTerminal = None):
-    """Displays the current time and the player's ship status."""
+    Args:
+        selection_flag (Literal["player", "ship", "both"]): The type of status to display. Defaults to "both".
+        term (PygameTerminal): The terminal instance for output.
+    """
     game: Game = term.app_state
     time_string = f"Time: {format_seconds(game.global_time)}s"
     term.writeLn(time_string)
@@ -447,8 +527,12 @@ def display_time_and_status(selection_flag: str = None, term: PygameTerminal = N
 
     term.writeLn("=================================")
 
-def command_exit(term: PygameTerminal):
-    """Exit the term."""
+def command_exit(term: PygameTerminal) -> None:
+    """Exit the term.
+
+    Args:
+        term (PygameTerminal): The terminal instance for output.
+    """
     term.countdown_with_message(
         start_value=3.0,
         end_value=1.0,
@@ -459,14 +543,19 @@ def command_exit(term: PygameTerminal):
     )
     term.running = False
 
+def command_color(color_type: Literal["bg", "fg"], color: str, term: PygameTerminal) -> None:
+    """Change the terminal's text color.
 
-def command_color(color_type: str, color: str, term):
-    color_type = color_type
+    Args:
+        color_type (Literal["bg", "fg"]): Type of color to change. "bg" for background,
+            "fg" for foreground.
+        color (str): The color to use. Must be a valid color name.
+        term (PygameTerminal): The terminal instance for output.
+    """
     if color_type not in ["bg", "fg"]:
         term.write(f"Invalid type: {color_type}")
         return
 
-    color = color
     if not color_data.does_color_exist(color):
         term.write(f"Invalid color: {color}")
         return
@@ -479,8 +568,13 @@ def command_color(color_type: str, color: str, term):
         term.fg_color = color_data.get_color(color)
         return
 
-
-def command_reset(type_of_reset: str, term: PygameTerminal):
+def command_reset(type_of_reset: Literal["color", "bg", "fg", "text", "history", "all"], term: PygameTerminal) -> None:
+    """Reset the terminal colors or text.
+    
+    Args:
+        type_of_reset (Literal["color", "bg", "fg", "text", "history", "all"]): Type of reset to perform.
+        term (PygameTerminal): The terminal instance for output.
+    """
     if type_of_reset == "color":
         term.fg_color = term.default_fg_color
         term.bg_color = term.default_bg_color
@@ -501,7 +595,6 @@ def command_reset(type_of_reset: str, term: PygameTerminal):
         term.fg_color = term.default_fg_color
         term.bg_color = term.default_bg_color
         clear(term)
-
 
 def clear(term):
     """Clear the terminal screen."""
@@ -549,7 +642,12 @@ def unpause_sound(term: PygameTerminal):
     term.writeLn("Sound enabled.")
 
 
-def toggle_sound_command(term: PygameTerminal):
+def toggle_sound_command(term: PygameTerminal) -> None:
+    """Toggle sound on or off.
+
+    Args:
+        term (PygameTerminal): The terminal instance for output.
+    """
     game: Game = term.app_state
 
     if game.mute_flag:
@@ -563,7 +661,19 @@ def toggle_sound_command(term: PygameTerminal):
         pause_sound(term)
 
 def display_help(command_name: str = None, term: PygameTerminal = None):
-    # Display general help
+    """Displays help information for available commands.
+
+    If a specific command name is provided, detailed help for that
+    command is displayed. Otherwise, a list of all available commands
+    is shown, with their descriptions and whether they are allowed
+    based on the current game state.
+
+    Args:
+        command_name (str, optional): The name of the command for which
+            detailed help is requested. Defaults to None.
+        term (PygameTerminal, optional): The terminal instance for output.
+            Defaults to None.
+    """
     term.writeLn("Available commands (type 'help <command>' for more details):")
 
     game: Game = term.app_state
