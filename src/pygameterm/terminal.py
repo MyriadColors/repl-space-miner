@@ -96,9 +96,10 @@ def typeof(value):
 class TerminalLine:
     segments: list[tuple[str, pygame.Color | None, pygame.Color | None]] = field(default_factory=list)
     default_fg: pygame.Color = field(default_factory=lambda: pygame.Color('white'))
-    default_bg: pygame.Color = field(default_factory=lambda: pygame.Color('black')) 
+    default_bg: pygame.Color = field(default_factory=lambda: pygame.Color('black'))
 
     def add_segment(self, text: str, fg_color: pygame.Color | None = None, bg_color: pygame.Color | None = None):
+        
         self.segments.append((text, fg_color, bg_color))
 
     def render(self, font: pygame.font.Font, x: int, y: int, screen: pygame.Surface):
@@ -189,6 +190,56 @@ class PygameTerminal:
                 # If both fail, fall back to the default font
                 print("Warning: Monospace font not found. Using default font.")
                 self.font = pygame.font.Font(None, self.font_size)
+
+    def show_illustration(self, image_source, x=None, y=None, width=None, height=None):
+        """
+        Displays an image in the terminal.
+
+        Args:
+            image_source: Can be either a file path (string) or a URL (string).
+            x: x-coordinate of the top-left corner.
+            y: y-coordinate of the top-left corner.
+            width: Desired width of the image.
+            height: Desired height of the image.
+        """
+        try:
+            if image_source.startswith("http://") or image_source.startswith("https://"):
+                response = requests.get(image_source, stream=True)
+                response.raise_for_status()  # Raise an exception for bad status codes (e.g., 404)
+                image = pygame.image.load(BytesIO(response.content))
+            else:
+                image = pygame.image.load(image_source)
+
+            # Resize if width and height are provided
+            if width and height:
+                image = pygame.transform.scale(image, (width, height))
+            elif width:
+                height = int(image.get_height() * width / image.get_width())
+                image = pygame.transform.scale(image, (width, height))
+            elif height:
+                width = int(image.get_width() * height / image.get_height())
+                image = pygame.transform.scale(image, (width, height))
+
+
+
+            # Calculate position if not provided
+            if x is None:
+                x = self.terminal_margin_left
+            if y is None:
+                y = self.terminal_margin_top
+
+
+            self.screen.blit(image, (x, y))
+            pygame.display.flip()
+
+        except requests.exceptions.RequestException as e:
+            self.writeLn(f"Error fetching image from URL: {e}")
+        except FileNotFoundError:
+            self.writeLn(f"Image file not found: {image_source}")
+        except pygame.error as e:  # Catch pygame image loading errors
+            self.writeLn(f"Error loading image: {e}")
+        except Exception as e:
+            self.writeLn(f"An unexpected error occurred: {e}")
 
     def set_font_size(self, font_size: int) -> None:
         """Set the font size."""
@@ -634,13 +685,7 @@ class PygameTerminal:
                 i = text_end
 
         return segments
-            
-    def write_colored_text(self, text: str, fg_color: pygame.Color | None = None, bg_color: pygame.Color | None = None):
-        """Write text to the terminal with specified colors."""
-        lines = text.split('\n')
-        for line in lines:
-            self.terminal_lines.append(TerminalLine(line, fg_color=fg_color, bg_color=bg_color))
-    
+
     @staticmethod
     def args_length(args):
         if args:

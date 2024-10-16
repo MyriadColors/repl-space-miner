@@ -4,7 +4,7 @@ from src.command_handlers import refuel_command, scan_field_command, sell_comman
     display_help, command_dock, \
     command_undock, display_time_and_status, mine_command, buy_command, add_creds_debug_command, \
     command_exit, command_color, command_reset, clear, add_ore_debug_command, direct_travel_command, debug_mode_command, \
-    toggle_sound_command, init_music
+    toggle_sound_command, init_music, show_image_command
 from src.events import intro_event
 from src.pygameterm import color_data
 from src.pygameterm.terminal import PygameTerminal, Argument
@@ -235,6 +235,11 @@ def register_commands(terminal: PygameTerminal):
     terminal.register_command(
         ["toggle_sound", "ts"],
         toggle_sound_command,
+    )
+    
+    terminal.register_command(
+        ["show_image", "si"], show_image_command,
+        [Argument("image_source", str, False)]
     )
 
 

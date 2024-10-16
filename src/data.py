@@ -38,8 +38,8 @@ class OreCargo:
     buy_price: float
     sell_price: float
 
-
-upgrade_data: dict = {
+# Unused until I implement the upgrade system
+_upgrade_data: dict = {
     "speed": {
         "price": 100_000,
         "multiplier": 1.05,

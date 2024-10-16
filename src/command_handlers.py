@@ -245,7 +245,10 @@ def travel_command(*args: str, term: PygameTerminal) -> float:
 
     # Handle 'closest' command
     if args[0] == "closest":
-        closest_travel(term, args[1])
+        try:
+            closest_travel(term, args[1])
+        except IndexError:
+            term.writeLn("Invalid argument. Please enter 'closest' followed by 'field' or 'station'.")
     else:
         term.writeLn("Invalid argument. Please enter 'closest' to travel to the closest field or station.")
 
@@ -261,31 +264,35 @@ def closest_travel(term: PygameTerminal, object_type: str) -> None:
         None
     """
     game: Game = term.app_state
-    # Get the closest field and station
-    closest_field: AsteroidField = get_closest_field(game.solar_system, game.player_ship.space_object.get_position(),
-                                                     game.solar_system.is_object_within_an_asteroid_field_radius(
-                                                         game.player_ship.space_object.get_position()) is not None)
-    closest_station: Station = get_closest_station(game.solar_system, game.player_ship,
-                                                   game.solar_system.get_object_within_interaction_radius(
-                                                       game.player_ship) is not None)
 
-    if not object_type:
-        # Ask user for input to choose between field or station
-        term.writeLn(
-            f"Closest field is Field {closest_field.id} at {euclidean_distance(game.player_ship.space_object.get_position(), closest_field.position)} AUs from here.")
-        term.writeLn(
-            f"Closest station is Station {closest_station.id} at {euclidean_distance(game.player_ship.space_object.get_position(), closest_station.position)} AUs from here.")
-        prompt_for_closest_travel_choice(game.player_ship, closest_field, closest_station, game.global_time, term)
+    try:
+        # Get the closest field and station
+        closest_field: AsteroidField = get_closest_field(game.solar_system, game.player_ship.space_object.get_position(),
+                                                         game.solar_system.is_object_within_an_asteroid_field_radius(
+                                                             game.player_ship.space_object.get_position()) is not None)
+        closest_station: Station = get_closest_station(game.solar_system, game.player_ship,
+                                                       game.solar_system.get_object_within_interaction_radius(
+                                                           game.player_ship) is not None)
 
-    elif object_type in ['field', 'f']:
-        field_position: Vector2 = closest_field.position
-        term.app_state.player_ship.travel(term, field_position)
+        if not object_type:
+            # Ask user for input to choose between field or station
+            term.writeLn(
+                f"Closest field is Field {closest_field.id} at {euclidean_distance(game.player_ship.space_object.get_position(), closest_field.position)} AUs from here.")
+            term.writeLn(
+                f"Closest station is Station {closest_station.id} at {euclidean_distance(game.player_ship.space_object.get_position(), closest_station.position)} AUs from here.")
+            prompt_for_closest_travel_choice(game.player_ship, closest_field, closest_station, game.global_time, term)
 
-    elif object_type in ['station', 's']:
-        station_position: Vector2 = closest_station.position
-        term.app_state.player_ship.travel(term, station_position)
-    else:
-        term.writeLn("Invalid object type. Use 'field' or 'station'.")
+        elif object_type in ['field', 'f']:
+            field_position: Vector2 = closest_field.position
+            term.app_state.player_ship.travel(term, field_position)
+
+        elif object_type in ['station', 's']:
+            station_position: Vector2 = closest_station.position
+            term.app_state.player_ship.travel(term, station_position)
+        else:
+            raise ValueError("Invalid object type. Use 'field' or 'station'.")
+    except (AttributeError, ValueError) as e:
+        term.writeLn(f"Error: {e}")
 
 
 def direct_travel_command(destination_x: str, destination_y: str, term: PygameTerminal):
@@ -299,14 +306,22 @@ def direct_travel_command(destination_x: str, destination_y: str, term: PygameTe
         term.writeLn("Invalid coordinates. Please enter valid numbers.")
         return
 
-    if x >= game.solar_system.size or y >= game.solar_system.size:
-        term.writeLn("Invalid coordinates. Please enter coordinates within the solar system.")
+    # Check if the coordinates are valid
+    if x < 0 or y < 0 or x >= game.solar_system.size or y >= game.solar_system.size:
+        term.writeLn(
+            "Invalid coordinates. Please enter coordinates within the solar system's bounds (0 <= x < {}, 0 <= y < {}).".format(
+                game.solar_system.size, game.solar_system.size))
+        return
+
+    # Check if the coordinates are occupied by an asteroid field or station
+    if game.solar_system.is_object_at_position(Vector2(x, y)):
+        term.writeLn("Cannot travel to occupied coordinates.")
         return
 
     game.player_ship.travel(term, Vector2(x, y))
 
 
-def mine_command(time_to_mine: int, mine_until_full: bool, ore_selected: List[str] | None, term: PygameTerminal) -> None:
+def mine_command(time_to_mine: int, mine_until_full: bool, ore_selected: list[str] | None, term: PygameTerminal) -> None:
     """Handles the mine command.
 
     Args:
@@ -499,12 +514,12 @@ def display_status(term: PygameTerminal) -> None:
         term.writeLn(status)    
 
 def display_time_and_status(
-    selection_flag: Literal["player", "ship", "both"] = "both", term: PygameTerminal
+    term: PygameTerminal, selection_flag: ["player", "ship", "both"] = "both"
 ) -> None:
     """Displays the current time and the player's ship status.
 
     Args:
-        selection_flag (Literal["player", "ship", "both"]): The type of status to display. Defaults to "both".
+        selection_flag (["player", "ship", "both"]): The type of status to display. Defaults to "both".
         term (PygameTerminal): The terminal instance for output.
     """
     game: Game = term.app_state
@@ -543,11 +558,11 @@ def command_exit(term: PygameTerminal) -> None:
     )
     term.running = False
 
-def command_color(color_type: Literal["bg", "fg"], color: str, term: PygameTerminal) -> None:
+def command_color(color_type: ["bg", "fg"], color: str, term: PygameTerminal) -> None:
     """Change the terminal's text color.
 
     Args:
-        color_type (Literal["bg", "fg"]): Type of color to change. "bg" for background,
+        color_type (["bg", "fg"]): Type of color to change. "bg" for background,
             "fg" for foreground.
         color (str): The color to use. Must be a valid color name.
         term (PygameTerminal): The terminal instance for output.
@@ -568,11 +583,11 @@ def command_color(color_type: Literal["bg", "fg"], color: str, term: PygameTermi
         term.fg_color = color_data.get_color(color)
         return
 
-def command_reset(type_of_reset: Literal["color", "bg", "fg", "text", "history", "all"], term: PygameTerminal) -> None:
+def command_reset(type_of_reset: ["color", "bg", "fg", "text", "history", "all"], term: PygameTerminal) -> None:
     """Reset the terminal colors or text.
     
     Args:
-        type_of_reset (Literal["color", "bg", "fg", "text", "history", "all"]): Type of reset to perform.
+        type_of_reset (["color", "bg", "fg", "text", "history", "all"]): Type of reset to perform.
         term (PygameTerminal): The terminal instance for output.
     """
     if type_of_reset == "color":
@@ -660,6 +675,10 @@ def toggle_sound_command(term: PygameTerminal) -> None:
         game.mute_flag = True
         pause_sound(term)
 
+def show_image_command(image_source, term):
+        term.show_illustration(image_source, x=100, y=50, width=200)  # or provide a URL
+        term.writeLn("Image displayed.")
+
 def display_help(command_name: str = None, term: PygameTerminal = None):
     """Displays help information for available commands.
 
@@ -690,10 +709,10 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
 
     def write_command(command, description, allowed: bool):
         if allowed:
-            term.write_colored_text(f"{command}: {description}", fg_color=color_data.get_color("blue192"))
+            term.writeLn(f"{f"<blue>{command}</blue>"}: {description}")
         else:
-            term.write_colored_text(f"{command}: {description}", fg_color=color_data.get_color("red192"))
-
+            term.writeLn(f"{f"<red>{command}</red>"}: {description}")
+            
     write_command("status (st) <selection_flag>", "Displays your current credits, ship status (fuel, cargo, location), and time elapsed.", True)
     write_command("scan (sc) <quantity>", "Scan for nearby asteroid fields and stations.", True)
     write_command("scan_field (scf)", "Scan for nearby asteroid fields and stations.", True)
@@ -804,3 +823,5 @@ def display_help(command_name: str = None, term: PygameTerminal = None):
             term.writeLn("  Exits the game.")
         else:
             term.writeLn(f"Unknown command: {command_name}")
+
+
