@@ -1,7 +1,0 @@
-1. Add a command history
-2. Add the ability to recall the last command by pressing the arrow keys
-3. In the help, put the commands in brackets so they're easier to spot:
-
-[q] Quit the game
-[refuel <amount>]  Refuel the ship  with the given amount
-
