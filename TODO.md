@@ -48,7 +48,7 @@
 ## Code Improvements
 1. **Increase test coverage to ensure code reliability**  
    - Urgency: 2  
-   - Description: Expand the test suite to cover more code paths and edge cases, ensuring the reliability and stability of the codebase. This may involve writing unit tests, integration tests, and end-to-end tests to verify the functionality of various components.
+   - Description: Expand the test suite to cover the code's functionality and to avoid regressions.
 
 2. **Optimize performance for smoother gameplay**  
    - Urgency: 3  
