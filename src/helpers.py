@@ -23,8 +23,8 @@ def rnd_vector(min_val, max_val):
     return Vector2(rnd_float(min_val, max_val), rnd_float(min_val, max_val))
 
 
-def vector_to_string(v):
-    return f"({v.x:.3f}, {v.y:.3f})"
+def vector_to_string(vector: Vector2):
+    return f"({vector.x:.3f}, {vector.y:.3f})"
 
 
 def take_input(prompt):

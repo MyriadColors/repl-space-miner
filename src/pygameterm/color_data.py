@@ -1,4 +1,8 @@
-color = {
+import pygame
+
+color_example = (0 ,0, 0)
+
+colors: dict[str, tuple[int, int, int]] = {
     "black": (0, 0, 0),
     "gray16": (16, 16, 16),
     "gray24": (24, 24, 24),
@@ -70,10 +74,21 @@ color = {
     "pastel_red": (129, 39, 23),
 }
 
+def find_color_by_name(color_str: str) -> dict[str, tuple[int, int, int]] | None:
+    if color_str in colors:
+        return {color_str: colors[color_str]}
+    
+    return None
+
+def color_name_to_pygame_color(color_str: str) -> pygame.color.Color | None:
+    color_info = find_color_by_name(color_str)
+    if color_info is None:
+        return None
+    rgb = list(color_info.values())[0]
+    return pygame.color.Color(r=rgb[0], g=rgb[1], b=rgb[2])
 
 def get_color(color_str: str):
-    return color[color_str]
-
+    return colors[color_str]
 
 def does_color_exist(color_str: str):
-    return color_str in color
+    return color_str in colors

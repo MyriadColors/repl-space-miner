@@ -10,16 +10,16 @@ from src.data import OreCargo
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
 from src.pygameterm.terminal import PygameTerminal
 
+class IsSpaceObject:
+    
+    def __init__(self, position: Vector2, id: int) -> None:
+        self.position: Vector2 = position
+        self.id: int = id
 
-@dataclass
-class IsSystemObject:
-    position: Vector2
-    id: int
-
-    def get_position(self):
+    def get_position(self) -> Vector2:
         return self.position
 
-    def set_position(self, new_position):
+    def set_position(self, new_position: Vector2) -> None:
         self.position = new_position
 
     def get_id(self):
@@ -38,30 +38,42 @@ class CanMove:
 
 
 class Ship:
-    def __init__(self, position: Vector2, speed, max_fuel, fuel_consumption, cargo_capacity, value, mining_speed, name):
-        self.space_object = IsSystemObject(position, 0)
+    ship_id_counter: int = 0
+    def __init__(
+        self,
+        name: str,
+        position: Vector2,
+        speed,
+        max_fuel,
+        fuel_consumption,
+        cargo_capacity,
+        value,
+        mining_speed,
+    ):
+        self.name = name
+        self.space_object = IsSpaceObject(position, self.ship_id_counter)
         self.moves = CanMove(speed)  # in AU/s
         self.fuel = max_fuel  # in m3
         self.max_fuel = max_fuel  # in m3
         self.fuel_consumption = fuel_consumption  # in m3/AU
-        self.cargohold = []
+        self.cargohold: list = []
         self.cargohold_occupied = 0
         self.cargohold_capacity = cargo_capacity
         self.value = value
         self.mining_speed = mining_speed
         self.interaction_radius = 0.001  # Radius around the player ship where it can interact with other objects
         self.is_docked = False
-        self.docked_at = None
-        self.ship_name = name
+        self.docked_at: Station | None = None
         self.calculate_cargo_occupancy()
-    
+
     def get_ore_cargo_by_id(self, ore_id: int) -> OreCargo | None:
         return next((cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None)
 
-    def set_ship_name(self, new_name):
-        self.ship_name = new_name
+    def set_name(self, new_name):
+        self.name = new_name
 
     def dock_into_station(self, station: Station):
+        assert station is not None
         self.is_docked = True
         self.docked_at = station
 
@@ -90,7 +102,9 @@ class Ship:
     def travel(self, term: PygameTerminal, destination: Vector2):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
 
-        term.writeLn(f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel.")
+        term.writeLn(
+            f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel."
+        )
 
         if self.fuel - fuel_consumed < 0:
             term.writeLn("Not enough fuel to travel. Please refuel.")
@@ -110,25 +124,34 @@ class Ship:
 
     def status_to_string(self) -> list[str]:
         ore_units_on_cargohold = sum(cargo.quantity for cargo in self.cargohold)
-        docked_at_name = 'Not docked' if self.docked_at is None else self.docked_at.name
+        docked_at_name = "Not docked" if self.docked_at is None else self.docked_at.name
         return [
-            f"Ship Name: {self.ship_name}",
-            f"Position: {vector_to_string(self.space_object.position)}",
+            f"Ship Name: {self.name}",
+            f"Position: {vector_to_string(self.space_object.get_position())}",
             f"Speed: {self.moves.speed:.2f} AU/s",
             f"Fuel: {self.fuel:.2f}/{self.max_fuel} m3",
             f"Cargohold: {self.cargohold_occupied:.2f}/{self.cargohold_capacity} m3",
             f"Amount of Ores: {ore_units_on_cargohold}",
-            f"Docked at: {docked_at_name}"
+            f"Docked at: {docked_at_name}",
         ]
 
     def cargo_to_string(self, term: PygameTerminal):
-        return "\n".join(f"{cargo.quantity} units of {cargo.ore.name}" for cargo in self.cargohold)
+        return "\n".join(
+            f"{cargo.quantity} units of {cargo.ore.name}" for cargo in self.cargohold
+        )
 
     def get_docked_station(self) -> Station | None:
         return self.docked_at
 
-    def mine_belt(self, terminal: PygameTerminal, asteroid_field, time_to_mine, mine_until_full,
-                  ores_selected_list: str | None):
+    def mine_belt(
+        self,
+        terminal: PygameTerminal,
+        asteroid_field,
+        time_to_mine,
+        mine_until_full,
+        ores_selected_list: str | None,
+    ):
+
         if not asteroid_field.asteroids:
             terminal.writeLn("This field is empty.")
             return
@@ -137,23 +160,34 @@ class Ship:
             terminal.writeLn("You have no cargo space left.")
             return
 
-        # Check if the specified ores are available in the asteroid field
         if ores_selected_list:
             available_ores = {ore.name.lower() for ore in asteroid_field.ores_available}
-            invalid_ores = [ore for ore in ores_selected_list if ore.lower() not in available_ores]
+            invalid_ores = [
+                ore for ore in ores_selected_list if ore.lower() not in available_ores
+            ]
             if invalid_ores:
-                terminal.writeLn(f"The following ores are not available in this field: {', '.join(invalid_ores)}")
+                terminal.writeLn(
+                    f"The following ores are not available in this field: {', '.join(invalid_ores)}"
+                )
                 return
 
         asteroid_being_mined: Asteroid | None = None
-        ores_mined = []
+        ores_mined: list[OreCargo] = []
         time_spent = 0
         mined_volume = 0
 
-        while (not mine_until_full and time_spent < time_to_mine) or (mine_until_full and not self.is_cargo_full()):
+        while (not mine_until_full and time_spent < time_to_mine) or (
+            mine_until_full and not self.is_cargo_full()
+        ):
             if asteroid_being_mined is None or asteroid_being_mined.volume <= 0:
-                asteroid_being_mined = next((asteroid for asteroid in asteroid_field.asteroids if asteroid.volume > 0),
-                                            None)
+                asteroid_being_mined = next(
+                    (
+                        asteroid
+                        for asteroid in asteroid_field.asteroids
+                        if asteroid.volume > 0
+                    ),
+                    None,
+                )
                 if asteroid_being_mined is None:
                     terminal.writeLn("This field is empty.")
                     break
@@ -172,11 +206,16 @@ class Ship:
             if mined_volume >= ore.volume:
                 if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
                     terminal.writeLn(
-                        f"Cannot mine this ore because the {ore.name} ore is too voluminous for the ship's cargohold.")
-                    terminal.writeLn("In the future you may be able to try again with another ore.")
+                        f"Cannot mine this ore because the {ore.name} ore is too voluminous for the ship's cargohold."
+                    )
+                    terminal.writeLn(
+                        "In the future you may be able to try again with another ore."
+                    )
                     break
 
-                ore_cargo = next((cargo for cargo in ores_mined if cargo.ore.id == ore.id), None)
+                ore_cargo = next(
+                    (cargo for cargo in ores_mined if cargo.ore.id == ore.id), None
+                )
                 if ore_cargo:
                     ore_cargo.quantity += 1
                 else:
@@ -201,7 +240,9 @@ class Ship:
                 self.cargohold.append(ore_cargo)
 
         if total_quantity > 0:
-            terminal.writeLn(f"Mined {total_quantity} units of {', '.join(ore_names)} for {total_volume:.2f} m³")
+            terminal.writeLn(
+                f"Mined {total_quantity} units of {', '.join(ore_names)} for {total_volume:.2f} m³"
+            )
         else:
             terminal.writeLn("No ores were mined.")
 
@@ -210,29 +251,36 @@ class Ship:
         terminal.app_state.global_time += time_spent
 
     def calculate_cargo_occupancy(self):
-        self.cargohold_occupied = sum(cargo.quantity * cargo.ore.volume for cargo in self.cargohold)
+        self.cargohold_occupied = sum(
+            cargo.quantity * cargo.ore.volume for cargo in self.cargohold
+        )
 
     def is_cargo_full(self) -> bool:
         return self.cargohold_occupied == self.cargohold_capacity
 
-    def check_field_presence(self, term: PygameTerminal) -> Tuple[bool, Optional[AsteroidField]]:
+    def check_field_presence(
+        self, term: PygameTerminal
+    ) -> Tuple[bool, Optional[AsteroidField]]:
         game = term.app_state
 
         for field in game.solar_system.asteroid_fields:
-            if self.interaction_radius > euclidean_distance(self.space_object.position, field.position):
+            if self.interaction_radius > euclidean_distance(
+                self.space_object.position, field.position
+            ):
                 return True, field
         return False, None
 
     def scan_field(self, term: PygameTerminal):
-        """Scans the field and returns the ores available."""
         game = term.app_state
         fields: list[AsteroidField] = game.solar_system.asteroid_fields
 
         is_inside_field, field = self.check_field_presence(term)
 
-        if not is_inside_field:
+        if not is_inside_field or field is None:
             term.writeLn("You are not inside a field.")
             return
 
         for ore in field.ores_available:
             term.writeLn(f"{ore.name} - {ore.volume} m3")
+
+

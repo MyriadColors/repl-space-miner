@@ -1,4 +1,5 @@
 import random
+from typing import Union
 
 from pygame import Vector2
 
@@ -7,10 +8,11 @@ from src.classes.asteroid import AsteroidField
 from src.classes.station import Station
 from src.helpers import euclidean_distance, rnd_float, rnd_vector, select_random_ore, rnd_int
 
+HasSpaceObjectType = Union[AsteroidField, Station]
 
 class SolarSystem:
 
-    def __init__(self, size, field_quantity):
+    def __init__(self, size, field_quantity) -> None:
         self.size: float = size
         self.game_time: int = 0
         self.field_quantity: int = field_quantity
@@ -41,7 +43,7 @@ class SolarSystem:
                 # Check overlap with existing fields
                 overlapping = False
                 for existing_field in self.asteroid_fields:
-                    distance = rnd_position.distance_to(existing_field.position)
+                    distance = rnd_position.distance_to(existing_field.space_object.position)
                     if distance < (rnd_radius + existing_field.radius):
                         overlapping = True
                         break
@@ -58,10 +60,27 @@ class SolarSystem:
                 print(
                     f"Warning: Could not place asteroid field {len(self.asteroid_fields) + 1} without overlap"
                 )
-
+    def get_all_asteroid_fields(self) -> list[AsteroidField]:
+        return self.asteroid_fields
+    
+    def get_all_stations(self) -> list[Station]:
+        return self.stations
+    
+    from src.classes.ship import IsSpaceObject
+    def get_all_space_objects(self) -> list[HasSpaceObjectType]:
+        return self.asteroid_fields + self.stations
+    
+    def is_object_at_position(self, position: Vector2) -> bool:
+        # Check if the coordinates are occupied by an asteroid field or station
+        for space_object in self.get_all_space_objects():
+            if space_object.space_object.get_position() == position:
+                return True
+        
+        return False
+    
     def is_object_within_an_asteroid_field_radius(self, object_position):
         for asteroid_field in self.asteroid_fields:
-            distance = object_position.distance_to(asteroid_field.position)
+            distance = object_position.distance_to(asteroid_field.space_object.position)
             if distance <= asteroid_field.radius:
                 return True
         return False
@@ -70,7 +89,7 @@ class SolarSystem:
         for asteroid_field in self.asteroid_fields:
             if euclidean_distance(
                     position,
-                    asteroid_field.position) <= asteroid_field.radius:
+                    asteroid_field.space_object.position) <= asteroid_field.radius:
                 return asteroid_field
         return None
 
@@ -85,7 +104,7 @@ class SolarSystem:
                 if position_flag is None:
                     raise ValueError(
                         "Position flag is required for distance sorting")
-                return field.position.distance_to(position_flag)
+                return field.space_object.position.distance_to(position_flag)
             else:
                 raise ValueError(f"Invalid sort type: {sort_type}")
 
@@ -106,14 +125,14 @@ class SolarSystem:
     def sort_stations(self,
                       sort_order,
                       sort_type,
-                      position_flag=None):
+                      position_flag=None) -> list[Station]:
 
         def sort_key(station_key):
             if sort_type in ('distance', 'd'):
                 if position_flag is None:
                     raise ValueError(
                         "Position flag is required for distance sorting")
-                return station_key.position.distance_to(position_flag)
+                return station_key.space_object.position.distance_to(position_flag)
             else:
                 raise ValueError(f"Invalid sort type: {sort_type}")
 
@@ -124,8 +143,8 @@ class SolarSystem:
                                  reverse=(sort_order in ['des', 'd']))
 
         if position_flag is not None:
-            sorted_stations = self.sort_objects_by_distance(sorted_stations,
-                                                            position_flag)
+            sorted_stations = sorted(sorted_stations,
+                                     key=lambda station: station.space_object.position.distance_to(position_flag))
 
         if len(sorted_stations) == 0:
             print("No stations found")
@@ -133,13 +152,11 @@ class SolarSystem:
         return sorted_stations
 
     @staticmethod
-    def sort_objects_by_distance(objects, position):
-        """Sort objects by distance."""
-
+    def sort_objects_by_distance(objects: list[HasSpaceObjectType], position: Vector2):
         sorted_objects = sorted(objects,
-                                key=lambda obj: euclidean_distance(position, obj.position))
+                                key=lambda obj: euclidean_distance(position, obj.space_object.position))
         return sorted_objects
-
+    
     def scan_system_objects(self, player_position, amount) -> list:
         """Scan the system for objects within a certain distance."""
         sorted_fields = self.sort_fields('des', 'd', player_position)
@@ -153,13 +170,13 @@ class SolarSystem:
     def is_object_within_interaction_radius(self, player_ship):
         for station in self.stations:
             if euclidean_distance(player_ship.space_object.get_position(),
-                                  station.position) <= player_ship.interaction_radius:
+                                  station.space_object.position) <= player_ship.interaction_radius:
                 return True
         return False
 
     def get_object_within_interaction_radius(self, player_ship):
         for station in self.stations:
             if euclidean_distance(player_ship.space_object.get_position(),
-                                  station.position) <= player_ship.interaction_radius:
+                                  station.space_object.position) <= player_ship.interaction_radius:
                 return station
         return None

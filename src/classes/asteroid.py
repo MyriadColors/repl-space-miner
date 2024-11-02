@@ -1,7 +1,5 @@
 import random
-
 from pygame import Vector2
-
 from src.classes.ore import Ore
 from src.helpers import rnd_float, meters_cubed_to_km_cubed
 
@@ -22,29 +20,29 @@ class Asteroid:
 class AsteroidField:
     belt_counter: int = 0
 
-    def __init__(self, asteroid_quantity, ores_available, radius, position):
+    def __init__(self, asteroid_quantity, ores_available, radius, position) -> None:
+        from src.classes.ship import IsSpaceObject
         self.asteroid_quantity: int = asteroid_quantity
         self.ores_available: list[Ore] = ores_available
         self.radius: float = radius  # in AU
         self.asteroids: list[Asteroid] = []
-        self.position: Vector2 = position
-        self.id: int = AsteroidField.belt_counter
+        self.space_object = IsSpaceObject(position, AsteroidField.belt_counter)
         self.visited: bool = False
         self.spawn_asteroids()
         AsteroidField.belt_counter += 1
 
     def to_string_short(self, position=None):
         if position is None:
-            return f"Field id: {self.id}, Position: {self.position}, Radius: {self.radius}"
-        return f"Field id: {self.id}, Position: {self.position}, Distance: {self.position.distance_to(position):.3f} AU"
+            return f"Field id: {self.space_object.id}, Position: {self.space_object.position}, Radius: {self.radius}"
+        return f"Field id: {self.space_object.id}, Position: {self.space_object.position}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
 
     def to_string(self, position=None):
         asteroid_field_info = (
-            f"====== Asteroid Field {self.id} =====\n"
-            f"Position: {self.position.x:.3f} {self.position.y:.3f}\n"
+            f"====== Asteroid Field {self.space_object.id} =====\n"
+            f"Position: {self.space_object.position.x:.3f} {self.space_object.position.y:.3f}\n"
         )
         if position:
-            asteroid_field_info += f"Distance: {self.position.distance_to(position):.3f} AU\n"
+            asteroid_field_info += f"Distance: {self.space_object.position.distance_to(position):.3f} AU\n"
         ore_list_info = "\n".join(ore.to_string() for ore in self.ores_available)
         asteroid_field_info += (
             f"Radius: {self.radius:.3f} AU\n"

@@ -5,13 +5,13 @@ from src.classes.ore import Ore
 from src.data import OreCargo
 from src.helpers import take_input, rnd_float, rnd_int
 from src.pygameterm.terminal import PygameTerminal
-
+from typing import Optional
 
 class Station:
-    def __init__(self, name, station_id, position):
+    def __init__(self, name, station_id, position) -> None:
+        from src.classes.ship import IsSpaceObject
         self.name: str = name
-        self.position: Vector2 = position
-        self.id: int = station_id
+        self.space_object = IsSpaceObject(position, station_id)
         self.fueltank_cap: float = helpers.rnd_float(5_000, 20_000)
         self.fueltank: float = self.fueltank_cap / helpers.rnd_int(1, 4)
         self.fuel_price: float = helpers.rnd_float(8, 20)
@@ -49,7 +49,7 @@ class Station:
 
         self.ores_available = selected
 
-    def generate_ore_cargo_instances(self):
+    def generate_ore_cargo_instances(self) -> None:
         # create the OreCargo instances
         for ore in self.ores_available:
             ore_quantity: int = 0
@@ -99,12 +99,12 @@ class Station:
         return string
 
     def get_info(self):
-        return f"{self.name} {self.position} {self.id} {self.fueltank_cap} {self.fueltank} {self.ore_cargo} {self.ore_cargo_volume} {self.ore_capacity} {self.fuel_price}"
+        return f"{self.name} {self.space_object.position} {self.space_object.id} {self.fueltank_cap} {self.fueltank} {self.ore_cargo} {self.ore_cargo_volume} {self.ore_capacity} {self.fuel_price}"
 
     def to_string_short(self, position=None):
         if position is None:
-            return f"{self.name}, Position: {self.position}, ID: {self.id}"
-        return f"{self.name}, Position: {self.position}, ID: {self.id}, Distance: {self.position.distance_to(position):.3f} AU"
+            return f"{self.name}, Position: {self.space_object.position}, ID: {self.space_object.id}"
+        return f"{self.name}, Position: {self.space_object.position}, ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
 
     def ores_available_to_string(self, term: PygameTerminal):
         for ore_cargo in self.ore_cargo:
@@ -116,7 +116,7 @@ class Station:
             term.writeLn("----------------------------------")
 
     def to_string(self):
-        return f"{self.name}\nPosition: {self.position}\nID: {self.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"
+        return f"{self.name}\nPosition: {self.space_object.position}\nID: {self.space_object.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"
 
     def buy_fuel(self, player_ship, amount):
         print(f"Price: {amount * self.fuel_price} credits ({self.fuel_price} credits per m³)")

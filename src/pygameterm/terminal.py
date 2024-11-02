@@ -1,17 +1,9 @@
 from dataclasses import dataclass, field
 from math import floor
-import re
 from typing import Callable, Any
 
 import pygame
-
 from src.pygameterm import color_data
-
-@dataclass
-class TerminalLine:
-    text: str
-    fg_color: pygame.Color | None = None
-    bg_color: pygame.Color | None = None
 
 @dataclass
 class Argument:
@@ -82,7 +74,7 @@ class Command:
     def _is_valid_bool(value):
         return value.lower() in ('true', 'false', '1', '0')
 
-    def __call__(self, *args, terminal: 'PygameTerminal'):
+    def __call__(self, *args: Any, terminal: 'PygameTerminal') -> Any:
         valid, message = self.validate_arguments(args)
         if not valid:
             raise ValueError(message)
@@ -125,16 +117,8 @@ class TerminalLine:
 
 class PygameTerminal:
     def __init__(self, app_state, width: int = 1024, height: int = 600, font_size: int = 28,
-                 initial_message: str = "", default_bg_color: pygame.Color = color_data.color['black'],
-                 default_fg_color: pygame.Color = color_data.color['white']) -> None:
-        """
-        Initialize the Pygame Terminal Emulator.
-
-        :param width: The width of the terminal emulator window.
-        :param height: The height of the terminal emulator window.
-        :param font_size: The font size of the terminal emulator window.
-        :param initial_message: The initial message to display in the terminal emulator.
-        """
+                 initial_message: str = "", default_bg_color: pygame.Color = pygame.Color(*color_data.colors['black']),
+                 default_fg_color: pygame.Color = pygame.Color(*color_data.colors['white'])) -> None:
         self.terminal_margin_bottom = 40
         self.terminal_margin_left = 10
         self.terminal_margin_top = 10
@@ -142,18 +126,20 @@ class PygameTerminal:
         self.command_callback: Callable | None = None
         pygame.init()
         pygame.display.set_caption("Pygame Terminal Emulator")
-        self.app_state = app_state  # This is the state of the application, this will be passed to commands by default
-        self.width: int = width  # The width of the terminal emulator window
-        self.height: int = height  # The height of the terminal emulator window
+        self.app_state = app_state
+        self.width: int = width
+        self.height: int = height
         self.screen: pygame.Surface = pygame.display.set_mode(
-            (self.width, self.height))  # The screen surface of the terminal emulator window
+            (self.width, self.height))
         self.font: pygame.font.Font = pygame.font.Font(None, font_size)
         self.default_bg_color: pygame.color.Color = default_bg_color
         self.bg_color: pygame.color.Color = self.default_bg_color
         self.default_fg_color: pygame.color.Color = default_fg_color
         self.fg_color: pygame.color.Color = self.default_fg_color
         self.custom_line_color = None
-        self.terminal_lines: list[TerminalLine] = [TerminalLine(initial_message)]
+        self.terminal_lines: list[TerminalLine] = [TerminalLine()]
+        if initial_message:
+            self.terminal_lines[0].add_segment(initial_message)
         self.current_line: str = ""
         self.segments: list[tuple[str, pygame.Color | None, pygame.Color | None]] = field(default_factory=list)
         self.cursor_pos: int = 0
@@ -170,12 +156,10 @@ class PygameTerminal:
         self.set_monospace_font()
         self.lines_on_screen = floor(self.height / (self.font.get_height() + self.line_margin_height)) - 2
         self.illustration_window = None
-        self.custom_event_handlers = {}
+        self.custom_event_handlers: dict[str, Callable] = {}
         pygame.key.set_repeat(250, 25)
-
-        # Command registry
         self.commands: dict[str, Command] = {}
-
+    
     def set_monospace_font(self):
         try:
             # Try to use 'Courier' font, which is available on most systems
@@ -190,56 +174,6 @@ class PygameTerminal:
                 # If both fail, fall back to the default font
                 print("Warning: Monospace font not found. Using default font.")
                 self.font = pygame.font.Font(None, self.font_size)
-
-    def show_illustration(self, image_source, x=None, y=None, width=None, height=None):
-        """
-        Displays an image in the terminal.
-
-        Args:
-            image_source: Can be either a file path (string) or a URL (string).
-            x: x-coordinate of the top-left corner.
-            y: y-coordinate of the top-left corner.
-            width: Desired width of the image.
-            height: Desired height of the image.
-        """
-        try:
-            if image_source.startswith("http://") or image_source.startswith("https://"):
-                response = requests.get(image_source, stream=True)
-                response.raise_for_status()  # Raise an exception for bad status codes (e.g., 404)
-                image = pygame.image.load(BytesIO(response.content))
-            else:
-                image = pygame.image.load(image_source)
-
-            # Resize if width and height are provided
-            if width and height:
-                image = pygame.transform.scale(image, (width, height))
-            elif width:
-                height = int(image.get_height() * width / image.get_width())
-                image = pygame.transform.scale(image, (width, height))
-            elif height:
-                width = int(image.get_width() * height / image.get_height())
-                image = pygame.transform.scale(image, (width, height))
-
-
-
-            # Calculate position if not provided
-            if x is None:
-                x = self.terminal_margin_left
-            if y is None:
-                y = self.terminal_margin_top
-
-
-            self.screen.blit(image, (x, y))
-            pygame.display.flip()
-
-        except requests.exceptions.RequestException as e:
-            self.writeLn(f"Error fetching image from URL: {e}")
-        except FileNotFoundError:
-            self.writeLn(f"Image file not found: {image_source}")
-        except pygame.error as e:  # Catch pygame image loading errors
-            self.writeLn(f"Error loading image: {e}")
-        except Exception as e:
-            self.writeLn(f"An unexpected error occurred: {e}")
 
     def set_font_size(self, font_size: int) -> None:
         """Set the font size."""
@@ -318,7 +252,9 @@ class PygameTerminal:
     def write_command_history(self, limit: int = -1) -> None:
         """Write the command history to the terminal."""
         for line in self.command_history[-limit:]:
-            self.terminal_lines.append(line)
+            terminal_line = TerminalLine()
+            terminal_line.add_segment(line)
+            self.terminal_lines.append(terminal_line)
 
     def run(self):
         """The main loop to run the terminal emulator."""
@@ -550,32 +486,38 @@ class PygameTerminal:
 
         pygame.display.flip()
 
-    def process_command(self, command: str):
-        parts = command.strip().split()
-        if not parts:
+    def process_command(self, command_line: str):
+        command_line = command_line.strip()
+        if not command_line:
+            self.writeLn("No command entered.")
             return
 
-        command_name: str = parts[0].lower()
-        input_args = parts[1:]
+        parts = command_line.split()
+        command_name = parts[0]
+        args = parts[1:]
 
         if command_name in self.commands:
-            command_struct: Command = self.commands[command_name]
+            command = self.commands[command_name]
+            required_args_count = len([arg for arg in command.arguments if not arg.is_optional])
 
+            if len(args) < required_args_count:
+                self.writeLn(f"Missing required arguments for command '{command_name}'.")
+                return
             try:
-                for i, arg in enumerate(command_struct.arguments):
-                    if i < len(input_args):
-                        pass
-                    elif not arg.is_optional:
+                arg_dict = {}
+                for i, arg in enumerate(command.arguments):
+                    if i < len(args):
+                        arg_dict[arg.name] = args[i]
+                    elif arg.is_optional:
+                        arg_dict[arg.name] = ""
+                    else:
                         raise ValueError(f"Missing required argument: {arg.name}")
 
-                # Execute the command with the original string arguments and pass the terminal
-                result = command_struct(*input_args, terminal=self)
-                if result is not None:
-                    self.writeLn(str(result))
+                command.function(**arg_dict, term=self)
             except ValueError as e:
                 self.writeLn(str(e))
         else:
-            self.writeLn(f"Command '{command_name}' not found")
+            self.writeLn(f"Unknown command: {command_name}")
 
     @staticmethod
     def check_type(value: str, expected_type: type) -> bool:
@@ -635,10 +577,6 @@ class PygameTerminal:
         self.terminal_lines.append(line)
 
     def parse_segments(self, text: str):
-        """Parses the input text into segments with their corresponding colors.
-
-        Returns a list of tuples where each tuple contains the text segment and its color.
-        """
         segments = []
         i = 0
         current_fg = self.fg_color  # Start with the default foreground color
@@ -654,17 +592,17 @@ class PygameTerminal:
                 tag = text[tag_start:tag_end]
 
                 # Check if it's a color tag
-                if tag.lower() in color_data.color:
-                    current_fg = color_data.color[tag.lower()]  # Change to the specified color
+                if tag.lower() in color_data.colors:
+                    current_fg = pygame.Color(*color_data.colors[tag.lower()])  # Change to the specified color
                     i = tag_end + 1  # Move past the closing '>'
-                    
+
                     # Start reading the text after the opening tag
                     text_start = i
                     text_end = text.find('<', text_start)
-                    
+
                     if text_end == -1:
                         text_end = len(text)
-                        
+
                     # Get the text until the next tag or end of string
                     text_segment = text[text_start:text_end]
                     segments.append((text_segment, current_fg))  # Add colored segment
@@ -692,23 +630,6 @@ class PygameTerminal:
             return len(args[0])
         else:
             return 0
-
-    def create_illustration_window(self, width, height):
-        self.illustration_window = pygame.display.set_mode((width, height))
-
-    def close_illustration_window(self):
-        if self.illustration_window:
-            pygame.display.set_mode((self.width, self.height))  # Restore original window
-            self.illustration_window = None
-
-    def show_illustration(self, image_path):
-        if self.illustration_window:
-            try:
-                image = pygame.image.load(image_path)
-                self.illustration_window.blit(image, (0, 0))
-                pygame.display.flip()  # Update illustration window
-            except Exception as e:
-                self.writeLn(f"Error loading illustration: {e}")
 
     def register_event_handler(self, event_name, handler):
         # Generate a unique event type id
