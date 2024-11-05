@@ -1,8 +1,6 @@
-from src.classes.game import Character, Game, Background, background_choices
+from src.classes.game import Game, Background, background_choices
 from src.classes.ship import Ship
 from src.pygameterm.terminal import PygameTerminal
-import random
-from dataclasses import dataclass
 
 
 def intro_event(terminal: PygameTerminal):
@@ -10,7 +8,7 @@ def intro_event(terminal: PygameTerminal):
 
     # Quick start option
     quick_start_choice = terminal.prompt_user("Do you wish to quick start the game (yes/no)? ")
-    if quick_start_choice == "yes" or "y":
+    if quick_start_choice.lower() in ["yes", "y"]:
         return quick_start(terminal)
 
     # Introduction text
@@ -224,7 +222,6 @@ def intro_event(terminal: PygameTerminal):
         },
     }
 
-    # Display mission options clearly
     for i, mission in enumerate(missions):
         terminal.writeLn(f"{i + 1}. {mission}")
 
@@ -232,12 +229,11 @@ def intro_event(terminal: PygameTerminal):
         "Choose your poison:", list(missions.keys())
     )
 
-
 def quick_start(terminal: PygameTerminal):
     game: Game = terminal.app_state
 
     # Create a standard character
-    standard_background = background_choices[0]  # Using the first background as default
+    standard_background = background_choices[0]
     game.set_player_character(
         "Test Pilot",
         30,
@@ -270,7 +266,7 @@ def quick_start(terminal: PygameTerminal):
     )
 
     terminal.writeLn(
-        "<yellow>Quick start initiated. Standard character and ship created.</yellow>"
+        "<yellow128>Quick start initiated. Standard character and ship created.</yellow128>"
     )
     terminal.writeLn(
         f"Character: Test Pilot, Age: 30, Sex: Male, Background: {standard_background.name}"
@@ -280,7 +276,7 @@ def quick_start(terminal: PygameTerminal):
 
     # Skip tutorial and mission selection
     terminal.writeLn(
-        "<yellow>Tutorial and first mission selection skipped for quick start.</yellow>"
+        "<yellow128>Tutorial and first mission selection skipped for quick start.</yellow128>"
     )
     terminal.writeLn("You're ready to explore the galaxy. Good luck, spacer!")
 
