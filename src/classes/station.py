@@ -1,4 +1,3 @@
-from backup.pygameterm.terminal import PygameTerminal
 from src import helpers
 from src.classes.ore import Ore
 from src.data import OreCargo
@@ -104,14 +103,14 @@ class Station:
             return f"{self.name}, Position: {self.space_object.position}, ID: {self.space_object.id}"
         return f"{self.name}, Position: {self.space_object.position}, ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
 
-    def ores_available_to_string(self, term: PygameTerminal):
+    def ores_available_to_string(self, game_state: 'Game'):
         for ore_cargo in self.ore_cargo:
-            term.writeLn("----------------------------------")
-            term.writeLn(f"Ore:       {ore_cargo.ore.name}")
-            term.writeLn(f"Volume:    {ore_cargo.ore.volume}")
-            term.writeLn(f"Sell for:  {ore_cargo.sell_price}")
-            term.writeLn(f"Buy at:    {ore_cargo.buy_price}")
-            term.writeLn("----------------------------------")
+            print("----------------------------------")
+            print(f"Ore:       {ore_cargo.ore.name}")
+            print(f"Volume:    {ore_cargo.ore.volume}")
+            print(f"Sell for:  {ore_cargo.sell_price}")
+            print(f"Buy at:    {ore_cargo.buy_price}")
+            print("----------------------------------")
 
     def to_string(self):
         return f"{self.name}\nPosition: {self.space_object.position}\nID: {self.space_object.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"

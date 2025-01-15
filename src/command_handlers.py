@@ -200,7 +200,7 @@ def barter(price: float) -> tuple[float, bool]:
     return price, bartering_flag  # Return original price and flag
 
 
-def buy_command(item_name: str, amount: str, game_state):
+def buy_command(game_state: 'Game', item_name: str, amount: str):
     player_ship: Ship = game_state.get_player_ship()
     if not player_ship.is_docked:
         print("Must be docked to buy ore.")
@@ -303,7 +303,7 @@ def update_ore_quantities(
         print(f"Updated player ship cargo with {amount} {ore_name}.")
 
 
-def travel_command(*args: str, game_state) -> float:
+def travel_command(game_state: 'Game', *args: str) -> float:
     global_time: float = game_state.global_time
     player_ship: Ship = game_state.get_player_ship()
 
@@ -330,7 +330,7 @@ def travel_command(*args: str, game_state) -> float:
     return global_time
 
 
-def refuel_command(game_state, amount: float) -> None:
+def refuel_command(game_state: 'Game', amount: float) -> None:
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
@@ -369,7 +369,7 @@ def refuel_command(game_state, amount: float) -> None:
     print(f"Refueled with {round(amount, 2)} m3 for {round(price, 2)} credits.")
 
 
-def sell_command(game_state) -> None:
+def sell_command(game_state: 'Game') -> None:
     if game_state.get_player_ship() is None or not game_state.get_player_ship().is_docked:
         print("Cannot sell while not docked.")
         return
@@ -427,7 +427,7 @@ def sell_command(game_state) -> None:
     print(f"Sold {total_units} units for {total_value:.2f} credits.")
 
 
-def closest_travel(game_state, object_type: str) -> None:
+def closest_travel(game_state: 'Game', object_type: str) -> None:
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
@@ -474,7 +474,7 @@ def closest_travel(game_state, object_type: str) -> None:
         print(f"Error: {e}")
 
 
-def direct_travel_command(destination_x: str, destination_y: str, game_state):
+def direct_travel_command(game_state: 'Game', destination_x: str, destination_y: str):
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
@@ -504,7 +504,7 @@ def direct_travel_command(destination_x: str, destination_y: str, game_state):
 
 
 def mine_command(
-        game_state,
+        game_state: 'Game',
     time_to_mine: int,
     mine_until_full: bool,
     ore_selected: str | None,
@@ -759,7 +759,7 @@ def debug_mode_command(game_state) -> None:
         print("Debug mode enabled.")
 
 
-def display_help(command_name: str, game_state):
+def display_help(game_state: 'Game', command_name: str):
     if not command_name:
         command_name = ''
     print("Available commands (type 'help <command>' for more details):")
