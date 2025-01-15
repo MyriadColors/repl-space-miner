@@ -14,22 +14,18 @@ from src.command_handlers import (
     buy_command,
     add_creds_debug_command,
     command_exit,
-    command_color,
-    command_reset,
     clear,
     add_ore_debug_command,
     direct_travel_command,
     debug_mode_command,
-    toggle_sound_command,
-    init_music,
+    process_command,
 )
+from src.command_handlers import register_command, Argument
 from src.events import intro_event
-from src.pygameterm import color_data
-from src.pygameterm.terminal import PygameTerminal, Argument
 
 
-def register_commands(terminal: PygameTerminal):
-    terminal.register_command(
+def register_commands(game_state: 'Game'):
+    register_command(
         ["refuel", "ref"],
         refuel_command,
         argument_list=[
@@ -42,12 +38,12 @@ def register_commands(terminal: PygameTerminal):
         ],
     )
 
-    terminal.register_command(
+    register_command(
         ["sell", "sl"],
         sell_command,
     )
 
-    terminal.register_command(
+    register_command(
         ["buy", "by"],
         buy_command,
         argument_list=[
@@ -61,7 +57,7 @@ def register_commands(terminal: PygameTerminal):
         ],
     )
 
-    terminal.register_command(
+    register_command(
         ["travel", "tr"],  # Include "tr" as an abbreviation
         travel_command,
         argument_list=[
@@ -80,7 +76,7 @@ def register_commands(terminal: PygameTerminal):
         ],
     )
 
-    terminal.register_command(
+    register_command(
         ["scan", "sc"],
         scan_command,
         argument_list=[
@@ -91,33 +87,14 @@ def register_commands(terminal: PygameTerminal):
             ),
         ],
     )
-    
 
-    # command_reset
-    terminal.register_command(
-        ["reset", "rs"],
-        command_reset,
-        argument_list=[Argument(name="type_of_reset", type=str, is_optional=False)],
-    )
-
-    terminal.register_command(["quit", "exit", "q", "e"], command_exit)
-
-    terminal.register_command(
-        ["color", "co"],
-        command_color,
-        argument_list=[
-            Argument(name="color-type", type=str, is_optional=False),
-            Argument(name="color", type=str, is_optional=False),
-        ],
-    )
-
-    terminal.register_command(
+    register_command(
         ["help", "h"],
         display_help,
         argument_list=[Argument(name="command_name", type=str, is_optional=True)],
     )
 
-    terminal.register_command(
+    register_command(
         ["direct_travel", "dtr"],
         direct_travel_command,
         argument_list=[
@@ -126,22 +103,22 @@ def register_commands(terminal: PygameTerminal):
         ],
     )
 
-    terminal.register_command(
+    register_command(
         ["dock", "do"],
         command_dock,
     )
 
-    terminal.register_command(
+    register_command(
         ["undock", "ud"],
         command_undock,
     )
 
-    terminal.register_command(
+    register_command(
         ["status", "st"],
         display_time_and_status,
     )
 
-    terminal.register_command(
+    register_command(
         ["mine", "mi"],
         mine_command,
         argument_list=[
@@ -152,16 +129,16 @@ def register_commands(terminal: PygameTerminal):
     )
 
     # COmmand to scan the asteroid field,r eturning the ores available
-    terminal.register_command(
+    register_command(
         ["scan_field", "scf"],
         scan_field_command,
     )
 
-    terminal.register_command(["clear", "cl"], clear)
+    register_command(["clear", "cl"], clear)
 
-    terminal.register_command(["debug", "dm"], debug_mode_command)
+    register_command(["debug", "dm"], debug_mode_command)
 
-    terminal.register_command(
+    register_command(
         ["add_ore", "ao"],
         add_ore_debug_command,
         argument_list=[
@@ -170,43 +147,27 @@ def register_commands(terminal: PygameTerminal):
         ],
     )
 
-    terminal.register_command(
+    register_command(
         ["add_creds", "ac"],
         add_creds_debug_command,
         argument_list=[Argument(name="amount", type=int, is_optional=False)],
     )
 
-    terminal.register_command(
-        ["toggle_sound", "ts"],
-        toggle_sound_command,
-    )
-
 
 def start_repl(args_input):
-    game = Game(
+    game_state = Game(
         debug_flag=True if args_input.debug else False,
-        mute_flag=True if args_input.mute else False,
         skip_customization=True if args_input.skipc else False,
     )
 
-    terminal = PygameTerminal(
-        game,
-        1400,
-        950,
-        18,
-        "Welcome to the Space Trader CLI game!",
-        default_bg_color=color_data.colors["gray64"],
-        default_fg_color=color_data.colors["green144"],
-    )
-    init_music(terminal) if not game.mute_flag else None
-    register_commands(terminal)
+    register_commands(game_state)
 
-    if game.skipc:
-        game.player_character = Character(
-            name="Player", age=25, sex="male", background="Belter"
+    if game_state.skipc:
+        game_state.player_character = Character(
+            name="Player", age=25, sex="male", background="Belter", starting_creds=1000.0, starting_debt=0.0
         )
-        game.player_ship = Ship(
-            game.rnd_station.position,
+        game_state.player_ship = Ship(
+            game_state.rnd_station.position,
             0.0001,
             100,
             0.05,
@@ -215,18 +176,18 @@ def start_repl(args_input):
             0.01,
             "Player's Ship",
         )
-        terminal.writeLn(
+        print(
             "Skipping character and ship customization and starting the game."
         )
     else:
-        intro_event(terminal)
-        if not game.player_character:
-            game.player_character = Character(
+        intro_event(game_state)
+        if not game_state.player_character:
+            game_state.player_character = Character(
                 name="Player", age=25, sex="male", background="Belter"
             )
-        if not game.player_ship:
-            game.player_ship = Ship(
-                game.rnd_station.position,
+        if not game_state.player_ship:
+            game_state.player_ship = Ship(
+                game_state.rnd_station.position,
                 0.0001,
                 100,
                 0.05,
@@ -235,5 +196,9 @@ def start_repl(args_input):
                 0.01,
                 "Player's Ship",
             )
-
-    terminal.run()
+        while True:
+            command_input = input("> ").lower()
+            if command_input in ["exit", "quit"]:
+                command_exit(game_state)
+                break
+            process_command(command_input, game_state)

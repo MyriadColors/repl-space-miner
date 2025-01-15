@@ -1,11 +1,9 @@
-from pygame import Vector2
-
+from backup.pygameterm.terminal import PygameTerminal
 from src import helpers
 from src.classes.ore import Ore
 from src.data import OreCargo
 from src.helpers import take_input, rnd_float, rnd_int
-from src.pygameterm.terminal import PygameTerminal
-from typing import Optional
+
 
 class Station:
     def __init__(self, name, station_id, position) -> None:

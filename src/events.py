@@ -1,15 +1,14 @@
-from src.classes.game import Game, Background, background_choices
+from time import sleep
+
+from src.classes.game import Background, background_choices, Game
 from src.classes.ship import Ship
-from src.pygameterm.terminal import PygameTerminal
 
 
-def intro_event(terminal: PygameTerminal):
-    game: Game = terminal.app_state
-
+def intro_event(game_state: 'Game'):
     # Quick start option
-    quick_start_choice = terminal.prompt_user("Do you wish to quick start the game (yes/no)? ")
+    quick_start_choice = input("Do you wish to quick start the game (yes/no)? ")
     if quick_start_choice.lower() in ["yes", "y"]:
-        return quick_start(terminal)
+        return quick_start(game_state)
 
     # Introduction text
     intro_text = [
@@ -21,82 +20,89 @@ def intro_event(terminal: PygameTerminal):
         "Each sip is bitter, like the creditors' breath on your neck. Their patience? Gone.",
         "A figure materializes beside you. You catch a whiff of ozone and danger.",
         "Metal glints beneath a worn leather hat. Weapon? Tool? Both, probably.",
-        "<green192>'Heard you're desperate for work,'</green192> a voice like gravel in a turbine rasps.",
+        "'Heard you're desperate for work,' a voice like gravel in a turbine rasps.",
         "The ancient speakers crackle, as if agreeing. You turn, meet eyes hard as vacuum.",
         "A woman in a black suit that's seen better days - and worse nights - sizes you up.",
-        "<green192>'I run this lovely establishment. Got a job that needs doing. You game?'</green192>",
+        "'I run this lovely establishment. Got a job that needs doing. You game?'",
     ]
 
     for line in intro_text:
-        terminal.wait(100)
-        terminal.writeLn(line)
-
-    if (
-        terminal.prompt_multiple_choice("Take the plunge?", ["Hell yes", "I'll pass"])
-        == 2
-    ):
-        terminal.writeLn(
+        sleep(1)
+        print(line)
+    response = int(input("Take the plunge? (1. Yes, 2. No): "))
+    if response == 2:
+        print(
             "You mumble an excuse, turn back to your drink. The woman's laugh is cold."
         )
-        terminal.writeLn(
-            "<green192>'Your funeral, spacer. Debt collectors ain't known for mercy.'</green192>"
+        print(
+            "'Your funeral, spacer. Debt collectors ain't known for mercy.'"
         )
-        terminal.writeLn(
+        print(
             "She vanishes into the smoke. You're left alone with your bleak future."
         )
-        terminal.writeLn("GAME OVER")
-        terminal.quit()
-        return
+        print("GAME OVER")
+        exit()
 
-    terminal.writeLn(
-        "A razor-thin smile cuts across her face. <green192>'Smart move, spacer.'</green192>"
+    print(
+        "A razor-thin smile cuts across her face. 'Smart move, spacer.'"
     )
-    terminal.writeLn(
+    print(
         "She leans in close. Scars crisscross her cheek like asteroid belts."
     )
-    terminal.writeLn(
-        "<green192>'Now, what name should I put on your makeshift tombstone?'</green192>"
+    print(
+        "'Now, what name should I put on your makeshift tombstone?'"
     )
 
     # Player name input validation
     while True:
-        player_name = terminal.prompt_user("Your name (choose wisely): ")
+        player_name = input("Your name (choose wisely): ")
         if player_name and len(player_name) <= 20:
             break
-        terminal.writeLn(
-            "<red>Invalid name. Please enter a name with 1-20 characters.</red>"
+        print(
+            "Invalid name. Please enter a name with 1-20 characters."
         )
 
-    terminal.writeLn(
-        f"<green192>'Well then, {player_name}. What sorry tale landed you in my fine establishment?'</green192>"
+    print(
+        f"'Well then, {player_name}. What sorry tale landed you in my fine establishment?'"
     )
 
     background_choices_names: list[str] = [choice.name for choice in background_choices]
-    chosen_background_index: int = terminal.prompt_multiple_choice(
-        "Your checkered past:", background_choices_names
-    )
+    for background_index, background_name in enumerate(background_choices_names):
+        print(f"{background_index + 1}. {background_name}")
+    while True:
+        try:
+            chosen_background_index: int = int(input("Choose your background: "))
+            if 1 <= chosen_background_index <= len(background_choices):
+                break
+            else:
+                print(
+                    f"Invalid choice. Please choose a number between 1 and {len(background_choices)}."
+                )
+        except ValueError:
+            print("Invalid input. Please enter a number.")
     chosen_background: Background = background_choices[chosen_background_index - 1]
 
-    sex: str = (
-        "Male"
-        if terminal.prompt_multiple_choice("Biological sex:", ["Male", "Female"]) == 1
-        else "Female"
-    )
+    while True:
+        sex_input = input("Biological sex (Male/Female): ").strip().capitalize()
+        if sex_input in ["Male", "Female"]:
+            sex = sex_input
+            break
+        print("Invalid input. Please enter 'Male' or 'Female'.")
 
     # Age input validation
     while True:
-        age_input = terminal.prompt_user("Your age (18 - 60): ")
+        age_input = input("Your age (18 - 60): ")
         try:
             age = int(age_input)
             if 18 <= age <= 60:
                 break
-            terminal.writeLn(
-                "<red>Invalid age. Please enter an age between 18 and 60.</red>"
+            print(
+                "Invalid age. Please enter an age between 18 and 60."
             )
         except ValueError:
-            terminal.writeLn("<red>Invalid input. Please enter a number.</red>")
+            print("Invalid input. Please enter a number.")
     # Create character
-    game.set_player_character(
+    game_state.set_player_character(
         player_name,
         age,
         sex,
@@ -106,8 +112,8 @@ def intro_event(terminal: PygameTerminal):
     )
 
     # Ship selection
-    terminal.writeLn(
-        "The woman's eyes narrow. <green192>'Now, about your ride...'</green192>"
+    print(
+        "The woman's eyes narrow. 'Now, about your ride...'"
     )
     ship_choices = {
         "The Scrapheap (Freighter)": {
@@ -136,25 +142,33 @@ def intro_event(terminal: PygameTerminal):
         },
     }
 
-    ship_choice = terminal.prompt_multiple_choice(
-        "Your deathtrap of choice:", list(ship_choices.keys())
-    )
-    chosen_ship = list(ship_choices.keys())[ship_choice - 1]
+    for idx, choice in enumerate(ship_choices.keys(), 1):
+        print(f"{idx}. {choice}")
+    while True:
+        try:
+            ship_choice = int(input("Your deathtrap of choice: "))
+            if 1 <= ship_choice <= len(ship_choices):
+                chosen_ship = list(ship_choices.keys())[ship_choice - 1]
+                break
+            else:
+                print(f"Invalid choice. Please choose a number between 1 and {len(ship_choices)}.")
+        except ValueError:
+            print(f"Invalid input. Please enter a number between 1 and {len(ship_choices)}.")
 
     # Ship name input validation
     while True:
-        ship_name: str = terminal.prompt_user("Baptize your bird: ")
+        ship_name: str = input("Baptize your bird: ")
         if ship_name and len(ship_name) <= 30:
             break
-        terminal.writeLn(
-            "<red>Invalid ship name. Please enter a name with 1-30 characters.</red>"
+        print(
+            "Invalid ship name. Please enter a name with 1-30 characters."
         )
     ship_data: dict = ship_choices[chosen_ship]
     ship_data["name"] = ship_name
 
-    game.player_ship = Ship(
+    game_state.player_ship = Ship(
         ship_data["name"],
-        game.rnd_station.space_object.get_position(),
+        game_state.rnd_station.space_object.get_position(),
         ship_data["speed"],
         ship_data["max_fuel"],
         ship_data["fuel_consumption"],
@@ -163,78 +177,35 @@ def intro_event(terminal: PygameTerminal):
         ship_data["mining_speed"],
     )
 
-    terminal.writeLn(
+    print(
         f"The {ship_name}'s name echoes through the bar. A declaration of defiance."
     )
-    terminal.writeLn(
+    print(
         "It's a rustbucket, sure, but it's *your* rustbucket. Your ticket to freedom."
     )
-    terminal.writeLn("Or a floating coffin. Time will tell.")
+    print("Or a floating coffin. Time will tell.")
 
     # Tutorial
     tutorial_text = [
-        "<green192>'Listen up, rookie. Here's Survival 101:'</green192>",
-        f"<green192>'You're {game.get_player_character().debt} credits in the hole. Every chip matters.'</green192>",
-        "<green192>'Creditors? They're sharks. And your blood's in the water.'</green192>",
-        "<green192>'Fuel is life out there. Empty tank? You're space debris.'</green192>",
-        "<green192>'Stations are oases. Fuel, repairs, upgrades. If you've got the creds.'</green192>",
-        "<green192>'Asteroids are floating goldmines. Learn to crack 'em or stay broke.'</green192>",
-        "<green192>'Oh, and pirates? They're the least of your worries.'</green192>",
+        "'Listen up, rookie. Here's Survival 101:'",
+        f"'You're {game_state.get_player_character().debt} credits in the hole. Every chip matters.'",
+        "'Creditors? They're sharks. And your blood's in the water.'",
+        "'Fuel is life out there. Empty tank? You're space debris.'",
+        "'Stations are oases. Fuel, repairs, upgrades. If you've got the creds.'",
+        "'Asteroids are floating goldmines. Learn to crack 'em or stay broke.'",
+        "'Oh, and pirates? They're the least of your worries.'",
         "Type 'status' or 'st' to check your ship, creds, and impending doom.",
     ]
 
     for line in tutorial_text:
-        terminal.writeLn(line)
+        print(line)
 
-    # First mission selection
-    terminal.writeLn(
-        "<green192>'Now, your first job. Three options. Choose your poison:'</green192>"
-    )
 
-    missions = {
-        "The Delivery": {
-            "name": "The Package",
-            "description": "Simple delivery job. Don't ask, don't open, don't lose.",
-            "risk_level": "Low",
-            "reward": 1000,
-            "location": "Terminus Station to Proxima Centauri",
-            "estimated_duration": "2 days",
-        },
-        "The Bounty": {
-            "name": "The Salvage",
-            "description": "Recover a black box from a derelict ship in the Crimson Nebula. Watch out for... competitors.",
-            "risk_level": "Medium",
-            "reward": 2500,
-            "location": "Crimson Nebula",
-            "requirements": {"ship_type": "Mining Vessel", "min_cargo_space": 50},
-            "special_conditions": ["Radiation hazard", "Possible pirate activity"],
-            "estimated_duration": "1 week",
-        },
-        "The Heist": {
-            "name": "The Heist",
-            "description": "During an 'unfortunate accident' at a Novo-Gen Corp research station, certain valuable data might go missing.",
-            "risk_level": "High",
-            "reward": 5000,
-            "location": "Novo-Gen Research Station",
-            "requirements": {"min_stealth": 3, "hacking_skill": 2},
-            "estimated_duration": "6 hours",
-            "special_conditions": ["High security", "Limited time window"],
-        },
-    }
-
-    for i, mission in enumerate(missions):
-        terminal.writeLn(f"{i + 1}. {mission}")
-
-    mission_choice = terminal.prompt_multiple_choice(
-        "Choose your poison:", list(missions.keys())
-    )
-
-def quick_start(terminal: PygameTerminal):
-    game: Game = terminal.app_state
+def quick_start(game_state: 'Game'):
 
     # Create a standard character
     standard_background = background_choices[0]
-    game.set_player_character(
+    game_state.set_player_character(
         "Test Pilot",
         30,
         "Male",
@@ -254,9 +225,9 @@ def quick_start(terminal: PygameTerminal):
         "mining_speed": 0.01,
     }
 
-    game.player_ship = Ship(
+    game_state.player_ship = Ship(
         str(standard_ship["name"]),
-        game.rnd_station.space_object.get_position(),
+        game_state.rnd_station.space_object.get_position(),
         standard_ship["speed"],
         standard_ship["max_fuel"],
         standard_ship["fuel_consumption"],
@@ -265,19 +236,19 @@ def quick_start(terminal: PygameTerminal):
         standard_ship["mining_speed"],
     )
 
-    terminal.writeLn(
-        "<yellow128>Quick start initiated. Standard character and ship created.</yellow128>"
+    print(
+        "Quick start initiated. Standard character and ship created."
     )
-    terminal.writeLn(
+    print(
         f"Character: Test Pilot, Age: 30, Sex: Male, Background: {standard_background.name}"
     )
-    terminal.writeLn(f"Ship: {standard_ship['name']}")
-    terminal.writeLn("Type 'status' or 'st' to check your ship and character details.")
+    print(f"Ship: {standard_ship['name']}")
+    print("Type 'status' or 'st' to check your ship and character details.")
 
     # Skip tutorial and mission selection
-    terminal.writeLn(
-        "<yellow128>Tutorial and first mission selection skipped for quick start.</yellow128>"
+    print(
+        "Tutorial and first mission selection skipped for quick start."
     )
-    terminal.writeLn("You're ready to explore the galaxy. Good luck, spacer!")
+    print("You're ready to explore the galaxy. Good luck, spacer!")
 
     return

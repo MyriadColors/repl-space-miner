@@ -18,10 +18,10 @@ src/classes/__pycache__/ore.cpython-312.pyc
 src/classes/__pycache__/ship.cpython-312.pyc
 src/classes/__pycache__/solar_system.cpython-312.pyc
 src/classes/__pycache__/station.cpython-312.pyc
-src/pygameterm/__pycache__/__init__.cpython-312.pyc
-src/pygameterm/__pycache__/color_data.cpython-312.pyc
-src/pygameterm/__pycache__/terminal.cpython-312.pyc
-src/pygameterm/tests/__pycache__/terminal_tests.cpython-312.pyc
+backup/pygameterm/__pycache__/__init__.cpython-312.pyc
+backup/pygameterm/__pycache__/color_data.cpython-312.pyc
+backup/pygameterm/__pycache__/terminal.cpython-312.pyc
+backup/pygameterm/tests/__pycache__/terminal_tests.cpython-312.pyc
 repl-space-miner-ptterminal.zip
 backup-11-09-v2.txt
 RMS_linux_x86_64
@@ -88,3 +88,4 @@ src/__pycache__/events.cpython-312.pyc
 src/__pycache__/events.cpython-312.pyc
 Why are we still here？.webm
 src/__pycache__/events.cpython-312.pyc
+/backup/

@@ -3,8 +3,8 @@ import random
 
 from pygame import Vector2
 
+from backup.pygameterm.terminal import PygameTerminal
 from src.classes.ore import Ore
-from src.pygameterm.terminal import PygameTerminal
 
 
 def euclidean_distance(v1: Vector2, v2: Vector2):

@@ -3,12 +3,13 @@ from typing import Optional, Tuple
 
 from pygame import Vector2
 
+from backup.pygameterm.terminal import PygameTerminal
 from src.classes.asteroid import Asteroid, AsteroidField
 from src.classes.ore import get_ore_by_name
 from src.classes.station import Station
 from src.data import OreCargo
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
-from src.pygameterm.terminal import PygameTerminal
+
 
 class IsSpaceObject:
     
@@ -99,28 +100,28 @@ class Ship:
         fuel_consumed = round(distance * self.fuel_consumption, 3)
         return distance, time, fuel_consumed
 
-    def travel(self, term: PygameTerminal, destination: Vector2):
+    def travel(self, game_state: 'Game', destination: Vector2):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
 
-        term.writeLn(
+        print(
             f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel."
         )
 
         if self.fuel - fuel_consumed < 0:
-            term.writeLn("Not enough fuel to travel. Please refuel.")
+            print("Not enough fuel to travel. Please refuel.")
             return
 
-        confirm = term.prompt_user(f"Confirm travel? (y/n)")
+        confirm = input(f"Confirm travel? (y/n)")
 
         if confirm != "y":
-            term.writeLn("Travel cancelled.")
+            print("Travel cancelled.")
             return
 
         self.consume_fuel(fuel_consumed)
         self.space_object.position = destination
-        term.app_state.global_time += travel_time
+        game_state.global_time += travel_time
 
-        term.writeLn(f"The ship has arrived at {vector_to_string(destination)}")
+        print(f"The ship has arrived at {vector_to_string(destination)}")
 
     def status_to_string(self) -> list[str]:
         ore_units_on_cargohold = sum(cargo.quantity for cargo in self.cargohold)
@@ -135,7 +136,7 @@ class Ship:
             f"Docked at: {docked_at_name}",
         ]
 
-    def cargo_to_string(self, term: PygameTerminal):
+    def cargo_to_string(self, game_state: 'Game'):
         return "\n".join(
             f"{cargo.quantity} units of {cargo.ore.name}" for cargo in self.cargohold
         )
@@ -259,28 +260,23 @@ class Ship:
         return self.cargohold_occupied == self.cargohold_capacity
 
     def check_field_presence(
-        self, term: PygameTerminal
+            self, game_state: 'Game'
     ) -> Tuple[bool, Optional[AsteroidField]]:
-        game = term.app_state
-
-        for field in game.solar_system.asteroid_fields:
+        for field in game_state.solar_system.asteroid_fields:
             if self.interaction_radius > euclidean_distance(
-                self.space_object.position, field.position
+                    self.space_object.position, field.space_object.position
             ):
                 return True, field
         return False, None
 
-    def scan_field(self, term: PygameTerminal):
-        game = term.app_state
-        fields: list[AsteroidField] = game.solar_system.asteroid_fields
+    def scan_field(self, game_state: 'Game'):
+        fields: list[AsteroidField] = game_state.solar_system.asteroid_fields
 
-        is_inside_field, field = self.check_field_presence(term)
+        is_inside_field, field = self.check_field_presence(game_state)
 
         if not is_inside_field or field is None:
-            term.writeLn("You are not inside a field.")
+            print("You are not inside a field.")
             return
 
         for ore in field.ores_available:
-            term.writeLn(f"{ore.name} - {ore.volume} m3")
-
-
+            print(f"{ore.name} - {ore.volume} m3")

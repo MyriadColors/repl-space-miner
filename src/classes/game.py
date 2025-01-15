@@ -1,8 +1,9 @@
-from random import choice
 from dataclasses import dataclass
-from result import Result, Ok, Err
+from random import choice
+
 from src.classes.ship import Ship
 from src.classes.solar_system import SolarSystem
+
 
 @dataclass
 class Background:
