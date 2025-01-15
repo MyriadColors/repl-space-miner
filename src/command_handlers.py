@@ -22,40 +22,38 @@ from src.helpers import (
 )
 
 
-def process_command(command_line: str, game_state: 'Game'):
-    command_line = command_line.strip()
+def process_command(game_state: 'Game', command_line: str):
+    command_line: str = command_line.strip()
     if not command_line:
         print("No command entered.")
         return
 
     parts = command_line.split()
-    if not parts:
-        print("Invalid command format.")
-        return
+    command_name = parts[0]
+    args = parts[1:]
 
-    command_name, *args = parts
-    command = commands.get_command(command_name)
+    if command_name in commands.commands:
+        command = commands.commands[command_name]
+        required_args_count = len([arg for arg in command.arguments if not arg.is_optional])
 
-    if not command:
+        if len(args) < required_args_count:
+            print(f"Missing required arguments for command '{command_name}'.")
+            return
+        try:
+            arg_dict = {}
+            for i, arg in enumerate(command.arguments):
+                if i < len(args):
+                    arg_dict[arg.name] = args[i]
+                elif arg.is_optional:
+                    arg_dict[arg.name] = ""
+                else:
+                    raise ValueError(f"Missing required argument: {arg.name}")
+
+            command.function(game_state, **arg_dict)
+        except ValueError as e:
+            print(str(e))
+    else:
         print(f"Unknown command: {command_name}")
-        return
-
-    required_args_count = len([arg for arg in command.arguments if not arg.is_optional])
-
-    if len(args) < required_args_count:
-        print(f"Missing required arguments for command '{command_name}'.")
-        return
-
-    try:
-        arg_dict = {
-            arg.name: args[i] if i < len(args) else "" for i, arg in enumerate(command.arguments)
-        }
-        command.function(**arg_dict, game_state=game_state)
-    except ValueError as e:
-        print(f"Value error processing command '{command_name}': {str(e)}")
-    except Exception as e:
-        print(f"An unexpected error occurred while executing command '{command_name}': {str(e)}")
-
 
 @dataclass
 class Argument:
@@ -506,12 +504,11 @@ def direct_travel_command(destination_x: str, destination_y: str, game_state):
 
 
 def mine_command(
+        game_state,
     time_to_mine: int,
     mine_until_full: bool,
     ore_selected: str | None,
-        game_state,
 ) -> None:
-    game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
@@ -596,8 +593,7 @@ def command_undock(game_state) -> None:
     )
 
 
-def scan_command(num_objects: str, game_state):
-    game: Game = game_state
+def scan_command(game_state, num_objects: str):
     amount_of_objects: int = int(num_objects)
     print(f"Scanning for {amount_of_objects} objects...")
     player_ship: Ship = game_state.get_player_ship()
@@ -615,7 +611,7 @@ def scan_command(num_objects: str, game_state):
 
     print(f"Enter object to navigate to or -1 to abort:")
     input_response: str = input(
-        "Enter the number of the object to navigate to or -1 to abort:"
+        "Enter the number of the object to navigate to or -1 to abort: "
     )
 
     if input_response == "-1":
@@ -757,10 +753,10 @@ def debug_mode_command(game_state) -> None:
     game: Game = game_state
     if game_state.debug_flag:
         game_state.debug_flag = False
-        game_state.write("Debug mode disabled.")
+        print("Debug mode disabled.")
     else:
         game_state.debug_flag = True
-        game_state.write("Debug mode enabled.")
+        print("Debug mode enabled.")
 
 
 def display_help(command_name: str, game_state):

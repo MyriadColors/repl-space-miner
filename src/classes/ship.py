@@ -3,9 +3,7 @@ from typing import Optional, Tuple
 
 from pygame import Vector2
 
-from backup.pygameterm.terminal import PygameTerminal
 from src.classes.asteroid import Asteroid, AsteroidField
-from src.classes.ore import get_ore_by_name
 from src.classes.station import Station
 from src.data import OreCargo
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
@@ -111,7 +109,7 @@ class Ship:
             print("Not enough fuel to travel. Please refuel.")
             return
 
-        confirm = input(f"Confirm travel? (y/n)")
+        confirm = input(f"Confirm travel? (y/n) ")
 
         if confirm != "y":
             print("Travel cancelled.")
@@ -145,41 +143,52 @@ class Ship:
         return self.docked_at
 
     def mine_belt(
-        self,
-        terminal: PygameTerminal,
-        asteroid_field,
-        time_to_mine,
-        mine_until_full,
-        ores_selected_list: str | None,
+            self,
+            game_state: 'Game',
+            asteroid_field: AsteroidField,
+            time_to_mine: int,
+            mine_until_full: bool,
+            ores_selected_list: list[str] | None,
     ):
-
+        # Ensure the asteroid field contains asteroids
         if not asteroid_field.asteroids:
-            terminal.writeLn("This field is empty.")
+            print("This field is empty.")
             return
 
+        # Check if the cargo is already full
         if self.is_cargo_full():
-            terminal.writeLn("You have no cargo space left.")
+            print("You have no cargo space left.")
             return
 
+        # Validate ores if a list of selected ores is provided
         if ores_selected_list:
             available_ores = {ore.name.lower() for ore in asteroid_field.ores_available}
             invalid_ores = [
                 ore for ore in ores_selected_list if ore.lower() not in available_ores
             ]
             if invalid_ores:
-                terminal.writeLn(
+                print(
                     f"The following ores are not available in this field: {', '.join(invalid_ores)}"
                 )
                 return
+        else:
+            print("No ores were selected. All available ores will be mined.")
+            print("List of available ores: ")
+            for ore in asteroid_field.ores_available:
+                print(f"- {ore.name}")
+            ores_selected_list = None
 
+        # Initialize mining variables
         asteroid_being_mined: Asteroid | None = None
         ores_mined: list[OreCargo] = []
-        time_spent = 0
         mined_volume = 0
+        time_spent = 0
 
-        while (not mine_until_full and time_spent < time_to_mine) or (
-            mine_until_full and not self.is_cargo_full()
+        # Begin mining loop
+        while (not mine_until_full and int(time_spent) < int(time_to_mine)) or (
+                mine_until_full and not self.is_cargo_full()
         ):
+            # Find a new asteroid to mine if needed
             if asteroid_being_mined is None or asteroid_being_mined.volume <= 0:
                 asteroid_being_mined = next(
                     (
@@ -190,49 +199,47 @@ class Ship:
                     None,
                 )
                 if asteroid_being_mined is None:
-                    terminal.writeLn("This field is empty.")
+                    print("No more asteroids available to mine.")
                     break
 
+            # Access the ore in the asteroid
             ore = asteroid_being_mined.ore
-            ores_to_mine = []
 
+            # If specific ores are selected, validate they match the current asteroid's ore
             if ores_selected_list is not None:
-                for ore_selected_name in ores_selected_list:
-                    ore_selected = get_ore_by_name(ore_selected_name)
-                    if ore_selected and ore_selected.id == ore.id:
-                        ores_to_mine.append(ore_selected)
-                    else:
-                        continue
-
-            if mined_volume >= ore.volume:
-                if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
-                    terminal.writeLn(
-                        f"Cannot mine this ore because the {ore.name} ore is too voluminous for the ship's cargohold."
-                    )
-                    terminal.writeLn(
-                        "In the future you may be able to try again with another ore."
-                    )
+                if ore.name.lower() not in (ore_name.lower() for ore_name in ores_selected_list):
+                    print(f"Skipping {ore.name}, as it is not in the selected ores list.")
+                    asteroid_being_mined = None
                     break
 
-                ore_cargo = next(
-                    (cargo for cargo in ores_mined if cargo.ore.id == ore.id), None
+            # Check if the ore fits in the remaining cargo capacity
+            if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
+                print(
+                    f"Cannot mine more {ore.name} because it exceeds the ship's cargo capacity."
                 )
-                if ore_cargo:
-                    ore_cargo.quantity += 1
-                else:
-                    ores_mined.append(OreCargo(ore, 1, ore.base_value, ore.base_value))
+                break  # Stop mining if no further ores can be added safely
 
-                asteroid_being_mined.volume -= ore.volume
-                self.cargohold_occupied += ore.volume
-                mined_volume -= ore.volume
+            # Add the ore to mined cargo
+            ore_cargo = next(
+                (cargo for cargo in ores_mined if cargo.ore.id == ore.id), None
+            )
+            if ore_cargo:
+                ore_cargo.quantity += 1
+            else:
+                ores_mined.append(OreCargo(ore, 1, ore.base_value, ore.base_value))
 
+            # Decrease the asteroid's volume and update ship's cargo data
+            asteroid_being_mined.volume -= ore.volume
+            self.cargohold_occupied += ore.volume
             mined_volume += self.mining_speed
             time_spent += 1
 
+        # Summarize mined results
         total_volume = sum(cargo.quantity * cargo.ore.volume for cargo in ores_mined)
         total_quantity = sum(cargo.quantity for cargo in ores_mined)
         ore_names = {cargo.ore.name for cargo in ores_mined}
 
+        # Update the ship's cargo hold with mined ores
         for ore_cargo in ores_mined:
             existing_cargo = self.get_ore_cargo_by_id(ore_cargo.ore.id)
             if existing_cargo:
@@ -241,15 +248,16 @@ class Ship:
                 self.cargohold.append(ore_cargo)
 
         if total_quantity > 0:
-            terminal.writeLn(
+            print(
                 f"Mined {total_quantity} units of {', '.join(ore_names)} for {total_volume:.2f} m³"
             )
         else:
-            terminal.writeLn("No ores were mined.")
+            print("No ores were mined.")
 
+        # Recalculate cargo occupancy and update global game time
         self.calculate_cargo_occupancy()
-        terminal.writeLn(f"Time spent mining: {time_spent} seconds.")
-        terminal.app_state.global_time += time_spent
+        print(f"Time spent mining: {time_spent} seconds.")
+        game_state.global_time += time_spent
 
     def calculate_cargo_occupancy(self):
         self.cargohold_occupied = sum(

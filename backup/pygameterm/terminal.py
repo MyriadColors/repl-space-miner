@@ -3,7 +3,9 @@ from math import floor
 from typing import Callable, Any
 
 import pygame
-from src.pygameterm import color_data
+
+from backup.pygameterm import color_data
+
 
 @dataclass
 class Argument:
@@ -126,7 +128,7 @@ class PygameTerminal:
         self.command_callback: Callable | None = None
         pygame.init()
         pygame.display.set_caption("Pygame Terminal Emulator")
-        self.app_state = app_state
+        # self.app_state = app_state
         self.width: int = width
         self.height: int = height
         self.screen: pygame.Surface = pygame.display.set_mode(

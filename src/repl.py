@@ -122,9 +122,9 @@ def register_commands(game_state: 'Game'):
         ["mine", "mi"],
         mine_command,
         argument_list=[
-            Argument(name="time", type=int, is_optional=True),  # Time to mine
-            Argument(name="uf", type=str, is_optional=True),  # Mine until full
-            Argument(name="ores", type=str, is_optional=True),  # Ores to mine
+            Argument(name="time_to_mine", type=int, is_optional=True),  # Time to mine
+            Argument(name="mine_until_full", type=str, is_optional=True),  # Mine until full
+            Argument(name="ore_selected", type=str, is_optional=True),  # Ores to mine
         ],
     )
 
@@ -201,4 +201,4 @@ def start_repl(args_input):
             if command_input in ["exit", "quit"]:
                 command_exit(game_state)
                 break
-            process_command(command_input, game_state)
+            process_command(game_state, command_input)
