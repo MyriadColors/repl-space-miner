@@ -1,14 +1,17 @@
 import argparse
+from typing import Optional, Sequence
 
 from src.repl import start_repl
 
+def parse_arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description='Space Trader CLI Game')
+    return parser.parse_args(argv)
 
-def main(args_input):
-    start_repl(args_input)
+def main() -> None:
+    """Start the game with the given arguments."""
+    start_repl()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Space Trader CLI Game')
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-    parser.add_argument('--skipc', action='store_true', help='Skip the character and ship customization')
-    args = parser.parse_args()
-    main(args)
+    args = parse_arguments()
+    main()

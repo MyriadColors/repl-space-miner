@@ -20,6 +20,11 @@ class Station:
         self.generate_ores_availability()
         self.generate_ore_cargo_instances()
         self.generate_ore_cargo()
+    
+    @property
+    def position(self):
+        """Access the station's position directly."""
+        return self.space_object.position
 
     def get_ore_buy_price(self, ore_name):
         for ore_cargo in self.ore_cargo:

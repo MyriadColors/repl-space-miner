@@ -22,9 +22,29 @@ from src.command_handlers import (
 )
 from src.command_handlers import register_command, Argument
 from src.events import intro_event
+import time
+import pygame as pg
 
 
-def register_commands(game_state: 'Game'):
+# Constants for Character and Ship initialization
+CHARACTER_NAME = "Player"
+CHARACTER_AGE = 25
+CHARACTER_SEX = "male"
+CHARACTER_BACKGROUND = "Belter"
+CHARACTER_STARTING_CREDS = 1000.0
+CHARACTER_STARTING_DEBT = 0.0
+
+SHIP_POSITION = pg.math.Vector2(0, 0)  # Placeholder for actual position
+SHIP_SPEED = 0.0001
+SHIP_FUEL_CAPACITY = 100
+SHIP_FUEL_CONSUMPTION = 0.05
+SHIP_HULL_CAPACITY = 100
+SHIP_HULL_INTEGRITY = 100
+SHIP_SHIELD_CAPACITY = 0.01
+SHIP_NAME = "Player's Ship"
+
+
+def register_commands(game_state: "Game"):
     register_command(
         ["refuel", "ref"],
         refuel_command,
@@ -123,7 +143,9 @@ def register_commands(game_state: 'Game'):
         mine_command,
         argument_list=[
             Argument(name="time_to_mine", type=int, is_optional=True),  # Time to mine
-            Argument(name="mine_until_full", type=str, is_optional=True),  # Mine until full
+            Argument(
+                name="mine_until_full", type=str, is_optional=True
+            ),  # Mine until full
             Argument(name="ore_selected", type=str, is_optional=True),  # Ores to mine
         ],
     )
@@ -154,18 +176,20 @@ def register_commands(game_state: 'Game'):
     )
 
 
-def start_repl(args_input):
-    game_state = Game(
-        debug_flag=True if args_input.debug else False,
-        skip_customization=True if args_input.skipc else False,
-    )
-
+def start_repl():
+    game_state = Game()
     register_commands(game_state)
+    run_intro_and_setup(game_state)
+    run_game_loop(game_state)
 
-    if game_state.skipc:
+
+def run_intro_and_setup(game_state):
+    intro_event(game_state)
+    if not game_state.player_character:
         game_state.player_character = Character(
-            name="Player", age=25, sex="male", background="Belter", starting_creds=1000.0, starting_debt=0.0
+            name="Player", age=25, sex="male", background="Belter"
         )
+    if not game_state.player_ship:
         game_state.player_ship = Ship(
             game_state.rnd_station.position,
             0.0001,
@@ -176,29 +200,19 @@ def start_repl(args_input):
             0.01,
             "Player's Ship",
         )
-        print(
-            "Skipping character and ship customization and starting the game."
-        )
-    else:
-        intro_event(game_state)
-        if not game_state.player_character:
-            game_state.player_character = Character(
-                name="Player", age=25, sex="male", background="Belter"
-            )
-        if not game_state.player_ship:
-            game_state.player_ship = Ship(
-                game_state.rnd_station.position,
-                0.0001,
-                100,
-                0.05,
-                100,
-                100,
-                0.01,
-                "Player's Ship",
-            )
-        while True:
-            command_input = input("> ").lower()
-            if command_input in ["exit", "quit"]:
-                command_exit(game_state)
-                break
+
+
+def run_game_loop(game_state):
+    while True:
+        command_input = input("> ").lower()
+        if command_input in ["exit", "quit"]:
+            command_exit(game_state)
+            break
+        try:
             process_command(game_state, command_input)
+        except ValueError as e:
+            print(f"Invalid command: {e}")
+        pg.time.wait(100) # Add a small delay to reduce CPU usage
+    # Perform necessary cleanup operations here
+    print("Performing cleanup operations before exiting the game.")
+    pg.quit()
