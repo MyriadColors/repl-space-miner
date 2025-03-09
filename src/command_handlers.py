@@ -40,7 +40,7 @@ def process_command(game_state: "Game", command_line: str):
     # Handle empty command
     command_line = command_line.strip()
     if not command_line:
-        print("No command entered.")
+        print(Fore.YELLOW + "No command entered." + Style.RESET_ALL)
         return
 
     # Parse command input
@@ -53,7 +53,7 @@ def process_command(game_state: "Game", command_line: str):
         try:
             execute_valid_command(game_state, command_name, args)
         except ValueError as e:
-            print(str(e))
+            print(Fore.RED + str(e) + Style.RESET_ALL)
     else:
         print(Fore.RED + f"Unknown command: {command_name} not implemented yet." + Style.RESET_ALL)
 
@@ -239,7 +239,7 @@ def barter(price: float) -> tuple[float, bool]:
 def buy_command(game_state: "Game", item_name: str, amount: str):
     player_ship: Ship = game_state.get_player_ship()
     if not player_ship.is_docked:
-        print("Must be docked to buy ore.")
+        print(Fore.RED + "Must be docked to buy ore." + Style.RESET_ALL)
         return
 
     station: Station | None = (
@@ -247,27 +247,27 @@ def buy_command(game_state: "Game", item_name: str, amount: str):
     )
 
     if not station:
-        print("No station within interaction radius.")
+        print(Fore.RED + "No station within interaction radius." + Style.RESET_ALL)
         return
     try:
         amount_number = int(amount)
         if amount_number <= 0:
-            print("Quantity must be positive.")
+            print(Fore.RED + "Quantity must be positive." + Style.RESET_ALL)
             return
     except ValueError:
-        print("Invalid amount. Please enter a valid number.")
+        print(Fore.RED + "Invalid amount. Please enter a valid number." + Style.RESET_ALL)
         return
 
     ore_cargo: OreCargo | None = station.get_ore_by_name(item_name)
     if not ore_cargo:
-        print(f"Cannot buy {item_name} because it is not available.")
+        print(Fore.RED + f"Cannot buy {item_name} because it is not available." + Style.RESET_ALL)
         return
 
     total_volume = round(ore_cargo.ore.volume * amount_number, 2)
     available_volume = round(ore_cargo.quantity * ore_cargo.ore.volume, 2)
     price = round(ore_cargo.buy_price * amount_number, 2)
 
-    print(f"Price for {amount_number} {item_name}: {price} credits")
+    print(Fore.GREEN + f"Price for {amount_number} {item_name}: {price} credits" + Style.RESET_ALL)
 
     price, _ = barter(price)
 
@@ -275,23 +275,23 @@ def buy_command(game_state: "Game", item_name: str, amount: str):
         game_state.player_character.credits if game_state.player_character else 0
     ):
         print(
-            f"Cannot buy {amount_number} {item_name} because you don't have enough credits."
+            Fore.RED + f"Cannot buy {amount_number} {item_name} because you don't have enough credits." + Style.RESET_ALL
         )
         return
 
     if total_volume > available_volume:
         print(
-            f"Cannot buy {amount_number} {item_name} because the station doesn't have enough ore in its cargo."
+            Fore.RED + f"Cannot buy {amount_number} {item_name} because the station doesn't have enough ore in its cargo." + Style.RESET_ALL
         )
-        confirm = input("Do you want to buy all available ore? y/n >> ")
+        confirm = input(Fore.YELLOW + "Do you want to buy all available ore? y/n >> " + Style.RESET_ALL)
         if confirm.lower() == "y":
             amount_number = int(available_volume / ore_cargo.ore.volume)
             price = round(ore_cargo.buy_price * amount_number, 2)
             print(
-                f"Adjusting purchase to {amount_number} {item_name} for {price} credits."
+                Fore.GREEN + f"Adjusting purchase to {amount_number} {item_name} for {price} credits." + Style.RESET_ALL
             )
         else:
-            print("Buy cancelled.")
+            print(Fore.RED + "Buy cancelled." + Style.RESET_ALL)
             return
 
     update_ore_quantities(
@@ -817,7 +817,7 @@ def debug_mode_command(game_state) -> None:
 def display_help(game_state: "Game", command_name: str):
     if not command_name:
         command_name = ""
-    print("Available commands (type 'help <command>' for more details):")
+    print(Fore.CYAN + "Available commands (type 'help <command>' for more details):" + Style.RESET_ALL)
 
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
@@ -836,7 +836,7 @@ def display_help(game_state: "Game", command_name: str):
 
     def write_command(command, description, allowed: bool):
         if allowed:
-            print(f"{command}: {description}")
+            print(Fore.GREEN + f"{command}: {description}" + Style.RESET_ALL)
         else:
             print(Fore.RED + f"{command}" + Style.RESET_ALL + f": {description}")
 
@@ -914,7 +914,7 @@ def display_help(game_state: "Game", command_name: str):
     if command_name:
         command_name = command_name.lower()
         if command_name == "status" or command_name == "st":
-            print("status (st):")
+            print(Fore.CYAN + "status (st):" + Style.RESET_ALL)
             print(
                 "  Displays your current credits, ship status (fuel, cargo, location), and time elapsed."
             )
@@ -924,21 +924,21 @@ def display_help(game_state: "Game", command_name: str):
             )
             print("    Example: status both")
         elif command_name == "scan" or command_name == "sc":
-            print("scan (sc) <quantity>:")
+            print(Fore.CYAN + "scan (sc) <quantity>:" + Style.RESET_ALL)
             print(
                 "  Scans for the specified number of nearby asteroid fields and stations."
             )
             print("  Example: scan 5")
         elif command_name == "travel" or command_name == "tr":
-            print("travel (tr) closest <field|station>:")
+            print(Fore.CYAN + "travel (tr) closest <field|station>:" + Style.RESET_ALL)
             print("  Travels to the closest asteroid field or station.")
             print("  Example: travel closest field")
         elif command_name == "direct_travel" or command_name == "dtr":
-            print("travel_direct (dtr) <x> <y>:")
+            print(Fore.CYAN + "travel_direct (dtr) <x> <y>:" + Style.RESET_ALL)
             print("  Travels to the specified coordinates in the solar system.")
             print("  Example: travel 10.5 20.3")
         elif command_name == "mine" or command_name == "mi":
-            print("mine (mi) <time>:")
+            print(Fore.CYAN + "mine (mi) <time>:" + Style.RESET_ALL)
             print(
                 "  Mines for ores at the current asteroid field for the specified amount of time, if you want to mine until full, you can do so by adding 'until_full'."
             )
@@ -957,36 +957,36 @@ def display_help(game_state: "Game", command_name: str):
             print("  Example: mine 60 until_full")
             print("  Example: mine 60 Pyrogen")
         elif command_name == "dock" or command_name == "do":
-            print("dock (do):")
+            print(Fore.CYAN + "dock (do):" + Style.RESET_ALL)
             print("  Docks with the nearest station if you are within range.")
         elif command_name == "undock" or command_name == "ud":
-            print("undock (ud):")
+            print(Fore.CYAN + "undock (ud):" + Style.RESET_ALL)
             print("  Undocks from the current station.")
         elif command_name == "buy" or command_name == "by":
-            print("buy (by) <ore_name> <amount>:")
+            print(Fore.CYAN + "buy (by) <ore_name> <amount>:" + Style.RESET_ALL)
             print("  Buys the specified amount of ore from the docked station.")
             print("  Example: buy Pyrogen 10")
         elif command_name == "sell" or command_name == "sl":
-            print("sell (sl):")
+            print(Fore.CYAN + "sell (sl):" + Style.RESET_ALL)
             print("  Sells all ores in your cargo hold to the docked station.")
         elif command_name == "refuel" or command_name == "ref":
-            print("refuel (ref) <amount>:")
+            print(Fore.CYAN + "refuel (ref) <amount>:" + Style.RESET_ALL)
             print(
                 "  Refuels your ship with the specified amount of fuel at the docked station."
             )
             print("  Example: refuel 50")
         elif command_name == "upgrade":
-            print("upgrade:")
+            print(Fore.CYAN + "upgrade:" + Style.RESET_ALL)
             print("  Displays available ship upgrades and allows you to purchase them.")
         elif command_name == "color" or command_name == "co":
-            print("color (co) <bg|fg> <color_name>:")
+            print(Fore.CYAN + "color (co) <bg|fg> <color_name>:" + Style.RESET_ALL)
             print("  Changes the game_stateinal's background or foreground color.")
             print(
                 "  Available colors: black, white, red, green, blue, yellow, magenta, cyan"
             )
             print("  Example: color bg blue")
         elif command_name == "reset" or command_name == "rs":
-            print("reset (rs) <color|bg|fg|text|history|all>:")
+            print(Fore.CYAN + "reset (rs) <color|bg|fg|text|history|all>:" + Style.RESET_ALL)
             print("  Resets various aspects of the game_stateinal.")
             print("  Options:")
             print("    color: Resets both foreground and background colors.")
@@ -996,25 +996,26 @@ def display_help(game_state: "Game", command_name: str):
             print("    history: Clears the command history.")
             print("    all: Resets all game_stateinal settings.")
         elif command_name == "clear" or command_name == "cl":
-            print("clear (cl):")
+            print(Fore.CYAN + "clear (cl):" + Style.RESET_ALL)
             print("  Clears the game_stateinal screen.")
         elif command_name == "debug" or command_name == "dm":
-            print("debug (dm):")
+            print(Fore.CYAN + "debug (dm):" + Style.RESET_ALL)
             print("  Enables or Disables the Debug Mode.")
         elif command_name == "toggle_sound" or command_name == "ts":
-            print("toggle_sound (ts):")
+            print(Fore.CYAN + "toggle_sound (ts):" + Style.RESET_ALL)
             print("  Toggles the game's sound effects and music on or off.")
         elif command_name == "add_credits" or command_name == "ac":
-            print("add_credits (ac):")
+            print(Fore.CYAN + "add_credits (ac):" + Style.RESET_ALL)
             print("  Adds the specified amount of credits to your account.")
             print("  Example: add_credits 100")
             print("  Needs Debug Mode to be Enabled")
         elif command_name == "add_ores" or command_name == "ao":
+            print(Fore.CYAN + "add_ores (ao):" + Style.RESET_ALL)
             print("  Adds the specified amount of ores to your account.")
             print("  Example: add_ores 100 Pyrogen")
             print("  Needs Debug Mode to be Enabled")
         elif command_name == "exit":
-            print("exit:")
+            print(Fore.CYAN + "exit:" + Style.RESET_ALL)
             print("  Exits the game_state.")
         else:
-            print(f"Unknown command: {command_name}")
+            print(Fore.RED + f"Unknown command: {command_name}" + Style.RESET_ALL)
