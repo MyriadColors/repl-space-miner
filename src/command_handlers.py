@@ -341,7 +341,7 @@ def update_ore_quantities(
         print(f"Updated player ship cargo with {amount} {ore_name}.")
 
 
-def travel_command(game_state: "Game", *args: str) -> float:
+def travel_command(game_state: "Game", **kwargs) -> float:
     global_time: float = game_state.global_time
     player_ship: Ship = game_state.get_player_ship()
 
@@ -353,9 +353,9 @@ def travel_command(game_state: "Game", *args: str) -> float:
         print("Cannot travel while out of fuel.")
         return global_time
 
-    if args[0] == "closest":
+    if kwargs.get("sort_type") == "closest":
         try:
-            closest_travel(game_state, args[1])
+            closest_travel(game_state, kwargs.get("object_type", ""))
         except IndexError:
             print(
                 "Invalid argument. Please enter 'closest' followed by 'field' or 'station'."
