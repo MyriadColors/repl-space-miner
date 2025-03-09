@@ -47,13 +47,13 @@ def format_seconds(seconds: float):
     days = seconds // 86400
     hours = (seconds % 86400) // 3600
     minutes = ((seconds % 86400) % 3600) // 60
-    seconds = (seconds % 86400) % 60
+    seconds = int((seconds % 86400) % 60)
 
-    formatted_days = f"{days} days, " if days > 0 else ""
-    formatted_hours = f"{hours} hours, " if hours > 0 else ""
-    formatted_minutes = f"{minutes} minutes" if minutes > 0 else ""
+    formatted_days = f"{days} days " if days > 0 else ""
+    formatted_hours = f"{hours} hours " if hours > 0 else ""
+    formatted_minutes = f"{minutes} minutes " if minutes > 0 else ""
 
-    return f"{formatted_days}{formatted_hours}{formatted_minutes} and {seconds} seconds"
+    return f"{formatted_days}{formatted_hours}{formatted_minutes}{seconds} seconds".strip()
 
 
 def select_random_ore() -> Ore:
