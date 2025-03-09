@@ -48,6 +48,7 @@ class Ship:
         cargo_capacity,
         value,
         mining_speed,
+        sensor_range,
     ):
         self.name = name
         self.space_object = IsSpaceObject(position, self.ship_id_counter)
@@ -60,10 +61,11 @@ class Ship:
         self.cargohold_capacity = cargo_capacity
         self.value = value
         self.mining_speed = mining_speed
-        self.interaction_radius = 0.001  # Radius around the player ship where it can interact with other objects
+        self.interaction_radius = 0.001  # Radius in AUs around the player ship where it can interact with other objects
         self.is_docked = False
         self.docked_at: Station | None = None
         self.calculate_cargo_occupancy()
+        self.sensor_range = sensor_range # If any entity enters this range around the ship, it si detected
 
     def get_ore_cargo_by_id(self, ore_id: int) -> OreCargo | None:
         return next((cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None)

@@ -194,6 +194,7 @@ def intro_event(game_state: 'Game'):
             "cargo_capacity": 200,
             "value": 25000,
             "mining_speed": 0.005,
+            "sensor_range": 0.1,
         },
         "The Stiletto (Scout)": {
             "description": "Fast and agile. Limited cargo. Efficient engines. Ideal for explorers and couriers.",
@@ -203,6 +204,7 @@ def intro_event(game_state: 'Game'):
             "cargo_capacity": 25,
             "value": 35000,
             "mining_speed": 0.001,
+            "sensor_range": 0.5,
         },
         "The Borer (Mining Vessel)": {
             "description": "Average speed. Specialized mining equipment. Moderate cargo. The prospector's choice.",
@@ -212,6 +214,7 @@ def intro_event(game_state: 'Game'):
             "cargo_capacity": 150,
             "value": 30000,
             "mining_speed": 0.05,
+            "sensor_range": 0.25,
         },
     }
 
@@ -223,6 +226,7 @@ def intro_event(game_state: 'Game'):
         print(f"   Speed: {ship_data['speed']}, Fuel Capacity: {ship_data['max_fuel']}")
         print(f"   Cargo Space: {ship_data['cargo_capacity']}, Mining Rate: {ship_data['mining_speed']}")
         print(f"   Market Value: {ship_data['value']} credits")
+        print(f"   Sensor Range: {ship_data['sensor_range']} AU")
     
     while True:
         try:
@@ -266,10 +270,11 @@ def intro_event(game_state: 'Game'):
     
     if mod_choice == 1:
         print(Fore.CYAN + "Sensors upgraded. You'll detect minerals and threats from further away.")
+        ship_data["sensor_range"] = float(ship_data["sensor_range"]) + 0.25
         game_state.get_player_character().debt += 5000
     elif mod_choice == 2:
         print(Fore.CYAN + "Hidden compartments installed. Extra 20 units of 'unofficial' cargo space.")
-        ship_data["cargo_capacity"] = 20.0
+        ship_data["cargo_capacity"] = float(ship_data["cargo_capacity"]) + 20.0
         game_state.get_player_character().debt += 3000
     elif mod_choice == 3:
         print(Fore.CYAN + "Hull reinforced. Your ship can take more damage before critical failure.")
@@ -287,6 +292,7 @@ def intro_event(game_state: 'Game'):
         ship_data["cargo_capacity"],
         ship_data["value"],
         ship_data["mining_speed"],
+        ship_data["sensor_range"],
     )
 
     print(Fore.CYAN + f"\nThe {ship_name}'s engines roar to life, vibrating through the docking bay.")
@@ -374,6 +380,7 @@ def quick_start(game_state: 'Game'):
         "cargo_capacity": 100,
         "value": 30000,
         "mining_speed": 0.01,
+        "sensor_range": 0.25,
     }
 
     game_state.player_ship = Ship(
@@ -385,6 +392,7 @@ def quick_start(game_state: 'Game'):
         standard_ship["cargo_capacity"],
         standard_ship["value"],
         standard_ship["mining_speed"],
+        standard_ship["sensor_range"],
     )
 
     print(
