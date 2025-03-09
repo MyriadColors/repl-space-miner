@@ -21,41 +21,72 @@ from src.helpers import (
     prompt_for_closest_travel_choice,
 )
 
+import colorama
+from colorama import Fore, Style
+colorama.init()
+
 
 def process_command(game_state: "Game", command_line: str):
+    """
+    Process a user command and execute the corresponding function.
+    
+    Parameters:
+        game_state (Game): The current state of the game.
+        command_line (str): The raw command string entered by the user.
+    """
+    # Handle empty command
     command_line = command_line.strip()
     if not command_line:
         print("No command entered.")
         return
 
+    # Parse command input
     parts = command_line.split()
     command_name = parts[0]
     args = parts[1:]
 
+    # Find and execute command if it exists
     if command_name in commands.commands:
-        command = commands.commands[command_name]
-        required_args_count = len(
-            [arg for arg in command.arguments if not arg.is_optional]
-        )
-
-        if len(args) < required_args_count:
-            print(f"Missing required arguments for command '{command_name}'.")
-            return
         try:
-            arg_dict = {}
-            for i, arg in enumerate(command.arguments):
-                if i < len(args):
-                    arg_dict[arg.name] = args[i]
-                elif arg.is_optional:
-                    arg_dict[arg.name] = ""
-                else:
-                    raise ValueError(f"Missing required argument: {arg.name}")
-
-            command.function(game_state, **arg_dict)
+            execute_valid_command(game_state, command_name, args)
         except ValueError as e:
             print(str(e))
     else:
-        print(f"Unknown command: {command_name}")
+        print(Fore.RED + f"Unknown command: {command_name} not implemented yet." + Style.RESET_ALL)
+
+
+def execute_valid_command(game_state: "Game", command_name: str, args: list[str]):
+    """
+    Execute a command after validating its arguments.
+    
+    Parameters:
+        game_state (Game): The current state of the game.
+        command_name (str): The name of the command to execute.
+        args (list[str]): The arguments provided for the command.
+    
+    Raises:
+        ValueError: If required arguments are missing.
+    """
+    command = commands.commands[command_name]
+    
+    # Check if we have enough arguments
+    required_args_count = len([arg for arg in command.arguments if not arg.is_optional])
+    if len(args) < required_args_count:
+        print(f"Missing required arguments for command '{command_name}'.")
+        return
+    
+    # Map provided arguments to command parameters
+    arg_dict = {}
+    for i, arg in enumerate(command.arguments):
+        if i < len(args):
+            arg_dict[arg.name] = args[i]
+        elif arg.is_optional:
+            arg_dict[arg.name] = ""
+        else:
+            raise ValueError(f"Missing required argument: {arg.name}")
+    
+    # Execute the command
+    command.function(game_state, **arg_dict)
 
 
 @dataclass
@@ -647,7 +678,7 @@ def scan_command(game_state, num_objects: str):
         )
 
 
-def add_ore_debug_command(amount: int, ore_name: str, game_state) -> None:
+def add_ore_debug_command(game_state, amount: int, ore_name: str) -> None:
     print("This is a debug/cheat command: with great power comes great responsibility!")
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
@@ -674,25 +705,37 @@ def add_ore_debug_command(amount: int, ore_name: str, game_state) -> None:
     display_status(game_state)
 
 
-def add_creds_debug_command(amount: int, game_state) -> None:
+def add_creds_debug_command(game_state, amount: str) -> None:
     """Handles the add credits command.
 
     Args:
-        amount (int): The amount of credits to add.
-        game_state (Pygamegame_stateinal): The game_stateinal instance for output.
+        game_state (Game): The game state instance for output.
+        amount (str): The amount of credits to add as a string.
     """
     game: Game = game_state
     player_character: Character = game_state.get_player_character()
-    # assert player_character is not None
+    
+    try:
+        amount_value = float(amount)
+    except ValueError:
+        print("Invalid amount. Please enter a valid number.")
+        return
+        
+    if player_character is None:
+        print("Error: Player character not found.")
+        return
+        
+    print(f"You are adding {amount_value} credits to your account.")
+    
     if game_state.debug_flag:
-        if amount < 0:
-            print("You have entered a negative number, this means you are in debt.")
+        if amount_value < 0:
+            print("You have entered a negative number, this means you lose money.")
             print("Are you sure? (y/n)")
             confirm = take_input(">> ").strip()
             if confirm != "y":
                 return
-        player_character.credits += amount
-        print(f"{amount} credits added to your credits.")
+        player_character.credits += amount_value
+        print(f"{amount_value} credits added to your credits.")
     else:
         print(
             "Debug commands can only be used through the use of the 'debug' ('dm') command."
@@ -704,41 +747,44 @@ def display_status(game_state) -> None:
     game: Game = game_state
     player_character: Character = game_state.get_player_character()
     player_ship: Ship = game_state.get_player_ship()
-    print("Player Status:")
-    for status in player_character.to_string():
-        print(status)
-    print("")
 
-    print("Ship Status:")
+    # Display Player Status with header
+    print(Fore.CYAN + Style.BRIGHT + "===== PLAYER STATUS =====" + Style.RESET_ALL)
+    for status in player_character.to_string():
+        print(Fore.GREEN + status + Style.RESET_ALL)
+    print()
+
+    # Display Ship Status with header
+    print(Fore.CYAN + Style.BRIGHT + "===== SHIP STATUS =====" + Style.RESET_ALL)
     for status in player_ship.status_to_string():
-        print(status)
+        print(Fore.YELLOW + status + Style.RESET_ALL)
 
 
 def display_time_and_status(game_state) -> None:
     game: Game = game_state
 
-    # Display time
-    print(f"Time: {game_state.global_time} Seconds")
-    print("=================")
+    # Display time with styling
+    print(Fore.CYAN + Style.BRIGHT + f"Time: {game_state.global_time} Seconds" + Style.RESET_ALL)
+    print(Fore.CYAN + "=================" + Style.RESET_ALL)
 
     # Display player character status
     player_character = game_state.get_player_character()
     if player_character:
-        print("Player Status:")
+        print(Fore.CYAN + Style.BRIGHT + "Player Status:" + Style.RESET_ALL)
         for status in player_character.to_string():
-            print(status)
+            print(Fore.GREEN + status + Style.RESET_ALL)
     else:
-        print("Error: Player character not found.")
+        print(Fore.RED + "Error: Player character not found." + Style.RESET_ALL)
     print("")
 
     # Display player ship status
     player_ship = game_state.get_player_ship()
     if player_ship:
-        print("Ship Status:")
+        print(Fore.CYAN + Style.BRIGHT + "Ship Status:" + Style.RESET_ALL)
         for status in player_ship.status_to_string():
-            print(status)
+            print(Fore.YELLOW + status + Style.RESET_ALL)
     else:
-        print("Error: Player ship not found.")
+        print(Fore.RED + "Error: Player ship not found." + Style.RESET_ALL)
 
 
 def command_exit(game_state) -> None:
@@ -795,9 +841,9 @@ def display_help(game_state: "Game", command_name: str):
 
     def write_command(command, description, allowed: bool):
         if allowed:
-            print(f"{f"{command}"}: {description}")
+            print(f"{command}: {description}")
         else:
-            print(f"{f"{command}"}: {description}")
+            print(Fore.RED + f"{command}" + Style.RESET_ALL + f": {description}")
 
     write_command(
         "status (st) <selection_flag>",
@@ -842,7 +888,7 @@ def display_help(game_state: "Game", command_name: str):
     write_command(
         "refuel (ref) <amount>",
         "Refuel your ship at the docked station.",
-        True if is_docked else False,
+        True if is_docked else False
     )
     write_command(
         "upgrade", "View and purchase ship upgrades.", True if is_docked else False
