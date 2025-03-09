@@ -108,3 +108,20 @@ def get_ore_by_id_or_name(identifier: str | int) -> Ore | None:
             if ore.name.lower() == identifier.lower():
                 return ore
     return None
+
+def is_valid_int(value: str) -> bool:
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+def is_valid_float(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+def is_valid_bool(value: str) -> bool:
+    return value.lower() in ("true", "false", "1", "0")

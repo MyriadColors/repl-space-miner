@@ -8,10 +8,10 @@ def parse_arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Space Trader CLI Game')
     return parser.parse_args(argv)
 
-def main() -> None:
+def main(args: argparse.Namespace) -> None:
     """Start the game with the given arguments."""
     start_repl()
 
 if __name__ == "__main__":
     args = parse_arguments()
-    main()
+    main(args)

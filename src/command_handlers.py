@@ -19,6 +19,9 @@ from src.helpers import (
     get_closest_station,
     euclidean_distance,
     prompt_for_closest_travel_choice,
+    is_valid_int,
+    is_valid_float,
+    is_valid_bool,
 )
 
 import colorama
@@ -144,23 +147,15 @@ class Command:
 
     @staticmethod
     def _is_valid_int(value):
-        try:
-            int(value)
-            return True
-        except ValueError:
-            return False
+        return is_valid_int(value)
 
     @staticmethod
     def _is_valid_float(value):
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
+        return is_valid_float(value)
 
     @staticmethod
     def _is_valid_bool(value):
-        return value.lower() in ("true", "false", "1", "0")
+        return is_valid_bool(value)
 
     def __call__(self, *args: Any, game_state: "Game") -> Any:
         valid, message = self.validate_arguments(args)

@@ -2,6 +2,7 @@ from time import sleep
 
 from src.classes.game import Background, background_choices, Game
 from src.classes.ship import Ship
+from src.helpers import is_valid_int, is_valid_float, is_valid_bool
 
 
 def intro_event(game_state: 'Game'):
@@ -92,14 +93,12 @@ def intro_event(game_state: 'Game'):
     # Age input validation
     while True:
         age_input = input("Your age (18 - 60): ")
-        try:
+        if is_valid_int(age_input):
             age = int(age_input)
             if 18 <= age <= 60:
                 break
-            print(
-                "Invalid age. Please enter an age between 18 and 60."
-            )
-        except ValueError:
+            print("Invalid age. Please enter an age between 18 and 60.")
+        else:
             print("Invalid input. Please enter a number.")
     # Create character
     game_state.set_player_character(
@@ -160,9 +159,7 @@ def intro_event(game_state: 'Game'):
         ship_name: str = input("Baptize your bird: ")
         if ship_name and len(ship_name) <= 30:
             break
-        print(
-            "Invalid ship name. Please enter a name with 1-30 characters."
-        )
+        print("Invalid ship name. Please enter a name with 1-30 characters.")
     ship_data: dict = ship_choices[chosen_ship]
     ship_data["name"] = ship_name
 
