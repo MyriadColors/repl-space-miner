@@ -1,8 +1,61 @@
 from dataclasses import dataclass
 from random import choice
+from colorama import Fore, Back, Style, init
 
 from src.classes.ship import Ship
 from src.classes.solar_system import SolarSystem
+
+# Initialize colorama
+init(autoreset=True)
+
+
+class UI:
+    def __init__(self, default_fg=Fore.WHITE, default_bg=Back.BLACK):
+        self.default_fg = default_fg
+        self.default_bg = default_bg
+        self.default_style = Style.NORMAL
+        
+    def apply_default_colors(self):
+        """Reset colors to the default settings."""
+        print(self.default_fg + self.default_bg + self.default_style, end='')
+        
+    def reset_colors(self):
+        """Reset all colors to terminal defaults."""
+        print(Style.RESET_ALL, end='')
+        
+    def info_message(self, message):
+        """Display an informational message with cyan color."""
+        print(Fore.CYAN + message + Style.RESET_ALL)
+        
+    def success_message(self, message):
+        """Display a success message with green color."""
+        print(Fore.GREEN + message + Style.RESET_ALL)
+        
+    def warn_message(self, message):
+        """Display a warning message with yellow color."""
+        print(Fore.YELLOW + message + Style.RESET_ALL)
+        
+    def error_message(self, message):
+        """Display an error message with red color."""
+        print(Fore.RED + message + Style.RESET_ALL)
+    
+    def highlight_message(self, message):
+        """Display a highlighted message."""
+        print(Fore.MAGENTA + Style.BRIGHT + message + Style.RESET_ALL)
+    
+    def format_text(self, message, fg=None, bg=None, style=None):
+        """Format text with specified colors and style."""
+        fg_color = fg if fg else self.default_fg
+        bg_color = bg if bg else self.default_bg
+        text_style = style if style else self.default_style
+        return fg_color + bg_color + text_style + message + Style.RESET_ALL
+    
+    def set_default_colors(self, fg=None, bg=None):
+        """Change the default colors."""
+        if fg:
+            self.default_fg = fg
+        if bg:
+            self.default_bg = bg
 
 
 @dataclass
@@ -69,6 +122,7 @@ class Game:
         self.mute_flag = mute_flag
         self.skipc = skip_customization
         self.sound_init = True if not mute_flag else False
+        self.ui = UI()
 
     def set_player_character(self, 
                              name: str, 
@@ -77,7 +131,7 @@ class Game:
                              background: str, 
                              starting_creds: float, 
                              starting_debt: float):
-
+        
         self.player_character = Character(name, age, sex, background, starting_creds, starting_debt)
 
     def get_player_ship(self) -> Ship:

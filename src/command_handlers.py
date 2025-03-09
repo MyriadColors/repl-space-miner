@@ -24,6 +24,7 @@ from src.helpers import (
     is_valid_bool,
 )
 
+# Colorama is still needed for direct colors in specific cases
 import colorama
 from colorama import Fore, Style
 colorama.init()
@@ -40,7 +41,7 @@ def process_command(game_state: "Game", command_line: str):
     # Handle empty command
     command_line = command_line.strip()
     if not command_line:
-        print(Fore.YELLOW + "No command entered." + Style.RESET_ALL)
+        game_state.ui.warn_message("No command entered.")
         return
 
     # Parse command input
@@ -53,9 +54,9 @@ def process_command(game_state: "Game", command_line: str):
         try:
             execute_valid_command(game_state, command_name, args)
         except ValueError as e:
-            print(Fore.RED + str(e) + Style.RESET_ALL)
+            game_state.ui.error_message(str(e))
     else:
-        print(Fore.RED + f"Unknown command: {command_name} not implemented yet." + Style.RESET_ALL)
+        game_state.ui.error_message(f"Unknown command: {command_name} not implemented yet.")
 
 
 def execute_valid_command(game_state: "Game", command_name: str, args: list[str]):
@@ -75,7 +76,7 @@ def execute_valid_command(game_state: "Game", command_name: str, args: list[str]
     # Check if we have enough arguments
     required_args_count = len([arg for arg in command.arguments if not arg.is_optional])
     if len(args) < required_args_count:
-        print(f"Missing required arguments for command '{command_name}'.")
+        game_state.ui.error_message(f"Missing required arguments for command '{command_name}'.")
         return
     
     # Map provided arguments to command parameters
@@ -100,22 +101,26 @@ class Argument:
     positional_index: int | None = None
     custom_validator: Callable[[Any], bool] | None = None
 
-
 @dataclass
 class Command:
+    """
+    Represents a command that can be executed in the game.
+    arguments: list[Argument] = field(default_factory=list)
+        function (Callable): The function to execute for this command.
+        arguments (list[Argument]): The list of arguments required by the command.
+        number_of_arguments (int): The number of arguments required by the command.
+        command_name (str): The name of the command.
+    """
     function: Callable
     arguments: list[Argument] = field(default_factory=list)
     number_of_arguments: int = field(init=False)
     command_name: str = ""
 
-    def get_required_arguments(self):
-        return [arg for arg in self.arguments if not arg.is_optional]
+    def __post_init__(self):
+        self.number_of_arguments = len(self.arguments)
 
     def get_optional_arguments(self):
         return [arg for arg in self.arguments if arg.is_optional]
-
-    def __post_init__(self):
-        self.number_of_arguments = len(self.arguments)
 
     def validate_arguments(self, args):
         required_args = [arg for arg in self.arguments if not arg.is_optional]
@@ -239,7 +244,7 @@ def barter(price: float) -> tuple[float, bool]:
 def buy_command(game_state: "Game", item_name: str, amount: str):
     player_ship: Ship = game_state.get_player_ship()
     if not player_ship.is_docked:
-        print(Fore.RED + "Must be docked to buy ore." + Style.RESET_ALL)
+        game_state.ui.error_message("Must be docked to buy ore.")
         return
 
     station: Station | None = (
@@ -247,51 +252,45 @@ def buy_command(game_state: "Game", item_name: str, amount: str):
     )
 
     if not station:
-        print(Fore.RED + "No station within interaction radius." + Style.RESET_ALL)
+        game_state.ui.error_message("No station within interaction radius.")
         return
     try:
         amount_number = int(amount)
         if amount_number <= 0:
-            print(Fore.RED + "Quantity must be positive." + Style.RESET_ALL)
+            game_state.ui.error_message("Quantity must be positive.")
             return
     except ValueError:
-        print(Fore.RED + "Invalid amount. Please enter a valid number." + Style.RESET_ALL)
+        game_state.ui.error_message("Invalid amount. Please enter a valid number.")
         return
 
     ore_cargo: OreCargo | None = station.get_ore_by_name(item_name)
     if not ore_cargo:
-        print(Fore.RED + f"Cannot buy {item_name} because it is not available." + Style.RESET_ALL)
+        game_state.ui.error_message(f"Cannot buy {item_name} because it is not available.")
         return
 
     total_volume = round(ore_cargo.ore.volume * amount_number, 2)
     available_volume = round(ore_cargo.quantity * ore_cargo.ore.volume, 2)
     price = round(ore_cargo.buy_price * amount_number, 2)
 
-    print(Fore.GREEN + f"Price for {amount_number} {item_name}: {price} credits" + Style.RESET_ALL)
+    game_state.ui.success_message(f"Price for {amount_number} {item_name}: {price} credits")
 
     price, _ = barter(price)
 
     if game_state.player_character is None or price > (
         game_state.player_character.credits if game_state.player_character else 0
     ):
-        print(
-            Fore.RED + f"Cannot buy {amount_number} {item_name} because you don't have enough credits." + Style.RESET_ALL
-        )
+        game_state.ui.error_message(f"Cannot buy {amount_number} {item_name} because you don't have enough credits.")
         return
 
     if total_volume > available_volume:
-        print(
-            Fore.RED + f"Cannot buy {amount_number} {item_name} because the station doesn't have enough ore in its cargo." + Style.RESET_ALL
-        )
-        confirm = input(Fore.YELLOW + "Do you want to buy all available ore? y/n >> " + Style.RESET_ALL)
+        game_state.ui.error_message(f"Cannot buy {amount_number} {item_name} because the station doesn't have enough ore in its cargo.")
+        confirm = input(game_state.ui.format_text("Do you want to buy all available ore? y/n >> ", fg=Fore.YELLOW))
         if confirm.lower() == "y":
             amount_number = int(available_volume / ore_cargo.ore.volume)
             price = round(ore_cargo.buy_price * amount_number, 2)
-            print(
-                Fore.GREEN + f"Adjusting purchase to {amount_number} {item_name} for {price} credits." + Style.RESET_ALL
-            )
+            game_state.ui.success_message(f"Adjusting purchase to {amount_number} {item_name} for {price} credits.")
         else:
-            print(Fore.RED + "Buy cancelled." + Style.RESET_ALL)
+            game_state.ui.error_message("Buy cancelled.")
             return
 
     update_ore_quantities(
@@ -346,22 +345,22 @@ def travel_command(game_state: "Game", **kwargs) -> float:
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship.is_docked:
-        print("Cannot travel while docked.")
+        game_state.ui.error_message("Cannot travel while docked.")
         return global_time
 
     if player_ship.fuel == 0:
-        print("Cannot travel while out of fuel.")
+        game_state.ui.error_message("Cannot travel while out of fuel.")
         return global_time
 
     if kwargs.get("sort_type") == "closest":
         try:
             closest_travel(game_state, kwargs.get("object_type", ""))
         except IndexError:
-            print(
+            game_state.ui.error_message(
                 "Invalid argument. Please enter 'closest' followed by 'field' or 'station'."
             )
     else:
-        print(
+        game_state.ui.error_message(
             "Invalid argument. Please enter 'closest' to travel to the closest field or station."
         )
 
@@ -372,37 +371,37 @@ def refuel_command(game_state: "Game", amount: float) -> None:
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
     if not player_ship.is_docked:
-        print("Cannot refuel while not docked.")
+        game_state.ui.error_message("Cannot refuel while not docked.")
         return
 
     station: Station | None = (
         game_state.solar_system.get_object_within_interaction_radius(game_state)
     )
     if station is None:
-        print("No station within interaction radius.")
+        game_state.ui.error_message("No station within interaction radius.")
         return
 
     if player_ship.fuel + amount > player_ship.max_fuel:
-        print(
+        game_state.ui.error_message(
             "Cannot refuel more than your ship's maximum fuel capacity, consider upgrading your ship."
         )
         return
 
     price: float = amount * station.fuel_price
-    print(f"Total price for {round(amount, 2)}m³ of fuel: {round(price, 2)} credits.")
-    print("Are you sure you want to refuel? y/n")
+    game_state.ui.info_message(f"Total price for {round(amount, 2)}m³ of fuel: {round(price, 2)} credits.")
+    game_state.ui.warn_message("Are you sure you want to refuel? y/n")
     confirm: str = take_input(">> ")
     if confirm.lower() != "y":
-        print("Refuel cancelled.")
+        game_state.ui.info_message("Refuel cancelled.")
         return
 
     player_ship.refuel(amount)
     if game_state.player_character:
         game_state.player_character.credits -= price
-    print(f"Refueled with {round(amount, 2)} m3 for {round(price, 2)} credits.")
+    game_state.ui.success_message(f"Refueled with {round(amount, 2)} m3 for {round(price, 2)} credits.")
 
 
 def sell_command(game_state: "Game") -> None:
@@ -410,14 +409,14 @@ def sell_command(game_state: "Game") -> None:
         game_state.get_player_ship() is None
         or not game_state.get_player_ship().is_docked
     ):
-        print("Cannot sell while not docked.")
+        game_state.ui.error_message("Cannot sell while not docked.")
         return
 
     station = game_state.solar_system.get_object_within_interaction_radius(
         game_state.get_player_ship()
     )
     if station.ore_cargo_volume >= station.ore_capacity:
-        print(
+        game_state.ui.error_message(
             "Cannot sell because the station's ore cargo is full. Look for another one."
         )
         return
@@ -431,7 +430,7 @@ def sell_command(game_state: "Game") -> None:
     ]
 
     if not sellable_ores:
-        print("No ores to sell.")
+        game_state.ui.warn_message("No ores to sell.")
         return
 
     total_value = sum(
@@ -442,21 +441,21 @@ def sell_command(game_state: "Game") -> None:
     )
     total_units = sum(ore_cargo.quantity for ore_cargo in sellable_ores)
 
-    print("Ores to be sold:")
+    game_state.ui.info_message("Ores to be sold:")
     for ore_cargo in sellable_ores:
-        print(ore_cargo.ore.to_string())
+        print(game_state.ui.format_text(ore_cargo.ore.to_string(), fg=Fore.CYAN))
 
-    print(f"Total value: {total_value:.2f} credits")
-    print(f"Total volume: {total_volume:.2f} m³")
-    print(f"Total units: {total_units}")
+    print(game_state.ui.format_text(f"Total value: {total_value:.2f} credits", fg=Fore.GREEN))
+    print(game_state.ui.format_text(f"Total volume: {total_volume:.2f} m³", fg=Fore.CYAN))
+    print(game_state.ui.format_text(f"Total units: {total_units}", fg=Fore.CYAN))
 
-    confirm = input("Are you sure you want to sell these ores? (y/n)")
+    confirm = input(game_state.ui.format_text("Are you sure you want to sell these ores? (y/n) ", fg=Fore.YELLOW))
     if confirm.lower() != "y":
-        print("Sell cancelled.")
+        game_state.ui.info_message("Sell cancelled.")
         return
 
     if not game_state.player_character:
-        print("Error: Player character not found.")
+        game_state.ui.error_message("Error: Player character not found.")
         return
 
     game_state.player_character.credits += total_value
@@ -467,14 +466,14 @@ def sell_command(game_state: "Game") -> None:
     ]
     game_state.get_player_ship().calculate_cargo_occupancy()
 
-    print(f"Sold {total_units} units for {total_value:.2f} credits.")
+    game_state.ui.success_message(f"Sold {total_units} units for {total_value:.2f} credits.")
 
 
 def closest_travel(game_state: "Game", object_type: str) -> None:
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
 
     try:
@@ -494,10 +493,10 @@ def closest_travel(game_state: "Game", object_type: str) -> None:
         )
 
         if not object_type:
-            print(
+            game_state.ui.info_message(
                 f"Closest field is Field {closest_field.space_object.id} at {euclidean_distance(player_ship.space_object.get_position(), closest_field.space_object.position)} AUs from here."
             )
-            print(
+            game_state.ui.info_message(
                 f"Closest station is Station {closest_station.space_object.id} at {euclidean_distance(player_ship.space_object.get_position(), closest_station.space_object.position)} AUs from here."
             )
             prompt_for_closest_travel_choice(
@@ -516,20 +515,20 @@ def closest_travel(game_state: "Game", object_type: str) -> None:
         else:
             raise ValueError("Invalid object type. Use 'field' or 'station'.")
     except (AttributeError, ValueError) as e:
-        print(f"Error: {e}")
+        game_state.ui.error_message(f"Error: {e}")
 
 
 def direct_travel_command(game_state: "Game", destination_x: str, destination_y: str):
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
     try:
         x = float(destination_x)
         y = float(destination_y)
     except ValueError:
-        print("Invalid coordinates. Please enter valid numbers.")
+        game_state.ui.error_message("Invalid coordinates. Please enter valid numbers.")
         return
 
     if (
@@ -538,7 +537,7 @@ def direct_travel_command(game_state: "Game", destination_x: str, destination_y:
         or x >= game_state.solar_system.size
         or y >= game_state.solar_system.size
     ):
-        print(
+        game_state.ui.error_message(
             f"Invalid coordinates. Please enter coordinates within the solar system's bounds (-{game_state.solar_system.size} <= x < {game_state.solar_system.size}, -{game_state.solar_system.size} <= y < {game_state.solar_system.size})."
         )
         return
@@ -559,12 +558,12 @@ def mine_command(
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
     if not game_state.solar_system.is_object_within_an_asteroid_field_radius(
         player_ship.space_object.get_position()
     ):
-        print("You must be within an asteroid field to mine.")
+        game_state.ui.error_message("You must be within an asteroid field to mine.")
         return
 
     try:
@@ -579,26 +578,26 @@ def mine_command(
         )
 
     except ValueError:
-        print("Invalid time. Please enter a valid number.")
+        game_state.ui.error_message("Invalid time. Please enter a valid number.")
 
 
 def command_dock(game_state) -> None:
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
     if player_ship.is_docked:
-        print("You are already docked.")
+        game_state.ui.info_message("You are already docked.")
         return
     target_station: Station | None = helpers.get_closest_station(
         game_state.solar_system, player_ship
     )
     if target_station is None:
-        print("There are no stations within range.")
+        game_state.ui.error_message("There are no stations within range.")
         return
-    if target_station.space_object.position.distance_to(player_ship.space_object.position) > 0.05:
-        print("Station is not within docking range.")
+    if target_station.space_object.position.distance_to(player_ship.space_object.position) > player_ship.interaction_radius:
+        game_state.ui.error_message(f"Station is not within docking range (must be within {player_ship.interaction_radius} AUs).")
         return
     on_dock_complete(game_state, station_to_dock=target_station)
 
@@ -607,41 +606,40 @@ def on_dock_complete(game_state, station_to_dock: Station) -> None:
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
     player_ship.dock_into_station(station_to_dock)
-    print(f"Docked with {station_to_dock.name}.")
+    game_state.ui.success_message(f"Docked with {station_to_dock.name}.")
     ores_available = station_to_dock.ores_available_to_string()
     if ores_available is not None:
-        print(ores_available)
+        game_state.ui.info_message(ores_available)
     else:
-        print("No ores available.")
+        game_state.ui.warn_message("No ores available.")
 
 
 def command_undock(game_state) -> None:
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
     if not player_ship.is_docked:
-        print("You are not docked.")
+        game_state.ui.error_message("You are not docked.")
         return
 
     def on_undock_complete() -> None:
         player_ship.undock_from_station()
-        print("Undocked.")
+        game_state.ui.success_message("Undocked.")
 
     on_undock_complete()
 
-
 def scan_command(game_state, num_objects: str):
     amount_of_objects: int = int(num_objects)
-    print(f"Scanning for {amount_of_objects} objects...")
+    game_state.ui.info_message(f"Scanning for {amount_of_objects} objects...")
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
     objects: list[Station | AsteroidField] = (
         game_state.solar_system.scan_system_objects(
@@ -649,13 +647,14 @@ def scan_command(game_state, num_objects: str):
         )
     )
     for i in range(amount_of_objects):
-        print(
-            f"{i}. {objects[i].to_string_short(player_ship.space_object.get_position())}"
-        )
+        print(game_state.ui.format_text(
+            f"{i}. {objects[i].to_string_short(player_ship.space_object.get_position())}",
+            fg=Fore.CYAN
+        ))
 
-    print(f"Enter object to navigate to or -1 to abort:")
+    game_state.ui.warn_message("Enter object to navigate to or -1 to abort:")
     input_response: str = input(
-        "Enter the number of the object to navigate to or -1 to abort: "
+        game_state.ui.format_text("Enter the number of the object to navigate to or -1 to abort: ", fg=Fore.YELLOW)
     )
 
     if input_response == "-1":
@@ -664,7 +663,7 @@ def scan_command(game_state, num_objects: str):
         try:
             input_response_index: int = int(input_response)
         except ValueError:
-            print("Invalid input. Please enter a valid number.")
+            game_state.ui.error_message("Invalid input. Please enter a valid number.")
             return
         selected_object: Station | AsteroidField = objects[input_response_index]
         selected_object_position: Vector2 = selected_object.space_object.position
@@ -674,26 +673,26 @@ def scan_command(game_state, num_objects: str):
 
 
 def add_ore_debug_command(game_state, amount: int, ore_name: str) -> None:
-    print("This is a debug/cheat command: with great power comes great responsibility!")
+    game_state.ui.warn_message("This is a debug/cheat command: with great power comes great responsibility!")
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
-        print("Error: Player ship not found.")
+        game_state.ui.error_message("Error: Player ship not found.")
         return
     if amount < 0:
-        print("You have entered a negative number.")
+        game_state.ui.error_message("You have entered a negative number.")
         return
 
     ore: Ore | None = helpers.get_ore_by_id_or_name(ore_name)
     if ore is None:
-        print(f"Invalid ore name: {ore_name}")
+        game_state.ui.error_message(f"Invalid ore name: {ore_name}")
         return
 
     total_volume = ore.volume * amount
     if total_volume > player_ship.cargohold_occupied:
-        print("You are trying to add more cargo than your ship's capacity.")
-        print("Since this is a debug command, i will allow you to do that.")
+        game_state.ui.warn_message("You are trying to add more cargo than your ship's capacity.")
+        game_state.ui.warn_message("Since this is a debug command, i will allow you to do that.")
 
     ore_cargo: OreCargo = OreCargo(ore, amount, ore.base_value, ore.base_value)
     update_ore_quantities(game_state, ore_cargo, ore_name, amount, ore.base_value)
@@ -713,26 +712,26 @@ def add_creds_debug_command(game_state, amount: str) -> None:
     try:
         amount_value = float(amount)
     except ValueError:
-        print("Invalid amount. Please enter a valid number.")
+        game_state.ui.error_message("Invalid amount. Please enter a valid number.")
         return
         
     if player_character is None:
-        print("Error: Player character not found.")
+        game_state.ui.error_message("Error: Player character not found.")
         return
         
-    print(f"You are adding {amount_value} credits to your account.")
+    game_state.ui.info_message(f"You are adding {amount_value} credits to your account.")
     
     if game_state.debug_flag:
         if amount_value < 0:
-            print("You have entered a negative number, this means you lose money.")
-            print("Are you sure? (y/n)")
+            game_state.ui.warn_message("You have entered a negative number, this means you lose money.")
+            game_state.ui.warn_message("Are you sure? (y/n)")
             confirm = take_input(">> ").strip()
             if confirm != "y":
                 return
         player_character.credits += amount_value
-        print(f"{amount_value} credits added to your credits.")
+        game_state.ui.success_message(f"{amount_value} credits added to your credits.")
     else:
-        print(
+        game_state.ui.error_message(
             "Debug commands can only be used through the use of the 'debug' ('dm') command."
         )
         return
@@ -744,42 +743,42 @@ def display_status(game_state) -> None:
     player_ship: Ship = game_state.get_player_ship()
 
     # Display Player Status with header
-    print(Fore.CYAN + Style.BRIGHT + "===== PLAYER STATUS =====" + Style.RESET_ALL)
+    print(game_state.ui.format_text("===== PLAYER STATUS =====", fg=Fore.CYAN, style=Style.BRIGHT))
     for status in player_character.to_string():
-        print(Fore.GREEN + status + Style.RESET_ALL)
+        print(game_state.ui.format_text(status, fg=Fore.GREEN))
     print()
 
     # Display Ship Status with header
-    print(Fore.CYAN + Style.BRIGHT + "===== SHIP STATUS =====" + Style.RESET_ALL)
+    print(game_state.ui.format_text("===== SHIP STATUS =====", fg=Fore.CYAN, style=Style.BRIGHT))
     for status in player_ship.status_to_string():
-        print(Fore.YELLOW + status + Style.RESET_ALL)
+        print(game_state.ui.format_text(status, fg=Fore.YELLOW))
 
 
 def display_time_and_status(game_state) -> None:
     game: Game = game_state
 
     # Display time with styling
-    print(Fore.CYAN + Style.BRIGHT + f"Time: {game_state.global_time} Seconds" + Style.RESET_ALL)
-    print(Fore.CYAN + "=================" + Style.RESET_ALL)
+    print(game_state.ui.format_text(f"Time: {game_state.global_time} Seconds", fg=Fore.CYAN, style=Style.BRIGHT))
+    print(game_state.ui.format_text("=================", fg=Fore.CYAN))
 
     # Display player character status
     player_character = game_state.get_player_character()
     if player_character:
-        print(Fore.CYAN + Style.BRIGHT + "Player Status:" + Style.RESET_ALL)
+        print(game_state.ui.format_text("Player Status:", fg=Fore.CYAN, style=Style.BRIGHT))
         for status in player_character.to_string():
-            print(Fore.GREEN + status + Style.RESET_ALL)
+            print(game_state.ui.format_text(status, fg=Fore.GREEN))
     else:
-        print(Fore.RED + "Error: Player character not found." + Style.RESET_ALL)
+        game_state.ui.error_message("Error: Player character not found.")
     print("")
 
     # Display player ship status
     player_ship = game_state.get_player_ship()
     if player_ship:
-        print(Fore.CYAN + Style.BRIGHT + "Ship Status:" + Style.RESET_ALL)
+        print(game_state.ui.format_text("Ship Status:", fg=Fore.CYAN, style=Style.BRIGHT))
         for status in player_ship.status_to_string():
-            print(Fore.YELLOW + status + Style.RESET_ALL)
+            print(game_state.ui.format_text(status, fg=Fore.YELLOW))
     else:
-        print(Fore.RED + "Error: Player ship not found." + Style.RESET_ALL)
+        game_state.ui.error_message("Error: Player ship not found.")
 
 
 def command_exit(game_state) -> None:
@@ -808,16 +807,16 @@ def debug_mode_command(game_state) -> None:
     game: Game = game_state
     if game_state.debug_flag:
         game_state.debug_flag = False
-        print("Debug mode disabled.")
+        game_state.ui.info_message("Debug mode disabled.")
     else:
         game_state.debug_flag = True
-        print("Debug mode enabled.")
+        game_state.ui.info_message("Debug mode enabled.")
 
 
 def display_help(game_state: "Game", command_name: str):
     if not command_name:
         command_name = ""
-    print(Fore.CYAN + "Available commands (type 'help <command>' for more details):" + Style.RESET_ALL)
+    game_state.ui.info_message("Available commands (type 'help <command>' for more details):")
 
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
@@ -836,9 +835,9 @@ def display_help(game_state: "Game", command_name: str):
 
     def write_command(command, description, allowed: bool):
         if allowed:
-            print(Fore.GREEN + f"{command}: {description}" + Style.RESET_ALL)
+            print(game_state.ui.format_text(f"{command}: {description}", fg=Fore.GREEN))
         else:
-            print(Fore.RED + f"{command}" + Style.RESET_ALL + f": {description}")
+            print(game_state.ui.format_text(command, fg=Fore.RED) + f": {description}")
 
     write_command(
         "status (st) <selection_flag>",
@@ -914,7 +913,7 @@ def display_help(game_state: "Game", command_name: str):
     if command_name:
         command_name = command_name.lower()
         if command_name == "status" or command_name == "st":
-            print(Fore.CYAN + "status (st):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("status (st):", fg=Fore.CYAN))
             print(
                 "  Displays your current credits, ship status (fuel, cargo, location), and time elapsed."
             )
@@ -924,21 +923,21 @@ def display_help(game_state: "Game", command_name: str):
             )
             print("    Example: status both")
         elif command_name == "scan" or command_name == "sc":
-            print(Fore.CYAN + "scan (sc) <quantity>:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("scan (sc) <quantity>:", fg=Fore.CYAN))
             print(
                 "  Scans for the specified number of nearby asteroid fields and stations."
             )
             print("  Example: scan 5")
         elif command_name == "travel" or command_name == "tr":
-            print(Fore.CYAN + "travel (tr) closest <field|station>:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("travel (tr) closest <field|station>:", fg=Fore.CYAN))
             print("  Travels to the closest asteroid field or station.")
             print("  Example: travel closest field")
         elif command_name == "direct_travel" or command_name == "dtr":
-            print(Fore.CYAN + "travel_direct (dtr) <x> <y>:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("travel_direct (dtr) <x> <y>:", fg=Fore.CYAN))
             print("  Travels to the specified coordinates in the solar system.")
             print("  Example: travel 10.5 20.3")
         elif command_name == "mine" or command_name == "mi":
-            print(Fore.CYAN + "mine (mi) <time>:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("mine (mi) <time>:", fg=Fore.CYAN))
             print(
                 "  Mines for ores at the current asteroid field for the specified amount of time, if you want to mine until full, you can do so by adding 'until_full'."
             )
@@ -957,36 +956,36 @@ def display_help(game_state: "Game", command_name: str):
             print("  Example: mine 60 until_full")
             print("  Example: mine 60 Pyrogen")
         elif command_name == "dock" or command_name == "do":
-            print(Fore.CYAN + "dock (do):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("dock (do):", fg=Fore.CYAN))
             print("  Docks with the nearest station if you are within range.")
         elif command_name == "undock" or command_name == "ud":
-            print(Fore.CYAN + "undock (ud):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("undock (ud):", fg=Fore.CYAN))
             print("  Undocks from the current station.")
         elif command_name == "buy" or command_name == "by":
-            print(Fore.CYAN + "buy (by) <ore_name> <amount>:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("buy (by) <ore_name> <amount>:", fg=Fore.CYAN))
             print("  Buys the specified amount of ore from the docked station.")
             print("  Example: buy Pyrogen 10")
         elif command_name == "sell" or command_name == "sl":
-            print(Fore.CYAN + "sell (sl):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("sell (sl):", fg=Fore.CYAN))
             print("  Sells all ores in your cargo hold to the docked station.")
         elif command_name == "refuel" or command_name == "ref":
-            print(Fore.CYAN + "refuel (ref) <amount>:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("refuel (ref) <amount>:", fg=Fore.CYAN))
             print(
                 "  Refuels your ship with the specified amount of fuel at the docked station."
             )
             print("  Example: refuel 50")
         elif command_name == "upgrade":
-            print(Fore.CYAN + "upgrade:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("upgrade:", fg=Fore.CYAN))
             print("  Displays available ship upgrades and allows you to purchase them.")
         elif command_name == "color" or command_name == "co":
-            print(Fore.CYAN + "color (co) <bg|fg> <color_name>:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("color (co) <bg|fg> <color_name>:", fg=Fore.CYAN))
             print("  Changes the game_stateinal's background or foreground color.")
             print(
                 "  Available colors: black, white, red, green, blue, yellow, magenta, cyan"
             )
             print("  Example: color bg blue")
         elif command_name == "reset" or command_name == "rs":
-            print(Fore.CYAN + "reset (rs) <color|bg|fg|text|history|all>:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("reset (rs) <color|bg|fg|text|history|all>:", fg=Fore.CYAN))
             print("  Resets various aspects of the game_stateinal.")
             print("  Options:")
             print("    color: Resets both foreground and background colors.")
@@ -996,26 +995,26 @@ def display_help(game_state: "Game", command_name: str):
             print("    history: Clears the command history.")
             print("    all: Resets all game_stateinal settings.")
         elif command_name == "clear" or command_name == "cl":
-            print(Fore.CYAN + "clear (cl):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("clear (cl):", fg=Fore.CYAN))
             print("  Clears the game_stateinal screen.")
         elif command_name == "debug" or command_name == "dm":
-            print(Fore.CYAN + "debug (dm):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("debug (dm):", fg=Fore.CYAN))
             print("  Enables or Disables the Debug Mode.")
         elif command_name == "toggle_sound" or command_name == "ts":
-            print(Fore.CYAN + "toggle_sound (ts):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("toggle_sound (ts):", fg=Fore.CYAN))
             print("  Toggles the game's sound effects and music on or off.")
         elif command_name == "add_credits" or command_name == "ac":
-            print(Fore.CYAN + "add_credits (ac):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("add_credits (ac):", fg=Fore.CYAN))
             print("  Adds the specified amount of credits to your account.")
             print("  Example: add_credits 100")
             print("  Needs Debug Mode to be Enabled")
         elif command_name == "add_ores" or command_name == "ao":
-            print(Fore.CYAN + "add_ores (ao):" + Style.RESET_ALL)
+            print(game_state.ui.format_text("add_ores (ao):", fg=Fore.CYAN))
             print("  Adds the specified amount of ores to your account.")
             print("  Example: add_ores 100 Pyrogen")
             print("  Needs Debug Mode to be Enabled")
         elif command_name == "exit":
-            print(Fore.CYAN + "exit:" + Style.RESET_ALL)
+            print(game_state.ui.format_text("exit:", fg=Fore.CYAN))
             print("  Exits the game_state.")
         else:
             print(Fore.RED + f"Unknown command: {command_name}" + Style.RESET_ALL)

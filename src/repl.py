@@ -24,7 +24,9 @@ from src.command_handlers import register_command, Argument
 from src.events import intro_event
 import time
 import pygame as pg
+from colorama import Fore, Back, Style, init
 
+init(autoreset=True)
 
 # Constants for Character and Ship initialization
 CHARACTER_NAME = "Player"
@@ -42,7 +44,6 @@ SHIP_HULL_CAPACITY = 100
 SHIP_HULL_INTEGRITY = 100
 SHIP_SHIELD_CAPACITY = 0.01
 SHIP_NAME = "Player's Ship"
-
 
 def register_commands(game_state: "Game"):
     register_command(
