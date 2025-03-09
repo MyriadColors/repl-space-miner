@@ -103,7 +103,7 @@ class Station:
             return f"{self.name}, Position: {self.space_object.position}, ID: {self.space_object.id}"
         return f"{self.name}, Position: {self.space_object.position}, ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
 
-    def ores_available_to_string(self, game_state: 'Game'):
+    def ores_available_to_string(self):
         for ore_cargo in self.ore_cargo:
             print("----------------------------------")
             print(f"Ore:       {ore_cargo.ore.name}")

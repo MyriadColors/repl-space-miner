@@ -2,8 +2,6 @@ import math
 import random
 
 from pygame import Vector2
-
-from backup.pygameterm.terminal import PygameTerminal
 from src.classes.ore import Ore
 
 
@@ -76,21 +74,20 @@ def get_closest_station(solar_system, player_ship, is_at_station=False):
         return solar_system.sort_stations('asc', 'distance', player_ship.space_object.get_position())[1]
     return solar_system.sort_stations('asc', 'distance', player_ship.space_object.get_position())[0]
 
-
-def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time, term: PygameTerminal):
+def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time):
     """Prompts the player to choose between the closest field or station."""
     tries = 3
     while tries > 0:
-        response = term.prompt_user("Do you wish to go to the closest 1. (f)ield or the closest 2. (s)tation?")
+        response = take_input("Do you wish to go to the closest 1. (f)ield or the closest 2. (s)tation?")
         if response in ["1", "f", "field"]:
             return player_ship.travel(closest_field.position, time)
         elif response in ["2", "s", "station"]:
             return player_ship.travel(closest_station.position, time)
         else:
-            term.writeLn("Invalid response.")
+            print("Invalid choice. Please enter 'f' or 's'.")
             tries -= 1
 
-    term.writeLn("Too many invalid attempts. Aborting.")
+    print("Too many invalid attempts. Aborting.")
 
 from src.classes.ore import ORES
 

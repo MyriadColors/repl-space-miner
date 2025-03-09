@@ -22,8 +22,8 @@ from src.helpers import (
 )
 
 
-def process_command(game_state: 'Game', command_line: str):
-    command_line: str = command_line.strip()
+def process_command(game_state: "Game", command_line: str):
+    command_line = command_line.strip()
     if not command_line:
         print("No command entered.")
         return
@@ -34,7 +34,9 @@ def process_command(game_state: 'Game', command_line: str):
 
     if command_name in commands.commands:
         command = commands.commands[command_name]
-        required_args_count = len([arg for arg in command.arguments if not arg.is_optional])
+        required_args_count = len(
+            [arg for arg in command.arguments if not arg.is_optional]
+        )
 
         if len(args) < required_args_count:
             print(f"Missing required arguments for command '{command_name}'.")
@@ -55,6 +57,7 @@ def process_command(game_state: 'Game', command_line: str):
     else:
         print(f"Unknown command: {command_name}")
 
+
 @dataclass
 class Argument:
     name: str
@@ -69,6 +72,7 @@ class Command:
     function: Callable
     arguments: list[Argument] = field(default_factory=list)
     number_of_arguments: int = field(init=False)
+    command_name: str = ""
 
     def get_required_arguments(self):
         return [arg for arg in self.arguments if not arg.is_optional]
@@ -95,7 +99,10 @@ class Command:
                     return False, f"Argument {i} ({arg.name}) must be a float."
             elif arg.type == bool:
                 if not self._is_valid_bool(value):
-                    return False, f"Argument {i} ({arg.name}) must be a boolean value (true/false or 1/0)."
+                    return (
+                        False,
+                        f"Argument {i} ({arg.name}) must be a boolean value (true/false or 1/0).",
+                    )
             elif arg.type == str:
                 pass
             else:
@@ -122,9 +129,9 @@ class Command:
 
     @staticmethod
     def _is_valid_bool(value):
-        return value.lower() in ('true', 'false', '1', '0')
+        return value.lower() in ("true", "false", "1", "0")
 
-    def __call__(self, *args: Any, game_state: 'Game') -> Any:
+    def __call__(self, *args: Any, game_state: "Game") -> Any:
         valid, message = self.validate_arguments(args)
         if not valid:
             raise ValueError(message)
@@ -137,9 +144,10 @@ class CommandRegistry:
 
     def register(self, name: str, command: Command):
         self.commands[name] = command
+        command.command_name = name
 
-    def unregister(self, command: Command):
-        self.commands.pop(command.name, None)
+    def unregister(self, command_name: str):
+        self.commands.pop(command_name, None)
 
     def get_command(self, command_name: str) -> Optional[Command]:
         return self.commands.get(command_name)
@@ -149,15 +157,18 @@ class CommandRegistry:
         command.function(*args, **kwargs)
 
 
-commands: 'CommandRegistry' = CommandRegistry()
+commands: "CommandRegistry" = CommandRegistry()
 
 
 def typeof(value):
     return type(value)
 
 
-def register_command(command_names: list[str], command_function: Callable,
-                     argument_list: list[Argument] | None = None):
+def register_command(
+    command_names: list[str],
+    command_function: Callable,
+    argument_list: list[Argument] | None = None,
+):
     for name in command_names:
         argument_struct_list_with_index = []
         for i, arg in enumerate(argument_list or []):
@@ -168,7 +179,7 @@ def register_command(command_names: list[str], command_function: Callable,
                     type=arg.type,
                     is_optional=arg.is_optional,
                     positional_index=i,
-                    custom_validator=arg.custom_validator
+                    custom_validator=arg.custom_validator,
                 )
                 argument_struct_list_with_index.append(new_arg)
             else:
@@ -176,8 +187,7 @@ def register_command(command_names: list[str], command_function: Callable,
                 argument_struct_list_with_index.append(arg)
 
         command = Command(
-            function=command_function,
-            arguments=argument_struct_list_with_index
+            function=command_function, arguments=argument_struct_list_with_index
         )
         commands.register(name, command)
 
@@ -200,14 +210,14 @@ def barter(price: float) -> tuple[float, bool]:
     return price, bartering_flag  # Return original price and flag
 
 
-def buy_command(game_state: 'Game', item_name: str, amount: str):
+def buy_command(game_state: "Game", item_name: str, amount: str):
     player_ship: Ship = game_state.get_player_ship()
     if not player_ship.is_docked:
         print("Must be docked to buy ore.")
         return
 
-    station: Station | None = game_state.solar_system.get_object_within_interaction_radius(
-        player_ship
+    station: Station | None = (
+        game_state.solar_system.get_object_within_interaction_radius(player_ship)
     )
 
     if not station:
@@ -235,7 +245,9 @@ def buy_command(game_state: 'Game', item_name: str, amount: str):
 
     price, _ = barter(price)
 
-    if game_state.player_character is None or price > game_state.player_character.credits:
+    if game_state.player_character is None or price > (
+        game_state.player_character.credits if game_state.player_character else 0
+    ):
         print(
             f"Cannot buy {amount_number} {item_name} because you don't have enough credits."
         )
@@ -256,11 +268,13 @@ def buy_command(game_state: 'Game', item_name: str, amount: str):
             print("Buy cancelled.")
             return
 
-    update_ore_quantities(game_state, ore_cargo, item_name, amount_number, price, station)
+    update_ore_quantities(
+        game_state, ore_cargo, item_name, amount_number, price, station
+    )
 
 
 def update_ore_quantities(
-        game_state,
+    game_state,
     ore_cargo: OreCargo,
     ore_name: str,
     amount: int,
@@ -295,15 +309,13 @@ def update_ore_quantities(
     if station:
         player_character.credits -= price
         print(f"Report: {amount} {ore_name} bought for {price} credits.")
-        print(
-            f"Station Ore Report:\n{station.ore_cargo_volume} tons of ore remaining"
-        )
+        print(f"Station Ore Report:\n{station.ore_cargo_volume} tons of ore remaining")
         print(f"Your new credit balance: {player_character.credits} credits")
     else:
         print(f"Updated player ship cargo with {amount} {ore_name}.")
 
 
-def travel_command(game_state: 'Game', *args: str) -> float:
+def travel_command(game_state: "Game", *args: str) -> float:
     global_time: float = game_state.global_time
     player_ship: Ship = game_state.get_player_ship()
 
@@ -330,7 +342,7 @@ def travel_command(game_state: 'Game', *args: str) -> float:
     return global_time
 
 
-def refuel_command(game_state: 'Game', amount: float) -> None:
+def refuel_command(game_state: "Game", amount: float) -> None:
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
@@ -340,8 +352,8 @@ def refuel_command(game_state: 'Game', amount: float) -> None:
         print("Cannot refuel while not docked.")
         return
 
-    station: Station | None = game_state.solar_system.get_object_within_interaction_radius(
-        game_state
+    station: Station | None = (
+        game_state.solar_system.get_object_within_interaction_radius(game_state)
     )
     if station is None:
         print("No station within interaction radius.")
@@ -354,9 +366,7 @@ def refuel_command(game_state: 'Game', amount: float) -> None:
         return
 
     price: float = amount * station.fuel_price
-    print(
-        f"Total price for {round(amount, 2)}m³ of fuel: {round(price, 2)} credits."
-    )
+    print(f"Total price for {round(amount, 2)}m³ of fuel: {round(price, 2)} credits.")
     print("Are you sure you want to refuel? y/n")
     confirm: str = take_input(">> ")
     if confirm.lower() != "y":
@@ -369,8 +379,11 @@ def refuel_command(game_state: 'Game', amount: float) -> None:
     print(f"Refueled with {round(amount, 2)} m3 for {round(price, 2)} credits.")
 
 
-def sell_command(game_state: 'Game') -> None:
-    if game_state.get_player_ship() is None or not game_state.get_player_ship().is_docked:
+def sell_command(game_state: "Game") -> None:
+    if (
+        game_state.get_player_ship() is None
+        or not game_state.get_player_ship().is_docked
+    ):
         print("Cannot sell while not docked.")
         return
 
@@ -416,6 +429,10 @@ def sell_command(game_state: 'Game') -> None:
         print("Sell cancelled.")
         return
 
+    if not game_state.player_character:
+        print("Error: Player character not found.")
+        return
+
     game_state.player_character.credits += total_value
     station.ore_cargo_volume += total_volume
 
@@ -427,7 +444,7 @@ def sell_command(game_state: 'Game') -> None:
     print(f"Sold {total_units} units for {total_value:.2f} credits.")
 
 
-def closest_travel(game_state: 'Game', object_type: str) -> None:
+def closest_travel(game_state: "Game", object_type: str) -> None:
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
@@ -458,23 +475,25 @@ def closest_travel(game_state: 'Game', object_type: str) -> None:
                 f"Closest station is Station {closest_station.space_object.id} at {euclidean_distance(player_ship.space_object.get_position(), closest_station.space_object.position)} AUs from here."
             )
             prompt_for_closest_travel_choice(
-                player_ship, closest_field, closest_station, game_state.global_time, game_state
+                player_ship, closest_field, closest_station, game_state.global_time
             )
 
         elif object_type in ["field", "f"]:
             field_position: Vector2 = closest_field.space_object.position
-            game_state.player_ship.travel(game_state, field_position)
+            assert player_ship is not None
+            player_ship.travel(game_state, field_position)
 
         elif object_type in ["station", "s"]:
             station_position: Vector2 = closest_station.space_object.position
-            game_state.player_ship.travel(game_state, station_position)
+            assert player_ship is not None
+            player_ship.travel(game_state, station_position)
         else:
             raise ValueError("Invalid object type. Use 'field' or 'station'.")
     except (AttributeError, ValueError) as e:
         print(f"Error: {e}")
 
 
-def direct_travel_command(game_state: 'Game', destination_x: str, destination_y: str):
+def direct_travel_command(game_state: "Game", destination_x: str, destination_y: str):
     player_ship: Ship = game_state.get_player_ship()
 
     if player_ship is None:
@@ -487,10 +506,12 @@ def direct_travel_command(game_state: 'Game', destination_x: str, destination_y:
         print("Invalid coordinates. Please enter valid numbers.")
         return
 
-    if (x < -game_state.solar_system.size
-            or y < -game_state.solar_system.size
-            or x >= game_state.solar_system.size
-            or y >= game_state.solar_system.size):
+    if (
+        x < -game_state.solar_system.size
+        or y < -game_state.solar_system.size
+        or x >= game_state.solar_system.size
+        or y >= game_state.solar_system.size
+    ):
         print(
             f"Invalid coordinates. Please enter coordinates within the solar system's bounds (-{game_state.solar_system.size} <= x < {game_state.solar_system.size}, -{game_state.solar_system.size} <= y < {game_state.solar_system.size})."
         )
@@ -504,7 +525,7 @@ def direct_travel_command(game_state: 'Game', destination_x: str, destination_y:
 
 
 def mine_command(
-        game_state: 'Game',
+    game_state: "Game",
     time_to_mine: int,
     mine_until_full: bool,
     ore_selected: str | None,
@@ -525,11 +546,10 @@ def mine_command(
             player_ship.space_object.get_position()
         )
 
-        if ore_selected is None:
-            ore_selected = None
+        selected_ores = [ore_selected] if ore_selected else None
 
         player_ship.mine_belt(
-            game_state, asteroid_field, time_to_mine, mine_until_full, ore_selected
+            game_state, asteroid_field, time_to_mine, mine_until_full, selected_ores
         )
 
     except ValueError:
@@ -551,6 +571,9 @@ def command_dock(game_state) -> None:
     if target_station is None:
         print("There are no stations within range.")
         return
+    if target_station.space_object.position.distance_to(player_ship.space_object.position) > 0.05:
+        print("Station is not within docking range.")
+        return
     on_dock_complete(game_state, station_to_dock=target_station)
 
 
@@ -562,7 +585,7 @@ def on_dock_complete(game_state, station_to_dock: Station) -> None:
         return
     player_ship.dock_into_station(station_to_dock)
     print(f"Docked with {station_to_dock.name}.")
-    ores_available = station_to_dock.ores_available_to_string(game_state)
+    ores_available = station_to_dock.ores_available_to_string()
     if ores_available is not None:
         print(ores_available)
     else:
@@ -583,14 +606,7 @@ def command_undock(game_state) -> None:
         player_ship.undock_from_station()
         print("Undocked.")
 
-    game_state.countdown_with_message(
-        start_value=5.0,
-        end_value=1.0,
-        step=0.5,
-        message_template="Undocking in... {}",
-        wait_time=0.1,
-        on_complete=on_undock_complete,
-    )
+    on_undock_complete()
 
 
 def scan_command(game_state, num_objects: str):
@@ -601,8 +617,10 @@ def scan_command(game_state, num_objects: str):
     if player_ship is None:
         print("Error: Player ship not found.")
         return
-    objects: list[Station | AsteroidField] = game_state.solar_system.scan_system_objects(
-        player_ship.space_object.get_position(), amount_of_objects
+    objects: list[Station | AsteroidField] = (
+        game_state.solar_system.scan_system_objects(
+            player_ship.space_object.get_position(), amount_of_objects
+        )
     )
     for i in range(amount_of_objects):
         print(
@@ -625,14 +643,12 @@ def scan_command(game_state, num_objects: str):
         selected_object: Station | AsteroidField = objects[input_response_index]
         selected_object_position: Vector2 = selected_object.space_object.position
         direct_travel_command(
-            str(selected_object_position.x), str(selected_object_position.y), game_state=game_state
+            game_state, str(selected_object_position.x), str(selected_object_position.y)
         )
 
 
 def add_ore_debug_command(amount: int, ore_name: str, game_state) -> None:
-    print(
-        "This is a debug/cheat command: with great power comes great responsibility!"
-    )
+    print("This is a debug/cheat command: with great power comes great responsibility!")
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
 
@@ -670,9 +686,7 @@ def add_creds_debug_command(amount: int, game_state) -> None:
     # assert player_character is not None
     if game_state.debug_flag:
         if amount < 0:
-            print(
-                "You have entered a negative number, this means you are in debt."
-            )
+            print("You have entered a negative number, this means you are in debt.")
             print("Are you sure? (y/n)")
             confirm = take_input(">> ").strip()
             if confirm != "y":
@@ -702,11 +716,11 @@ def display_status(game_state) -> None:
 
 def display_time_and_status(game_state) -> None:
     game: Game = game_state
-    
+
     # Display time
     print(f"Time: {game_state.global_time} Seconds")
     print("=================")
-    
+
     # Display player character status
     player_character = game_state.get_player_character()
     if player_character:
@@ -741,7 +755,7 @@ def clear(game_state):
     os.system("cls" if os.name == "nt" else "clear")
 
 
-def scan_field_command(game_state):
+def scan_field_command(game_state) -> None:
     """Handles the scan field command."""
     game: Game = game_state
     player_ship: Ship = game_state.get_player_ship()
@@ -759,9 +773,9 @@ def debug_mode_command(game_state) -> None:
         print("Debug mode enabled.")
 
 
-def display_help(game_state: 'Game', command_name: str):
+def display_help(game_state: "Game", command_name: str):
     if not command_name:
-        command_name = ''
+        command_name = ""
     print("Available commands (type 'help <command>' for more details):")
 
     game: Game = game_state
@@ -837,7 +851,9 @@ def display_help(game_state: 'Game', command_name: str):
         "color (co) <bg|fg> <color_name>", "Change the game_stateinal colors.", True
     )
     write_command(
-        "reset (rs) <color|bg|fg|text|history|all>", "Reset game_stateinal settings.", True
+        "reset (rs) <color|bg|fg|text|history|all>",
+        "Reset game_stateinal settings.",
+        True,
     )
     write_command("clear (cl)", "Clear the game_stateinal screen.", True)
     write_command("debug (dm)", "Enable the Debug Mode", True)
@@ -848,7 +864,9 @@ def display_help(game_state: 'Game', command_name: str):
         game_state.debug_flag,
     )
     write_command(
-        "add_ores (ao)", "Add ores to your ship (debug mode command)", game_state.debug_flag
+        "add_ores (ao)",
+        "Add ores to your ship (debug mode command)",
+        game_state.debug_flag,
     )
     write_command("exit", "Exit the game_state.", True)
 
@@ -918,9 +936,7 @@ def display_help(game_state: 'Game', command_name: str):
             print("  Example: refuel 50")
         elif command_name == "upgrade":
             print("upgrade:")
-            print(
-                "  Displays available ship upgrades and allows you to purchase them."
-            )
+            print("  Displays available ship upgrades and allows you to purchase them.")
         elif command_name == "color" or command_name == "co":
             print("color (co) <bg|fg> <color_name>:")
             print("  Changes the game_stateinal's background or foreground color.")

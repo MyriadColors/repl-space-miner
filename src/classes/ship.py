@@ -56,7 +56,7 @@ class Ship:
         self.max_fuel = max_fuel  # in m3
         self.fuel_consumption = fuel_consumption  # in m3/AU
         self.cargohold: list = []
-        self.cargohold_occupied = 0
+        self.cargohold_occupied: float = 0
         self.cargohold_capacity = cargo_capacity
         self.value = value
         self.mining_speed = mining_speed
@@ -98,7 +98,7 @@ class Ship:
         fuel_consumed = round(distance * self.fuel_consumption, 3)
         return distance, time, fuel_consumed
 
-    def travel(self, game_state: 'Game', destination: Vector2):
+    def travel(self, game_state, destination: Vector2):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
 
         print(
@@ -134,7 +134,7 @@ class Ship:
             f"Docked at: {docked_at_name}",
         ]
 
-    def cargo_to_string(self, game_state: 'Game'):
+    def cargo_to_string(self):
         return "\n".join(
             f"{cargo.quantity} units of {cargo.ore.name}" for cargo in self.cargohold
         )
@@ -144,7 +144,7 @@ class Ship:
 
     def mine_belt(
             self,
-            game_state: 'Game',
+            game_state,
             asteroid_field: AsteroidField,
             time_to_mine: int,
             mine_until_full: bool,
@@ -268,7 +268,7 @@ class Ship:
         return self.cargohold_occupied == self.cargohold_capacity
 
     def check_field_presence(
-            self, game_state: 'Game'
+            self, game_state
     ) -> Tuple[bool, Optional[AsteroidField]]:
         for field in game_state.solar_system.asteroid_fields:
             if self.interaction_radius > euclidean_distance(
@@ -277,7 +277,7 @@ class Ship:
                 return True, field
         return False, None
 
-    def scan_field(self, game_state: 'Game'):
+    def scan_field(self, game_state):
         fields: list[AsteroidField] = game_state.solar_system.asteroid_fields
 
         is_inside_field, field = self.check_field_presence(game_state)
