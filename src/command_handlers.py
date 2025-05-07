@@ -52,7 +52,7 @@ def process_command(game_state: Game, command_line: str):
     command_line = command_line.strip()
     if not command_line:
         game_state.ui.warn_message("No command entered.")
-        raise ValueError(f"Insufficient arguments provided for command '{command_name}'.")
+        raise ValueError("No command entered.")
 
     # Parse command input
     parts = command_line.split()
