@@ -1,6 +1,6 @@
 from src.classes.game import Character, Game
 from src.classes.ship import Ship
-from src.command_handlers import (
+from src.commands import (
     refuel_command,
     scan_field_command,
     sell_command,
@@ -18,12 +18,13 @@ from src.command_handlers import (
     add_ore_debug_command,
     direct_travel_command,
     debug_mode_command,
-    process_command,
     upgrade_command,
     save_game_command,
     load_game_command,
+    register_command,
+    Argument
 )
-from src.command_handlers import register_command, Argument
+from src.command_handlers import process_command
 from src.events import intro_event
 import time
 import pygame as pg
@@ -50,23 +51,16 @@ SHIP_SHIELD_CAPACITY = 0.01
 SHIP_NAME = "Player's Ship"
 
 def register_commands(game_state: "Game"):
-    register_command(
-        ["status", "st"],
-        display_time_and_status,
-        [],
-    )
-    register_command(
-        ["scan", "sc"],
-        scan_command,
-        [
-            Argument("num_objects", str, False, 0, is_valid_int),
-        ],
-    )
-    register_command(
-        ["scan_field", "scf"],
-        scan_field_command,
-        [],
-    )
+    """Register all game commands."""
+    # System commands
+    register_command(["status", "st"], display_time_and_status, [])
+    register_command(["help"], display_help, [Argument("command_name", str, True, 0, None)])
+    register_command(["exit"], command_exit, [])
+    register_command(["clear", "cl"], clear, [])
+    register_command(["save"], save_game_command, [Argument("filename", str, True, 0, None)])
+    register_command(["load"], load_game_command, [Argument("filename", str, True, 0, None)])
+
+    # Navigation commands
     register_command(
         ["travel", "tr"],
         travel_command,
@@ -84,24 +78,17 @@ def register_commands(game_state: "Game"):
         ],
     )
     register_command(
-        ["mine", "mi"],
-        mine_command,
-        [
-            Argument("time_to_mine", int, False, 0, is_valid_int),
-            Argument("mine_until_full", bool, False, 1, is_valid_bool),
-            Argument("ore_selected", str, True, 2, None),
-        ],
+        ["scan", "sc"],
+        scan_command,
+        [Argument("num_objects", str, False, 0, is_valid_int)],
     )
-    register_command(
-        ["dock", "do"],
-        command_dock,
-        [],
-    )
-    register_command(
-        ["undock", "ud"],
-        command_undock,
-        [],
-    )
+    register_command(["scan_field", "scf"], scan_field_command, [])
+
+    # Docking commands
+    register_command(["dock", "do"], command_dock, [])
+    register_command(["undock", "ud"], command_undock, [])
+
+    # Trading commands
     register_command(
         ["buy", "by"],
         buy_command,
@@ -112,18 +99,31 @@ def register_commands(game_state: "Game"):
     )
     register_command(["sell", "sl"], sell_command, [])
     register_command(
-        ["refuel", "ref"], refuel_command, [Argument("amount", float, False, 0, None)]
+        ["refuel", "ref"],
+        refuel_command,
+        [Argument("amount", float, False, 0, None)],
     )
+
+    # Mining commands
+    register_command(
+        ["mine", "mi"],
+        mine_command,
+        [
+            Argument("time_to_mine", int, False, 0, is_valid_int),
+            Argument("mine_until_full", bool, False, 1, is_valid_bool),
+            Argument("ore_selected", str, True, 2, None),
+        ],
+    )
+
+    # Upgrade commands
     register_command(
         ["upgrade", "up"],
         upgrade_command,
         [Argument("args", list, True)],
     )
-    register_command(["help"], display_help, [Argument("command_name", str, True, 0, None)])
-    register_command(["exit"], command_exit, [])
-    register_command(["clear", "cl"], clear, [])
+
+    # Debug commands
     register_command(["debug", "dm"], debug_mode_command, [])
-    
     register_command(
         ["add_credits", "ac"],
         add_creds_debug_command,
@@ -137,8 +137,6 @@ def register_commands(game_state: "Game"):
             Argument("ore_name", str, False, 1, None),
         ],
     )
-    register_command(["save"], save_game_command, [Argument("filename", str, True, 0, None)])
-    register_command(["load"], load_game_command, [Argument("filename", str, True, 0, None)])
 
 
 def start_repl():

@@ -95,8 +95,35 @@ class Character:
         self.reputation_scientists = 0
         self.reputation_military = 0
         self.reputation_explorers = 0
-        self.credits: float = 1000
-        self.debt: float = 0
+        self.credits: float = self.round_credits(starting_creds)
+        self.debt: float = self.round_credits(starting_debt)
+        
+    def round_credits(self, value: float) -> float:
+        """
+        Round credit values to two decimal places.
+        If exact halfway case occurs, it rounds up as per requirement.
+        """
+        return round(value * 100) / 100
+        
+    def add_credits(self, amount: float) -> float:
+        """Add credits and return the new balance"""
+        self.credits = self.round_credits(self.credits + amount)
+        return self.credits
+        
+    def remove_credits(self, amount: float) -> float:
+        """Remove credits and return the new balance"""
+        self.credits = self.round_credits(self.credits - amount)
+        return self.credits
+        
+    def add_debt(self, amount: float) -> float:
+        """Add debt and return the new balance"""
+        self.debt = self.round_credits(self.debt + amount)
+        return self.debt
+        
+    def remove_debt(self, amount: float) -> float:
+        """Remove debt and return the new balance"""
+        self.debt = self.round_credits(self.debt - amount)
+        return self.debt
 
     def to_string(self) -> list[str]:
         return [f"Name: {self.name}" + \

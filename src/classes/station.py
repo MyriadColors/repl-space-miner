@@ -120,23 +120,25 @@ class Station:
     def to_string(self):
         return f"{self.name}\nPosition: {self.space_object.position}\nID: {self.space_object.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"
 
-    def buy_fuel(self, player_ship, amount):
-        print(f"Price: {amount * self.fuel_price} credits ({self.fuel_price} credits per m³)")
+    def buy_fuel(self, player_ship, amount, game_state):
+        total_cost = round(amount * self.fuel_price, 2)
+        print(f"Price: {total_cost} credits ({self.fuel_price} credits per m³)")
         response = take_input("Do you want to buy fuel? (y/n) ")
         if response != "y":
             return
-        if player_ship.credits < amount * self.fuel_price:
+        if player_ship.credits < total_cost:
             print("You don't have enough credits")
             return
-        player_ship.credits -= amount * self.fuel_price
+        player_ship.remove_credits(game_state, total_cost)
         player_ship.fueltank += amount
         self.fueltank -= amount
-        print(f"You bought {amount} m³ of fuel for {amount * self.fuel_price} credits")
+        print(f"You bought {amount} m³ of fuel for {total_cost} credits")
         print(f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits")
         print(f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³")
 
-    def sell_fuel(self, player_ship, amount):
-        print(f"Price: {amount * self.fuel_price} credits ({self.fuel_price} credits per m³)")
+    def sell_fuel(self, player_ship, amount, game_state):
+        total_price = round(amount * self.fuel_price, 2)
+        print(f"Price: {total_price} credits ({self.fuel_price} credits per m³)")
         response = take_input("Do you want to sell fuel? (y/n) ")
         if response != "y":
             print("Fuel not sold")
@@ -145,9 +147,9 @@ class Station:
             print("You don't have enough fuel")
             return
         player_ship.fueltank -= amount
-        player_ship.credits += amount * self.fuel_price
+        player_ship.add_credits(game_state, total_price)
         self.fueltank += amount
-        print(f"You sold {amount} m³ of fuel for {amount * self.fuel_price} credits")
+        print(f"You sold {amount} m³ of fuel for {total_price} credits")
         print(f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits")
         print(f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³")
 
@@ -186,3 +188,25 @@ class Station:
         station.ore_capacity = data["ore_capacity"]
         station.visited = data.get("visited", False)
         return station
+
+    def add_item(self, ore, quantity):
+        """Add an item to the station's inventory."""
+        ore_cargo = next((cargo for cargo in self.ore_cargo if cargo.ore.id == ore.id), None)
+        if ore_cargo:
+            ore_cargo.quantity += quantity
+        else:
+            # Create new ore cargo if this ore type isn't in inventory yet
+            buy_price = round(ore.base_value * rnd_float(0.75, 1.25), 2)
+            sell_price = round(buy_price * rnd_float(0.5, 1.0), 2)
+            self.ore_cargo.append(OreCargo(ore, quantity, buy_price, sell_price))
+
+    def remove_item(self, ore, quantity):
+        """Remove an item from the station's inventory."""
+        ore_cargo = next((cargo for cargo in self.ore_cargo if cargo.ore.id == ore.id), None)
+        if ore_cargo:
+            if ore_cargo.quantity >= quantity:
+                ore_cargo.quantity -= quantity
+                if ore_cargo.quantity <= 0:
+                    self.ore_cargo.remove(ore_cargo)
+                return True
+        return False

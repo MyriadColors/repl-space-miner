@@ -1,0 +1,184 @@
+from typing import Optional, List
+
+from src.classes.game import Game
+from src.helpers import rnd_float, rnd_int, take_input
+from .registry import Argument
+from .base import register_command
+
+
+def barter(price: float) -> tuple[float, bool]:
+    """Handles the bartering process and returns the potentially discounted price and success flag."""
+    confirm = input("Want to barter for a discount? y/n")
+    bartering_flag: bool = False
+    
+    if confirm.lower() == "y":
+        bartering_flag = True
+        rng_number: float = rnd_float(0, 1)
+        if rng_number < 0.5:
+            discount: int = rnd_int(10, 25)
+            new_price: float = round(price * (100 - discount) / 100, 2)
+            print(f"Bartered for {discount}% discount off the original price.")
+            print(f"New price: {new_price} credits")
+            return new_price, bartering_flag
+        else:
+            print("Bartering failed.")
+    return price, bartering_flag
+
+
+def buy_command(game_state: Game, item_name: str, amount: str) -> None:
+    """Handle buying items from a station."""
+    player_ship = game_state.get_player_ship()
+    if not player_ship.is_docked:
+        game_state.ui.error_message("Must be docked to buy items.")
+        return
+
+    station = player_ship.get_station_docked_at()
+    if not station:
+        game_state.ui.error_message("Not docked at any station.")
+        return
+
+    try:
+        amount_int = int(amount)
+    except ValueError:
+        game_state.ui.error_message("Invalid amount specified.")
+        return
+
+    # Find the item in station's ore_cargo instead of inventory
+    item = next((cargo.ore for cargo in station.ore_cargo if cargo.ore.name.lower() == item_name.lower()), None)
+    if not item:
+        game_state.ui.error_message(f"Item {item_name} not found in station inventory.")
+        return
+
+    # Get the cargo that contains the ore
+    ore_cargo = next((cargo for cargo in station.ore_cargo if cargo.ore.name.lower() == item_name.lower()), None)
+    
+    # Check if station has enough of the item
+    if not ore_cargo:
+        game_state.ui.error_message(f"Item {item_name} not available at this station.")
+        return
+        
+    if ore_cargo.quantity < amount_int:
+        game_state.ui.error_message(f"Station only has {ore_cargo.quantity} {item_name} available.")
+        return
+
+    total_price = round(ore_cargo.buy_price * amount_int, 2)  # Round to 2 decimal places
+    player_character = game_state.get_player_character()
+    if player_character is None:
+        game_state.ui.error_message("Player character not found.")
+        return
+        
+    if player_character.credits < total_price:
+        game_state.ui.error_message("Not enough credits to make this purchase.")
+        return
+
+    # Try to barter
+    final_price, _ = barter(total_price)
+    final_price = round(final_price, 2)  # Ensure the bartered price is also rounded
+    
+    # Update game state using our credit management method
+    player_character.remove_credits(final_price)
+    
+    # Update station inventory by reducing ore quantity
+    if ore_cargo:
+        ore_cargo.quantity -= amount_int
+    
+    # Add item to ship's cargo
+    existing_cargo = next((cargo for cargo in player_ship.cargohold if cargo.ore.id == item.id), None)
+    if existing_cargo:
+        existing_cargo.quantity += amount_int
+    else:
+        from src.data import OreCargo
+        if ore_cargo:  # Ensure ore_cargo is not None before accessing its attributes
+            player_ship.cargohold.append(OreCargo(item, amount_int, ore_cargo.buy_price, ore_cargo.sell_price))
+    
+    game_state.ui.info_message(f"Successfully purchased {amount_int} {item_name} for {final_price} credits.")
+
+
+def sell_command(game_state: Game) -> None:
+    """Handle selling items to a station."""
+    player_ship = game_state.get_player_ship()
+    if not player_ship.is_docked:
+        game_state.ui.error_message("Must be docked to sell items.")
+        return
+
+    station = player_ship.get_station_docked_at()
+    if not station:
+        game_state.ui.error_message("Not docked at any station.")
+        return
+
+    if not player_ship.cargohold:
+        game_state.ui.error_message("No items to sell.")
+        return
+
+    # Display available items
+    game_state.ui.info_message("Available items to sell:")
+    for i, cargo in enumerate(player_ship.cargohold, 1):
+        game_state.ui.info_message(f"{i}. {cargo.ore.name} - Quantity: {cargo.quantity}")
+
+    # Get user selection
+    try:
+        selection = int(take_input("Select item number to sell (0 to cancel): "))
+        if selection == 0:
+            return
+        if selection < 1 or selection > len(player_ship.cargohold):
+            game_state.ui.error_message("Invalid selection.")
+            return
+    except ValueError:
+        game_state.ui.error_message("Invalid input.")
+        return
+
+    # Get quantity to sell
+    try:
+        quantity = int(take_input("Enter quantity to sell: "))
+        if quantity <= 0:
+            game_state.ui.error_message("Quantity must be positive.")
+            return
+    except ValueError:
+        game_state.ui.error_message("Invalid quantity.")
+        return
+
+    # Get selected item
+    selected_cargo = player_ship.cargohold[selection - 1]
+    if quantity > selected_cargo.quantity:
+        game_state.ui.error_message("Not enough items in cargo.")
+        return
+
+    # Calculate price
+    total_price = round(selected_cargo.ore.price * quantity, 2)
+    final_price, _ = barter(total_price)
+    final_price = round(final_price, 2)  # Ensure the bartered price is also rounded
+
+    # Update game state
+    player_character = game_state.get_player_character()
+    if player_character is None:
+        game_state.ui.error_message("Player character not found.")
+        return
+        
+    player_character.add_credits(final_price)
+    
+    # Update cargo quantities
+    selected_cargo.quantity -= quantity
+    if selected_cargo.quantity <= 0:
+        player_ship.cargohold.remove(selected_cargo)
+    
+    # Add to station inventory
+    station.add_item(selected_cargo.ore, quantity)
+
+    game_state.ui.info_message(f"Successfully sold {quantity} {selected_cargo.ore.name} for {final_price} credits.")
+
+
+# Register trading commands
+register_command(
+    ["buy", "b"],
+    buy_command,
+    [
+        Argument("item_name", str, False),
+        Argument("amount", str, False),
+    ],
+)
+
+register_command(
+    ["sell", "s"],
+    sell_command,
+    [],
+)

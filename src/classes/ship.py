@@ -108,8 +108,16 @@ class Ship:
     def travel(self, game_state, destination: Vector2):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
 
+        # Check if destination is within system boundaries
+        system_size = game_state.solar_system.size
+        # Assumption: The solar system's center is at (0,0). 
+        # This is used to calculate the distance of the destination from the center for boundary checking.
+        if destination.length() > system_size:
+            print(f"Destination is outside system boundaries. Maximum distance from center is {system_size} AU.")
+            return
+            
         print(
-            f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} fuel."
+            f"The ship will travel {distance} AUs in {format_seconds(travel_time)} using {fuel_consumed} m³ of fuel."
         )
 
         if self.fuel - fuel_consumed < 0:
@@ -210,7 +218,7 @@ class Ship:
                 )
                 if asteroid_being_mined is None:
                     print("No more asteroids available to mine.")
-                    break
+                    continue
 
             # Access the ore in the asteroid
             ore = asteroid_being_mined.ore
@@ -287,7 +295,7 @@ class Ship:
                 return True, field
         return False, None
 
-    def scan_field(self, game_state):
+    def scan_field(self, game_state) -> None:
         fields: list[AsteroidField] = game_state.solar_system.asteroid_fields
 
         is_inside_field, field = self.check_field_presence(game_state)
@@ -509,3 +517,27 @@ class Ship:
                 available.append(upgrade)
                 
         return available
+
+    def add_credits(self, game_state, amount: float) -> float:
+        """Add credits to the player and ensure they're rounded properly
+        
+        Args:
+            game_state: The game state containing the player character
+            amount: The amount of credits to add
+            
+        Returns:
+            float: New credit balance
+        """
+        return game_state.get_player_character().add_credits(amount)
+    
+    def remove_credits(self, game_state, amount: float) -> float:
+        """Remove credits from the player and ensure they're rounded properly
+        
+        Args:
+            game_state: The game state containing the player character
+            amount: The amount of credits to remove
+            
+        Returns:
+            float: New credit balance
+        """
+        return game_state.get_player_character().remove_credits(amount)
