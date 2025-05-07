@@ -270,11 +270,11 @@ def intro_event(game_state: 'Game'):
     
     if mod_choice == 1:
         print(Fore.CYAN + "Sensors upgraded. You'll detect minerals and threats from further away.")
-        ship_data["sensor_range"] = float(ship_data["sensor_range"]) + 0.25
+        ship_data["sensor_range"] = 0.25 + 0.25  # Add 0.25 to the default sensor range
         game_state.get_player_character().debt += 5000
     elif mod_choice == 2:
         print(Fore.CYAN + "Hidden compartments installed. Extra 20 units of 'unofficial' cargo space.")
-        ship_data["cargo_capacity"] = float(ship_data["cargo_capacity"]) + 20.0
+        ship_data["cargo_capacity"] = 20.0 + float(str(ship_data["cargo_capacity"]))
         game_state.get_player_character().debt += 3000
     elif mod_choice == 3:
         print(Fore.CYAN + "Hull reinforced. Your ship can take more damage before critical failure.")
