@@ -150,3 +150,39 @@ class Station:
         print(f"You sold {amount} m³ of fuel for {amount * self.fuel_price} credits")
         print(f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits")
         print(f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³")
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "position": {"x": self.space_object.position.x, "y": self.space_object.position.y},
+            "id": self.space_object.id,
+            "fueltank_cap": self.fueltank_cap,
+            "fueltank": self.fueltank,
+            "fuel_price": self.fuel_price,
+            "ores_available_ids": [ore.id for ore in self.ores_available],
+            "ore_cargo": [oc.to_dict() for oc in self.ore_cargo],
+            "ore_cargo_volume": self.ore_cargo_volume,
+            "ore_capacity": self.ore_capacity,
+            "visited": self.visited,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        from src.classes.ore import ORES # Local import
+        from src.classes.ship import IsSpaceObject # Local import
+        from pygame import Vector2  # Add missing Vector2 import
+        station = cls(
+            name=data["name"],
+            station_id=data["id"],
+            position=Vector2(data["position"]["x"], data["position"]["y"]),
+        )
+        station.space_object = IsSpaceObject(Vector2(data["position"]["x"], data["position"]["y"]), data["id"])
+        station.fueltank_cap = data["fueltank_cap"]
+        station.fueltank = data["fueltank"]
+        station.fuel_price = data["fuel_price"]
+        station.ores_available = [ORES.get(ore_id) for ore_id in data["ores_available_ids"] if ORES.get(ore_id) is not None]
+        station.ore_cargo = [OreCargo.from_dict(oc_data) for oc_data in data["ore_cargo"]]
+        station.ore_cargo_volume = data["ore_cargo_volume"]
+        station.ore_capacity = data["ore_capacity"]
+        station.visited = data.get("visited", False)
+        return station

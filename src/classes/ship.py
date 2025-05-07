@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Dict
 
 from pygame import Vector2
 
 from src.classes.asteroid import Asteroid, AsteroidField
 from src.classes.station import Station
-from src.data import OreCargo
+from src.data import OreCargo, Upgrade, UpgradeTarget
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
 
 
@@ -38,6 +38,7 @@ class CanMove:
 
 class Ship:
     ship_id_counter: int = 0
+    
     def __init__(
         self,
         name: str,
@@ -65,8 +66,12 @@ class Ship:
         self.is_docked = False
         self.docked_at: Station | None = None
         self.calculate_cargo_occupancy()
-        self.sensor_range = sensor_range # If any entity enters this range around the ship, it si detected
-
+        self.sensor_range = sensor_range # If any entity enters this range around the ship, it is detected
+        # Track applied upgrades
+        self.applied_upgrades: Dict[str, Upgrade] = {}
+        self.hull_integrity: float = 100.0  # Base hull integrity (percentage)
+        self.shield_capacity: float = 0.0   # Base shield capacity (percentage)
+        
     def get_ore_cargo_by_id(self, ore_id: int) -> OreCargo | None:
         return next((cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None)
 
@@ -134,6 +139,9 @@ class Ship:
             f"Cargohold: {self.cargohold_occupied:.2f}/{self.cargohold_capacity} m3",
             f"Amount of Ores: {ore_units_on_cargohold}",
             f"Docked at: {docked_at_name}",
+            f"Hull Integrity: {self.hull_integrity:.1f}%",
+            f"Shield Capacity: {self.shield_capacity:.1f}%",
+            f"Sensor Range: {self.sensor_range:.2f} AU",
         ]
 
     def cargo_to_string(self):
@@ -290,3 +298,214 @@ class Ship:
 
         for ore in field.ores_available:
             print(f"{ore.name} - {ore.volume} m3")
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "position": {"x": self.space_object.position.x, "y": self.space_object.position.y},
+            "speed": self.moves.speed,
+            "max_fuel": self.max_fuel,
+            "fuel": self.fuel,
+            "fuel_consumption": self.fuel_consumption,
+            "cargo_capacity": self.cargohold_capacity,
+            "cargohold_occupied": self.cargohold_occupied,
+            "cargohold": [cargo.to_dict() for cargo in self.cargohold],
+            "value": self.value,
+            "mining_speed": self.mining_speed,
+            "sensor_range": self.sensor_range,
+            "is_docked": self.is_docked,
+            "docked_at_id": self.docked_at.space_object.id if self.docked_at else None,
+            "applied_upgrades": {upgrade_id: upgrade.to_dict() for upgrade_id, upgrade in self.applied_upgrades.items()},
+            "hull_integrity": self.hull_integrity,
+            "shield_capacity": self.shield_capacity,
+        }
+
+    @classmethod
+    def from_dict(cls, data, game_state): # Added game_state parameter
+        ship = cls(
+            name=data["name"],
+            position=Vector2(data["position"]["x"], data["position"]["y"]),
+            speed=data["speed"],
+            max_fuel=data["max_fuel"],
+            fuel_consumption=data["fuel_consumption"],
+            cargo_capacity=data["cargo_capacity"],
+            value=data["value"],
+            mining_speed=data["mining_speed"],
+            sensor_range=data["sensor_range"],
+        )
+        ship.fuel = data["fuel"]
+        ship.cargohold_occupied = data["cargohold_occupied"]
+        ship.cargohold = [OreCargo.from_dict(cargo_data) for cargo_data in data["cargohold"]]
+        ship.is_docked = data["is_docked"]
+        
+        # Load applied upgrades if present
+        if "applied_upgrades" in data:
+            from src.data import Upgrade
+            ship.applied_upgrades = {
+                upgrade_id: Upgrade.from_dict(upgrade_data) 
+                for upgrade_id, upgrade_data in data["applied_upgrades"].items()
+            }
+            
+        # Load hull and shield stats if present
+        if "hull_integrity" in data:
+            ship.hull_integrity = data["hull_integrity"]
+        if "shield_capacity" in data:
+            ship.shield_capacity = data["shield_capacity"]
+            
+        if data["docked_at_id"] is not None:
+            # Find the station instance from the game_state
+            docked_station = next((s for s in game_state.solar_system.stations if s.space_object.id == data["docked_at_id"]), None)
+            if docked_station:
+                ship.docked_at = docked_station
+            else:
+                # Handle case where station might not be found (e.g. corrupted save)
+                print(f"Warning: Docked station with ID {data['docked_at_id']} not found during ship deserialization.")
+                ship.docked_at = None
+        else:
+            ship.docked_at = None
+        return ship
+
+    def apply_upgrade(self, upgrade: Upgrade) -> bool:
+        """Apply an upgrade to the ship if eligible
+        
+        Args:
+            upgrade: The upgrade to apply
+            
+        Returns:
+            bool: True if upgrade was applied, False otherwise
+        """
+        # Check if upgrade already at max level
+        if upgrade.id in self.applied_upgrades:
+            existing_upgrade = self.applied_upgrades[upgrade.id]
+            if existing_upgrade.level >= existing_upgrade.max_level:
+                return False
+        
+        # Apply upgrade effects based on target
+        if upgrade.target == UpgradeTarget.SPEED:
+            self.moves.speed *= upgrade.multiplier
+            
+        elif upgrade.target == UpgradeTarget.MINING_SPEED:
+            self.mining_speed *= upgrade.multiplier
+            
+        elif upgrade.target == UpgradeTarget.FUEL_CONSUMPTION:
+            self.fuel_consumption *= upgrade.multiplier
+            
+        elif upgrade.target == UpgradeTarget.FUEL_CAPACITY:
+            old_capacity = self.max_fuel
+            self.max_fuel *= upgrade.multiplier
+            # Refill the added capacity
+            self.fuel += (self.max_fuel - old_capacity)
+            
+        elif upgrade.target == UpgradeTarget.CARGO_CAPACITY:
+            self.cargohold_capacity *= upgrade.multiplier
+            
+        elif upgrade.target == UpgradeTarget.SENSOR_RANGE:
+            self.sensor_range *= upgrade.multiplier
+            
+        elif upgrade.target == UpgradeTarget.HULL_INTEGRITY:
+            self.hull_integrity *= upgrade.multiplier
+            
+        elif upgrade.target == UpgradeTarget.SHIELD_CAPACITY:
+            self.shield_capacity = max(0.1, self.shield_capacity * upgrade.multiplier)
+            
+        # Store the applied upgrade
+        if upgrade.id in self.applied_upgrades:
+            self.applied_upgrades[upgrade.id].level += 1
+        else:
+            self.applied_upgrades[upgrade.id] = upgrade.copy()
+        
+        return True
+    
+    def get_upgrade_effect_preview(self, upgrade: Upgrade) -> dict:
+        """Preview the effects of applying an upgrade without actually applying it
+        
+        Args:
+            upgrade: The upgrade to preview
+            
+        Returns:
+            dict: Dictionary with before/after values for the affected attribute
+        """
+        result = {
+            "attribute": upgrade.target.name.lower(),
+            "before": 0.0,  # Initialize as float
+            "after": 0.0,   # Initialize as float
+        }
+        
+        # Get current value based on target
+        if upgrade.target == UpgradeTarget.SPEED:
+            result["before"] = float(self.moves.speed)
+            result["after"] = float(self.moves.speed * upgrade.multiplier)
+            
+        elif upgrade.target == UpgradeTarget.MINING_SPEED:
+            result["before"] = float(self.mining_speed)
+            result["after"] = float(self.mining_speed * upgrade.multiplier)
+            
+        elif upgrade.target == UpgradeTarget.FUEL_CONSUMPTION:
+            result["before"] = float(self.fuel_consumption)
+            result["after"] = float(self.fuel_consumption * upgrade.multiplier)
+            
+        elif upgrade.target == UpgradeTarget.FUEL_CAPACITY:
+            result["before"] = float(self.max_fuel)
+            result["after"] = float(self.max_fuel * upgrade.multiplier)
+            
+        elif upgrade.target == UpgradeTarget.CARGO_CAPACITY:
+            result["before"] = float(self.cargohold_capacity)
+            result["after"] = float(self.cargohold_capacity * upgrade.multiplier)
+            
+        elif upgrade.target == UpgradeTarget.SENSOR_RANGE:
+            result["before"] = float(self.sensor_range)
+            result["after"] = float(self.sensor_range * upgrade.multiplier)
+            
+        elif upgrade.target == UpgradeTarget.HULL_INTEGRITY:
+            result["before"] = float(self.hull_integrity)
+            result["after"] = float(self.hull_integrity * upgrade.multiplier)
+            
+        elif upgrade.target == UpgradeTarget.SHIELD_CAPACITY:
+            result["before"] = float(self.shield_capacity)
+            result["after"] = float(max(0.1, self.shield_capacity * upgrade.multiplier))
+            
+        return result
+    
+    def can_apply_upgrade(self, upgrade_id: str) -> bool:
+        """Check if an upgrade can be applied based on prerequisites
+        
+        Args:
+            upgrade_id: The ID of the upgrade to check
+            
+        Returns:
+            bool: True if the upgrade can be applied
+        """
+        from src.data import UPGRADES
+        
+        if upgrade_id not in UPGRADES:
+            return False
+            
+        upgrade = UPGRADES[upgrade_id]
+        
+        # Check if already at max level
+        if upgrade_id in self.applied_upgrades:
+            if self.applied_upgrades[upgrade_id].level >= upgrade.max_level:
+                return False
+        
+        # Check prerequisites
+        if upgrade.prerequisites:
+            for prereq_id in upgrade.prerequisites:
+                if prereq_id not in self.applied_upgrades:
+                    return False
+                    
+        return True
+        
+    def get_available_upgrades(self) -> List[Upgrade]:
+        """Get list of upgrades that can be applied to this ship
+        
+        Returns:
+            List[Upgrade]: List of available upgrades
+        """
+        from src.data import UPGRADES
+        
+        available = []
+        for upgrade_id, upgrade in UPGRADES.items():
+            if self.can_apply_upgrade(upgrade_id):
+                available.append(upgrade)
+                
+        return available

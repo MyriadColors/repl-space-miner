@@ -19,12 +19,16 @@ from src.command_handlers import (
     direct_travel_command,
     debug_mode_command,
     process_command,
+    upgrade_command,
+    save_game_command,
+    load_game_command,
 )
 from src.command_handlers import register_command, Argument
 from src.events import intro_event
 import time
 import pygame as pg
 from colorama import Fore, Back, Style, init
+from src.helpers import is_valid_int, is_valid_float, is_valid_bool
 
 init(autoreset=True)
 
@@ -47,134 +51,94 @@ SHIP_NAME = "Player's Ship"
 
 def register_commands(game_state: "Game"):
     register_command(
-        ["refuel", "ref"],
-        refuel_command,
-        argument_list=[
-            Argument(
-                name="amount",
-                type=float,
-                is_optional=False,
-                custom_validator=lambda x: isinstance(x, float) and x > 0,
-            )
-        ],
+        ["status", "st"],
+        display_time_and_status,
+        [],
     )
-
-    register_command(
-        ["sell", "sl"],
-        sell_command,
-    )
-
-    register_command(
-        ["buy", "by"],
-        buy_command,
-        argument_list=[
-            Argument(name="item_name", type=str, is_optional=False),
-            Argument(
-                name="amount",
-                type=int,
-                is_optional=False,
-                custom_validator=lambda x: int(x) > 0,
-            ),
-        ],
-    )
-
-    register_command(
-        ["travel", "tr"],  # Include "tr" as an abbreviation
-        travel_command,
-        argument_list=[
-            Argument(
-                name="sort_type",
-                type=str,
-                is_optional=False,
-                custom_validator=lambda x: x in ["closest", "c"],
-            ),
-            Argument(
-                name="object_type",
-                type=str,
-                is_optional=False,
-                custom_validator=lambda x: x in ["field", "station", "f", "s"],
-            ),
-        ],
-    )
-
     register_command(
         ["scan", "sc"],
         scan_command,
-        argument_list=[
-            Argument(
-                name="num_objects",
-                type=int,
-                is_optional=False,
-            ),
+        [
+            Argument("num_objects", str, False, 0, is_valid_int),
         ],
     )
-
-    register_command(
-        ["help", "h"],
-        display_help,
-        argument_list=[Argument(name="command_name", type=str, is_optional=True)],
-    )
-
-    register_command(
-        ["direct_travel", "dtr"],
-        direct_travel_command,
-        argument_list=[
-            Argument(name="destination_x", type=float, is_optional=False),
-            Argument(name="destination_y", type=float, is_optional=False),
-        ],
-    )
-
-    register_command(
-        ["dock", "do"],
-        command_dock,
-    )
-
-    register_command(
-        ["undock", "ud"],
-        command_undock,
-    )
-
-    register_command(
-        ["status", "st"],
-        display_time_and_status,
-    )
-
-    register_command(
-        ["mine", "mi"],
-        mine_command,
-        argument_list=[
-            Argument(name="time_to_mine", type=int, is_optional=True),  # Time to mine
-            Argument(
-                name="mine_until_full", type=str, is_optional=True
-            ),  # Mine until full
-            Argument(name="ore_selected", type=str, is_optional=True),  # Ores to mine
-        ],
-    )
-
-    # COmmand to scan the asteroid field,r eturning the ores available
     register_command(
         ["scan_field", "scf"],
         scan_field_command,
+        [],
     )
-
-    register_command(["clear", "cl"], clear)
-
-    register_command(["debug", "dm"], debug_mode_command)
-
     register_command(
-        ["add_ore", "ao"],
-        add_ore_debug_command,
-        argument_list=[
-            Argument(name="amount", type=int, is_optional=False),
-            Argument(name="ore_name", type=str, is_optional=False),
+        ["travel", "tr"],
+        travel_command,
+        [
+            Argument("sort_type", str, False, 0, None),
+            Argument("object_type", str, True, 1, None),
         ],
     )
-
     register_command(
-        ["add_creds", "ac"],
-        add_creds_debug_command,
-        argument_list=[Argument(name="amount", type=int, is_optional=False)],
+        ["direct_travel", "dtr"],
+        direct_travel_command,
+        [
+            Argument("destination_x", str, False, 0, is_valid_float),
+            Argument("destination_y", str, False, 1, is_valid_float),
+        ],
     )
+    register_command(
+        ["mine", "mi"],
+        mine_command,
+        [
+            Argument("time_to_mine", int, False, 0, is_valid_int),
+            Argument("mine_until_full", bool, False, 1, is_valid_bool),
+            Argument("ore_selected", str, True, 2, None),
+        ],
+    )
+    register_command(
+        ["dock", "do"],
+        command_dock,
+        [],
+    )
+    register_command(
+        ["undock", "ud"],
+        command_undock,
+        [],
+    )
+    register_command(
+        ["buy", "by"],
+        buy_command,
+        [
+            Argument("item_name", str, False, 0, None),
+            Argument("amount", str, False, 1, is_valid_int),
+        ],
+    )
+    register_command(["sell", "sl"], sell_command, [])
+    register_command(
+        ["refuel", "ref"], refuel_command, [Argument("amount", float, False, 0, None)]
+    )
+    register_command(
+        ["upgrade", "up"],
+        upgrade_command,
+        [Argument("args", list, True)],
+    )
+    register_command(["help"], display_help, [Argument("command_name", str, True, 0, None)])
+    register_command(["exit"], command_exit, [])
+    register_command(["clear", "cl"], clear, [])
+    register_command(["debug", "dm"], debug_mode_command, [])
+    
+    register_command(
+        ["add_credits", "ac"],
+        add_creds_debug_command,
+        [Argument("amount", str, False, 0, None)],
+    )
+    register_command(
+        ["add_ores", "ao"],
+        add_ore_debug_command,
+        [
+            Argument("amount", int, False, 0, None),
+            Argument("ore_name", str, False, 1, None),
+        ],
+    )
+    register_command(["save"], save_game_command, [Argument("filename", str, True, 0, None)])
+    register_command(["load"], load_game_command, [Argument("filename", str, True, 0, None)])
 
 
 def start_repl():

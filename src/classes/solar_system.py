@@ -180,3 +180,27 @@ class SolarSystem:
                                   station.space_object.position) <= player_ship.interaction_radius:
                 return station
         return None
+
+    def to_dict(self):
+        return {
+            "size": self.size,
+            "game_time": self.game_time, # Although game_time is in Game, saving it here too for potential standalone use
+            "field_quantity": self.field_quantity,
+            "asteroid_fields": [field.to_dict() for field in self.asteroid_fields],
+            "stations": [station.to_dict() for station in self.stations],
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        solar_system = cls(
+            size=data["size"],
+            field_quantity=data["field_quantity"]
+        )
+        solar_system.game_time = data.get("game_time", 0)
+        solar_system.asteroid_fields = [
+            AsteroidField.from_dict(field_data) for field_data in data["asteroid_fields"]
+        ]
+        solar_system.stations = [
+            Station.from_dict(station_data) for station_data in data["stations"]
+        ]
+        return solar_system

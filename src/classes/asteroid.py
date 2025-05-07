@@ -2,6 +2,7 @@ import random
 from pygame import Vector2
 from src.classes.ore import Ore
 from src.helpers import rnd_float, meters_cubed_to_km_cubed
+from src.data import OreCargo
 
 
 class Asteroid:
@@ -15,6 +16,25 @@ class Asteroid:
 
     def get_info(self):
         return f"{self.name} {self.volume} {self.ore.get_info()}"
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "volume": self.volume,
+            "ore_id": self.ore.id,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        from src.classes.ore import ORES  # Local import to avoid circular dependency
+        ore_obj = ORES.get(data["ore_id"])
+        if ore_obj is None:
+            raise ValueError(f"Ore with ID {data['ore_id']} not found.")
+        return cls(
+            name=data["name"],
+            volume=data["volume"],
+            ore=ore_obj,
+        )
 
 
 class AsteroidField:
@@ -69,3 +89,31 @@ class AsteroidField:
 
     def get_total_volume(self):
         return sum(asteroid.volume for asteroid in self.asteroids)
+
+    def to_dict(self):
+        return {
+            "asteroid_quantity": self.asteroid_quantity,
+            "ores_available_ids": [ore.id for ore in self.ores_available],
+            "radius": self.radius,
+            "asteroids": [asteroid.to_dict() for asteroid in self.asteroids],
+            "position": {"x": self.space_object.position.x, "y": self.space_object.position.y},
+            "id": self.space_object.id,
+            "visited": self.visited,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        from src.classes.ore import ORES  # Local import
+        from src.classes.ship import IsSpaceObject  # Local import
+        from pygame import Vector2  # Add missing Vector2 import
+        ores = [ORES.get(ore_id) for ore_id in data["ores_available_ids"] if ORES.get(ore_id) is not None]
+        field = cls(
+            asteroid_quantity=data["asteroid_quantity"],
+            ores_available=ores,
+            radius=data["radius"],
+            position=Vector2(data["position"]["x"], data["position"]["y"]),
+        )
+        field.space_object = IsSpaceObject(Vector2(data["position"]["x"], data["position"]["y"]), data["id"])
+        field.asteroids = [Asteroid.from_dict(ast_data) for ast_data in data["asteroids"]]
+        field.visited = data.get("visited", False)  # Add visited attribute
+        return field

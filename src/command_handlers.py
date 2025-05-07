@@ -813,6 +813,24 @@ def debug_mode_command(game_state) -> None:
         game_state.ui.info_message("Debug mode enabled.")
 
 
+def save_game_command(game_state: "Game", filename: str = ""):
+    """Saves the current game state to a file."""
+    game_state.save_game(filename)
+
+def load_game_command(game_state: "Game", filename: str = ""):
+    """Loads a game state from a file."""
+    loaded_game = Game.load_game(game_state.ui, filename)  # Pass UI instance
+    if loaded_game:
+        # Update the current game_state object with the loaded data
+        for attr_name, attr_value in vars(loaded_game).items():
+            if hasattr(game_state, attr_name):
+                setattr(game_state, attr_name, attr_value)  # Fixed: was missing attr_name
+        
+        game_state.ui.success_message(f"Game state has been updated from {filename if filename else 'selected file'}.")
+    else:
+        game_state.ui.error_message("Failed to load game.")
+
+
 def display_help(game_state: "Game", command_name: str):
     if not command_name:
         command_name = ""
@@ -908,6 +926,8 @@ def display_help(game_state: "Game", command_name: str):
         "Add ores to your ship (debug mode command)",
         game_state.debug_flag,
     )
+    write_command("save [filename]", "Saves the current game. Filename is optional.", True)
+    write_command("load [filename]", "Loads a saved game. Filename is optional.", True)
     write_command("exit", "Exit the game_state.", True)
 
     if command_name:
@@ -1013,8 +1033,155 @@ def display_help(game_state: "Game", command_name: str):
             print("  Adds the specified amount of ores to your account.")
             print("  Example: add_ores 100 Pyrogen")
             print("  Needs Debug Mode to be Enabled")
+        elif command_name == "save":
+            print(game_state.ui.format_text("save [filename]:", fg=Fore.CYAN))
+            print("  Saves the current game state to a file.")
+            print("  If filename is omitted, a default name with timestamp will be used (e.g., RSM_SAVE_YYYYMMDD_HHMMSS.json).")
+            print("  Example: save my_progress")
+        elif command_name == "load":
+            print(game_state.ui.format_text("load [filename]:", fg=Fore.CYAN))
+            print("  Loads a game state from a file.")
+            print("  If filename is omitted, a list of available save files will be shown for selection.")
+            print("  Example: load my_progress")
         elif command_name == "exit":
             print(game_state.ui.format_text("exit:", fg=Fore.CYAN))
             print("  Exits the game_state.")
         else:
             print(Fore.RED + f"Unknown command: {command_name}" + Style.RESET_ALL)
+
+def upgrade_command(game_state, args=None):
+    """
+    Allow purchasing upgrades for the player's ship when docked at a station.
+    
+    Args:
+        game_state: The game state object
+        args: Command arguments (optional)
+            - list: Show list of available upgrades
+            - <upgrade_id>: Purchase a specific upgrade
+    """
+    from src.data import UPGRADES
+    
+    player_ship = game_state.get_player_ship()
+    if not player_ship.is_docked:
+        print("You need to be docked at a station to purchase ship upgrades.")
+        return
+    
+    # List all available upgrades
+    if not args or args[0] == "list":
+        available_upgrades = player_ship.get_available_upgrades()
+        
+        if not available_upgrades:
+            print("No upgrades available for your ship at this time.")
+            return
+        
+        print("=== AVAILABLE SHIP UPGRADES ===")
+        print(f"Credits available: {game_state.get_credits():.2f}")
+        print("\n")
+        
+        # Group upgrades by category for better presentation
+        from src.data import UpgradeCategory
+        by_category = {}
+        for upgrade in available_upgrades:
+            category = upgrade.category.name
+            if category not in by_category:
+                by_category[category] = []
+            by_category[category].append(upgrade)
+        
+        for category, upgrades in by_category.items():
+            print(f"--- {category} UPGRADES ---")
+            for upgrade in upgrades:
+                level_info = ""
+                current_level = 1
+                if upgrade.id in player_ship.applied_upgrades:
+                    current_level = player_ship.applied_upgrades[upgrade.id].level
+                    level_info = f" (Current: Level {current_level}/{upgrade.max_level})"
+                
+                price = upgrade.get_next_level_price() if current_level > 1 else upgrade.price
+                print(f"{upgrade.id}: {upgrade.name}{level_info} - {price:.2f} credits")
+                print(f"  {upgrade.description}")
+                
+                # Show preview of effects
+                preview = player_ship.get_upgrade_effect_preview(upgrade)
+                if preview["attribute"] == "fuel_consumption":
+                    print(f"  Effect: {preview['attribute']} {preview['before']:.5f} -> {preview['after']:.5f}")
+                else:
+                    print(f"  Effect: {preview['attribute']} {preview['before']:.2f} -> {preview['after']:.2f}")
+                print("")
+        
+        print("To purchase an upgrade, use: upgrade <upgrade_id>")
+        return
+    
+    # Purchase a specific upgrade
+    upgrade_id = args[0]
+    if upgrade_id not in UPGRADES:
+        print(f"Unknown upgrade: {upgrade_id}")
+        print("Use 'upgrade list' to see available upgrades.")
+        return
+    
+    # Check if upgrade can be applied
+    if not player_ship.can_apply_upgrade(upgrade_id):
+        # Check if it's due to max level
+        if upgrade_id in player_ship.applied_upgrades:
+            if player_ship.applied_upgrades[upgrade_id].level >= UPGRADES[upgrade_id].max_level:
+                print(f"You've already reached the maximum level for {UPGRADES[upgrade_id].name}.")
+                return
+        
+        # Check for prerequisites
+        if UPGRADES[upgrade_id].prerequisites:
+            missing = [prereq_id for prereq_id in UPGRADES[upgrade_id].prerequisites 
+                      if prereq_id not in player_ship.applied_upgrades]
+            if missing:
+                prereq_names = [UPGRADES[m].name for m in missing]
+                print(f"You need the following upgrades first: {', '.join(prereq_names)}")
+                return
+        
+        print(f"This upgrade cannot be applied to your ship right now.")
+        return
+    
+    # Calculate price
+    base_price = UPGRADES[upgrade_id].price
+    current_level = 1
+    if upgrade_id in player_ship.applied_upgrades:
+        current_level = player_ship.applied_upgrades[upgrade_id].level
+    
+    price = base_price
+    if current_level > 1:
+        price = UPGRADES[upgrade_id].get_next_level_price()
+    
+    # Check if player can afford it
+    if game_state.get_credits() < price:
+        print(f"You don't have enough credits. The upgrade costs {price:.2f} credits.")
+        return
+    
+    # Confirm purchase
+    upgrade = UPGRADES[upgrade_id]
+    preview = player_ship.get_upgrade_effect_preview(upgrade)
+    
+    print(f"Purchase {upgrade.name} for {price:.2f} credits?")
+    print(f"Effect: {preview['attribute']} {preview['before']:.5f} -> {preview['after']:.5f}")
+    
+    response = input("Confirm (y/n): ")
+    if response.lower() != "y":
+        print("Purchase cancelled.")
+        return
+    
+    # Apply upgrade and deduct credits
+    result = player_ship.apply_upgrade(upgrade)
+    if result:
+        game_state.player_character.credits -= price
+        
+        # Show success message
+        level_str = ""
+        if upgrade_id in player_ship.applied_upgrades:
+            level = player_ship.applied_upgrades[upgrade_id].level
+            if level > 1:
+                level_str = f" (Level {level})"
+        
+        print(f"Successfully installed {upgrade.name}{level_str}!")
+        print(f"Credits remaining: {game_state.get_credits():.2f}")
+    else:
+        print("Failed to apply upgrade. Please report this as a bug.")
+
+# Add registrations for save and load commands
+register_command(["save"], save_game_command, [Argument("filename", str, True, 0, None)])
+register_command(["load"], load_game_command, [Argument("filename", str, True, 0, None)])
