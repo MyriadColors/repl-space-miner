@@ -105,8 +105,36 @@ class Ship:
         fuel_consumed = round(distance * self.fuel_consumption, 3)
         return distance, time, fuel_consumed
 
+    def calculate_adjusted_fuel_consumption(self, character, fuel_consumed: float) -> float:
+        """Adjust fuel consumption based on character traits and skills."""
+        # Apply character's fuel consumption modifier if applicable
+        if hasattr(character, "fuel_consumption_mod"):
+            fuel_consumed *= character.fuel_consumption_mod
+
+            # Apply piloting skill bonus (0.5% reduction per point above 5)
+            if character.piloting > 5:
+                piloting_bonus = 1 - ((character.piloting - 5) * 0.005)
+                fuel_consumed *= piloting_bonus
+
+        # Round to 3 decimal places
+        return round(fuel_consumed, 3)
+
     def travel(self, game_state, destination: Vector2):
         distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
+        
+        # Apply character's fuel consumption modifier if applicable
+        character = game_state.get_player_character()
+        if hasattr(character, "fuel_consumption_mod"):
+            # Apply the modifier to the fuel consumption
+            fuel_consumed *= character.fuel_consumption_mod
+            
+            # Apply piloting skill bonus (0.5% reduction per point above 5)
+            if character.piloting > 5:
+                piloting_bonus = 1 - ((character.piloting - 5) * 0.005)
+                fuel_consumed *= piloting_bonus
+                
+            # Round to 3 decimal places
+            fuel_consumed = self.calculate_adjusted_fuel_consumption(character, fuel_consumed)
 
         # Check if destination is within system boundaries
         system_size = game_state.solar_system.size
@@ -130,6 +158,10 @@ class Ship:
             print("Travel cancelled.")
             return
 
+        # Apply Methodical trait message if applicable
+        if hasattr(character, "positive_trait") and character.positive_trait == "Methodical" and character.fuel_consumption_mod < 1.0:
+            print("Your methodical approach to navigation optimizes the journey, saving fuel.")
+        
         self.consume_fuel(fuel_consumed)
         self.space_object.position = destination
         game_state.global_time += travel_time
@@ -196,11 +228,32 @@ class Ship:
                 print(f"- {ore.name}")
             ores_selected_list = None
 
+        # Get character trait modifiers for mining
+        character = game_state.get_player_character()
+        mining_yield_mod = 1.0
+        if hasattr(character, "mining_yield_mod"):
+            mining_yield_mod = character.mining_yield_mod
+        
+        # Apply engineering skill bonus (1% per point above 5)
+        if character.engineering > 5:
+            engineering_bonus = 1 + ((character.engineering - 5) * 0.01)
+            mining_yield_mod *= engineering_bonus
+
+        # Adjust mining speed based on traits
+        effective_mining_speed = self.mining_speed * mining_yield_mod
+        
+        # Check for Forgetful negative trait - 5% chance to lose ore while mining
+        forgetful_chance = 0.0
+        if hasattr(character, "negative_trait") and character.negative_trait == "Forgetful":
+            forgetful_chance = 0.05  # 5% chance to lose ore
+            print("Warning: Your forgetful nature might cause you to misplace some minerals.")
+            
         # Initialize mining variables
         asteroid_being_mined: Asteroid | None = None
         ores_mined: list[OreCargo] = []
         mined_volume = 0
         time_spent = 0
+        lost_ore_count = 0
 
         # Begin mining loop
         while (not mine_until_full and int(time_spent) < int(time_to_mine)) or (
@@ -237,6 +290,15 @@ class Ship:
                 )
                 break  # Stop mining if no further ores can be added safely
 
+            # Apply forgetful trait - chance to lose ore
+            import random
+            if forgetful_chance > 0 and random.random() < forgetful_chance:
+                # Ore is mined but "lost"
+                lost_ore_count += 1
+                asteroid_being_mined.volume -= ore.volume
+                time_spent += 1
+                continue  # Skip adding to cargo
+
             # Add the ore to mined cargo
             ore_cargo = next(
                 (cargo for cargo in ores_mined if cargo.ore.id == ore.id), None
@@ -249,7 +311,7 @@ class Ship:
             # Decrease the asteroid's volume and update ship's cargo data
             asteroid_being_mined.volume -= ore.volume
             self.cargohold_occupied += ore.volume
-            mined_volume += self.mining_speed
+            mined_volume += effective_mining_speed
             time_spent += 1
 
         # Summarize mined results
@@ -269,6 +331,8 @@ class Ship:
             print(
                 f"Mined {total_quantity} units of {', '.join(ore_names)} for {total_volume:.2f} m³"
             )
+            if lost_ore_count > 0:
+                print(f"You somehow misplaced {lost_ore_count} units of ore during mining. How forgetful!")
         else:
             print("No ores were mined.")
 

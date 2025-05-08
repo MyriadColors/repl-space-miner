@@ -21,6 +21,7 @@ from src.commands import (
     upgrade_command,
     save_game_command,
     load_game_command,
+    repay_debt_command,
     register_command,
     Argument
 )

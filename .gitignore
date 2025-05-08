@@ -105,3 +105,6 @@ src/classes/__pycache__/station.cpython-313.pyc
 
 save
 
+**/__pycache__/
+**/.mypy_cache/
+

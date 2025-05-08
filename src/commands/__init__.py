@@ -18,6 +18,7 @@ from .system import (
 )
 from .appearance import color_command, reset_command
 from .sound import toggle_sound_command
+from .banking import banking_menu_command
 
 # Export the global command registry
 commands = command_registry
@@ -50,4 +51,5 @@ __all__ = [
     'color_command',
     'reset_command',
     'toggle_sound_command',
-] 
+    'banking_menu_command',
+]

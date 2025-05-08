@@ -61,19 +61,57 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
         game_state.ui.error_message(f"Station only has {ore_cargo.quantity} {item_name} available.")
         return
 
-    total_price = round(ore_cargo.buy_price * amount_int, 2)  # Round to 2 decimal places
+    # Calculate base price
+    base_price = ore_cargo.buy_price * amount_int
+    
+    # Apply character trait modifiers to price
     player_character = game_state.get_player_character()
     if player_character is None:
         game_state.ui.error_message("Player character not found.")
         return
+    
+    # Apply buy price modifier from traits
+    price_modifier = 1.0
+    if hasattr(player_character, "buy_price_mod"):
+        price_modifier = player_character.buy_price_mod
+        
+    # Apply charisma bonus (0.5% discount per point above 5)
+    if player_character.charisma > 5:
+        charisma_bonus = 1 - ((player_character.charisma - 5) * 0.005)
+        price_modifier *= charisma_bonus
+        
+    # Apply trader reputation bonus (0.25% per positive reputation point)
+    if player_character.reputation_traders > 0:
+        trader_bonus = 1 - (player_character.reputation_traders * 0.0025)
+        price_modifier *= trader_bonus
+        
+    # Apply superstitious trait randomly
+    import random
+    if hasattr(player_character, "negative_trait") and player_character.negative_trait == "Superstitious":
+        if random.random() < 0.1:  # 10% chance to miss a deal
+            game_state.ui.warn_message(f"You notice the transaction number ends in 13. A bad omen! You negotiate nervously.")
+            price_modifier *= 1.05  # 5% price increase
+    
+    # Apply modified price
+    total_price = round(base_price * price_modifier, 2)
+    
+    # Show price adjustment notification if significant
+    if price_modifier < 0.95:  # More than 5% discount
+        game_state.ui.success_message(f"Your negotiation skills helped secure a better price!")
+    elif price_modifier > 1.05:  # More than 5% increase  
+        game_state.ui.warn_message(f"The merchant seems to be charging you a premium...")
         
     if player_character.credits < total_price:
         game_state.ui.error_message("Not enough credits to make this purchase.")
         return
 
     # Try to barter
-    final_price, _ = barter(total_price)
+    final_price, bartered = barter(total_price)
     final_price = round(final_price, 2)  # Ensure the bartered price is also rounded
+    
+    # Apply Charismatic trait message if applicable and wasn't already bartered down
+    if not bartered and hasattr(player_character, "positive_trait") and player_character.positive_trait == "Charismatic" and price_modifier < 1.0:
+        game_state.ui.success_message("Your natural charisma helped secure a better deal.")
     
     # Update game state using our credit management method
     player_character.remove_credits(final_price)
@@ -143,17 +181,62 @@ def sell_command(game_state: Game) -> None:
         game_state.ui.error_message("Not enough items in cargo.")
         return
 
-    # Calculate price
-    total_price = round(selected_cargo.ore.price * quantity, 2)
-    final_price, _ = barter(total_price)
-    final_price = round(final_price, 2)  # Ensure the bartered price is also rounded
-
-    # Update game state
+    # Get the player character
     player_character = game_state.get_player_character()
     if player_character is None:
         game_state.ui.error_message("Player character not found.")
         return
+    
+    # Calculate base price
+    base_price = selected_cargo.ore.price * quantity
+    
+    # Apply sell price modifier from traits
+    price_modifier = 1.0
+    if hasattr(player_character, "sell_price_mod"):
+        price_modifier = player_character.sell_price_mod
         
+    # Apply charisma bonus (0.5% bonus per point above 5)
+    if player_character.charisma > 5:
+        charisma_bonus = 1 + ((player_character.charisma - 5) * 0.005)
+        price_modifier *= charisma_bonus
+        
+    # Apply trader reputation bonus (0.25% per positive reputation point)
+    if player_character.reputation_traders > 0:
+        trader_bonus = 1 + (player_character.reputation_traders * 0.0025)
+        price_modifier *= trader_bonus
+        
+    # Apply superstitious trait randomly
+    import random
+    if hasattr(player_character, "negative_trait") and player_character.negative_trait == "Superstitious":
+        if random.random() < 0.1:  # 10% chance to miss a deal
+            game_state.ui.warn_message(f"You notice it's the 13th deal of the day. A bad omen! You negotiate nervously.")
+            price_modifier *= 0.95  # 5% price decrease
+    
+    # Apply modified price
+    total_price = round(base_price * price_modifier, 2)
+    
+    # Show price adjustment notification if significant
+    if price_modifier > 1.05:  # More than 5% bonus
+        game_state.ui.success_message(f"Your negotiation skills helped secure a better price!")
+    elif price_modifier < 0.95:  # More than 5% decrease
+        game_state.ui.warn_message(f"The merchant seems to be lowballing your offer...")
+        
+    # Try to barter
+    final_price, bartered = barter(total_price)
+    final_price = round(final_price, 2)  # Ensure the bartered price is also rounded
+    
+    # Apply Charismatic trait message if applicable and wasn't already bartered up
+    if not bartered and hasattr(player_character, "positive_trait") and player_character.positive_trait == "Charismatic" and price_modifier > 1.0:
+        game_state.ui.success_message("Your natural charisma helped secure a better sale price.")
+        
+    # Check for Forgetful negative trait - 5% chance to forget some of your payment
+    if hasattr(player_character, "negative_trait") and player_character.negative_trait == "Forgetful":
+        if random.random() < 0.05:  # 5% chance to lose some credits
+            lost_amount = round(final_price * 0.05, 2)  # Lose 5% of the sale
+            final_price -= lost_amount
+            game_state.ui.warn_message(f"You misplaced {lost_amount} credits during the transaction. How forgetful!")
+    
+    # Update game state
     player_character.add_credits(final_price)
     
     # Update cargo quantities

@@ -32,13 +32,30 @@ def travel_command(game_state: Game, **kwargs) -> float:
     game_state.ui.info_message(f"  Estimated travel time: {format_seconds(travel_time)}")
     
     confirm = input("Confirm travel? (y/n) ")
-    if confirm.lower() != "y":
+    # Accept various forms of "yes" as confirmation
+    if confirm.lower() not in ["y", "yes", "yeah", "yep", "sure", "ok", "okay"]:
         game_state.ui.info_message("Travel cancelled.")
         return 0.0
         
     player_ship.consume_fuel(fuel_consumed)
     player_ship.space_object.position = destination
     game_state.global_time += travel_time
+    
+    # Check for debt interest after time has passed
+    if game_state.player_character:
+        interest_result = game_state.player_character.calculate_debt_interest(game_state.global_time)
+        if interest_result:
+            interest_amount, new_debt = interest_result
+            game_state.ui.warn_message(f"\n⚠️ DEBT ALERT! ⚠️")
+            game_state.ui.warn_message(f"While traveling, {interest_amount:.2f} credits of interest has accumulated on your debt!")
+            game_state.ui.warn_message(f"Your current debt is now {new_debt:.2f} credits.")
+            
+            # Advice based on debt levels
+            if new_debt > 10000:
+                game_state.ui.error_message("Your debt has reached dangerous levels. Creditors may soon take action!")
+                game_state.ui.info_message("Visit any station's banking terminal to make payments on your debt.")
+            elif new_debt > 5000:
+                game_state.ui.warn_message("Your debt is growing. Consider making payments at a station soon.")
     
     game_state.ui.info_message(f"The ship has arrived at {destination}")
     return travel_time

@@ -21,8 +21,40 @@ def display_status(game_state: Game) -> None:
         game_state.ui.info_message(line)
     
     if game_state.player_character:
-        game_state.ui.info_message(f"\nCredits: {game_state.player_character.credits}")
-    game_state.ui.info_message(f"Game Time: {format_seconds(game_state.global_time)}")
+        # Check for debt interest first
+        interest_result = game_state.player_character.calculate_debt_interest(game_state.global_time)
+        if interest_result:
+            interest_amount, new_debt = interest_result
+            game_state.ui.warn_message(f"DEBT ALERT: {interest_amount:.2f} credits of interest has been applied to your debt!")
+            
+        # Display financial status with emphasis on debt
+        game_state.ui.info_message(f"\nFinancial Status:")
+        game_state.ui.info_message(f"Credits: {game_state.player_character.credits:.2f}")
+        
+        # Highlight debt with color based on amount
+        debt = game_state.player_character.debt
+        if debt > 10000:
+            # Red for high debt
+            game_state.ui.error_message(f"DEBT: {debt:.2f} credits")
+            game_state.ui.warn_message(f"Warning: High debt levels! Banks may send debt collectors.")
+        elif debt > 5000:
+            # Yellow for medium debt
+            game_state.ui.warn_message(f"DEBT: {debt:.2f} credits")
+        else:
+            # Normal for low debt
+            game_state.ui.info_message(f"Debt: {debt:.2f} credits")
+            
+        if game_state.player_character.debt_interest_mod > 1.0:
+            game_state.ui.warn_message(f"Your 'Indebted' trait increases interest by {(game_state.player_character.debt_interest_mod - 1.0) * 100:.0f}%")
+        
+        # Show weekly interest rate
+        weekly_rate = 0.05 * game_state.player_character.debt_interest_mod
+        game_state.ui.info_message(f"Weekly Interest Rate: {weekly_rate:.1%}")
+        next_interest = game_state.player_character.last_interest_time + 168
+        time_to_next = next_interest - game_state.global_time
+        game_state.ui.info_message(f"Next interest in: {format_seconds(time_to_next)}")
+        
+    game_state.ui.info_message(f"\nGame Time: {format_seconds(game_state.global_time)}")
 
 
 def display_time_and_status(game_state: Game) -> None:
@@ -147,6 +179,9 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         # Trading commands
         write_command("buy/b <item> <amount>", "Buy items from station", True, "docked")
         write_command("sell/s", "Sell items to station", True, "docked")
+        
+        # Banking commands
+        write_command("bank/repay [amount]", "Access banking services to repay debt", True, "docked")
         
         # Docking commands
         write_command("dock/do", "Dock with nearby station", True, "undocked")

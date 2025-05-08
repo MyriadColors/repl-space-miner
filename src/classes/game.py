@@ -59,6 +59,11 @@ class UI:
             self.default_fg = fg
         if bg:
             self.default_bg = bg
+            
+    def clear_screen(self):
+        """Clear the terminal screen."""
+        import os
+        os.system('cls' if os.name == 'nt' else 'clear')
 
 
 @dataclass
@@ -97,6 +102,24 @@ class Character:
         self.reputation_explorers = 0
         self.credits: float = self.round_credits(starting_creds)
         self.debt: float = self.round_credits(starting_debt)
+        self.last_interest_time = 0  # Store the last time interest was applied
+        # New personality traits
+        self.positive_trait = ""
+        self.negative_trait = ""
+        # Trait effect modifiers (default to 1.0 = no effect)
+        self.damage_resist_mod = 1.0
+        self.mining_yield_mod = 1.0
+        self.buy_price_mod = 1.0
+        self.sell_price_mod = 1.0
+        self.sensor_range_mod = 1.0
+        self.evasion_mod = 1.0
+        self.fuel_consumption_mod = 1.0
+        self.debt_interest_mod = 1.0
+        # Banking system attributes
+        self.bank_transactions: list[dict] = []
+        self.savings = 0.0
+        self.savings_interest_rate = 0.02  # 2% weekly interest rate
+        self.last_savings_interest_time = 0  # Store the last time savings interest was applied
         
     def round_credits(self, value: float) -> float:
         """
@@ -124,13 +147,105 @@ class Character:
         """Remove debt and return the new balance"""
         self.debt = self.round_credits(self.debt - amount)
         return self.debt
+        
+    def apply_trait_effects(self):
+        """Apply effects from personality traits"""
+        # Reset modifiers to default
+        self.damage_resist_mod = 1.0
+        self.mining_yield_mod = 1.0
+        self.buy_price_mod = 1.0
+        self.sell_price_mod = 1.0
+        self.sensor_range_mod = 1.0
+        self.evasion_mod = 1.0
+        self.fuel_consumption_mod = 1.0
+        self.debt_interest_mod = 1.0
+        
+        # Apply positive trait effects
+        if self.positive_trait == "Resilient":
+            self.damage_resist_mod = 0.9  # 10% less damage
+        elif self.positive_trait == "Resourceful":
+            self.mining_yield_mod = 1.05  # 5% more ore
+        elif self.positive_trait == "Charismatic":
+            self.buy_price_mod = 0.95  # 5% cheaper purchases
+            self.sell_price_mod = 1.05  # 5% better sales
+        elif self.positive_trait == "Perceptive":
+            self.sensor_range_mod = 1.15  # 15% better sensors
+        elif self.positive_trait == "Quick":
+            self.evasion_mod = 1.1  # 10% better evasion
+        elif self.positive_trait == "Methodical":
+            self.fuel_consumption_mod = 0.92  # 8% less fuel use
+            
+        # Apply negative trait effects
+        if self.negative_trait == "Reckless":
+            self.damage_resist_mod *= 1.1  # 10% more damage
+        elif self.negative_trait == "Paranoid":
+            self.buy_price_mod *= 1.05  # 5% higher prices overall
+            self.sell_price_mod *= 0.95  # 5% worse sales
+        elif self.negative_trait == "Forgetful":
+            # Forgetful has a random chance effect, handled in mining
+            pass
+        elif self.negative_trait == "Impatient":
+            self.mining_yield_mod *= 0.9  # 10% less mining efficiency
+        elif self.negative_trait == "Superstitious":
+            # Superstitious has special event handling, no modifier needed
+            pass
+        elif self.negative_trait == "Indebted":
+            self.debt_interest_mod = 1.1  # 10% higher interest
+
+    def calculate_debt_interest(self, current_time: int):
+        """
+        Calculate and apply weekly interest on the debt
+        Returns a tuple of (interest_amount, new_debt) if interest was applied, None otherwise
+        """
+        # Weekly interest rate (5% per week)
+        WEEKLY_INTEREST_RATE = 0.05
+        # Define a week as 168 hours (7 days * 24 hours)
+        WEEK_LENGTH = 168
+        
+        # Check if a week has passed since last interest calculation
+        if self.last_interest_time == 0:
+            # First time tracking interest - just store current time
+            self.last_interest_time = current_time
+            return None
+            
+        weeks_passed = (current_time - self.last_interest_time) // WEEK_LENGTH
+        
+        if weeks_passed >= 1:
+            # Apply interest for each week passed
+            total_interest = 0.0
+            current_debt = self.debt
+            
+            for _ in range(weeks_passed):
+                # Apply the "Indebted" trait modifier if it exists
+                adjusted_rate = WEEKLY_INTEREST_RATE * self.debt_interest_mod
+                interest = current_debt * adjusted_rate
+                current_debt += interest
+                total_interest += interest
+            
+            # Update debt and last interest time
+            self.debt = self.round_credits(current_debt)
+            self.last_interest_time = current_time
+            
+            return (self.round_credits(total_interest), self.debt)
+        
+        return None
 
     def to_string(self) -> list[str]:
+        trait_info = ""
+        if self.positive_trait or self.negative_trait:
+            trait_info = f"\nPositive Trait: {self.positive_trait}\nNegative Trait: {self.negative_trait}"
+            
+        skill_info = f"\nPiloting: {self.piloting}\nEngineering: {self.engineering}\nCombat: {self.combat}" + \
+                    f"\nEducation: {self.education}\nCharisma: {self.charisma}"
+                    
         return [f"Name: {self.name}" + \
                 f"\nAge: {self.age}" + \
                 f"\nSex: {self.sex}" + \
                 f"\nBackground: {self.background}" + \
                 f"\nCredits: {self.credits}" + \
+                f"\nDebt: {self.debt}" + \
+                trait_info + \
+                skill_info + \
                 f"\nReputation States: {self.reputation_states}" + \
                 f"\nReputation Corporations: {self.reputation_corporations}" + \
                 f"\nReputation Pirates: {self.reputation_pirates}" + \
@@ -161,18 +276,46 @@ class Character:
             "reputation_explorers": self.reputation_explorers,
             "credits": self.credits,
             "debt": self.debt,
+            "positive_trait": self.positive_trait,
+            "negative_trait": self.negative_trait,
         }
 
     @classmethod
     def from_dict(cls, data):
-        return cls(
+        character = cls(
             name=data["name"],
             age=data["age"],
             sex=data["sex"],
             background=data["background"],
-            starting_creds=data["credits"],  # Assuming credits in dict is starting_creds
-            starting_debt=data["debt"],      # Assuming debt in dict is starting_debt
+            starting_creds=data["credits"],
+            starting_debt=data["debt"],
         )
+        
+        # Set skill values
+        character.piloting = data.get("piloting", 5)
+        character.engineering = data.get("engineering", 5)
+        character.combat = data.get("combat", 5)
+        character.education = data.get("education", 5)
+        character.charisma = data.get("charisma", 5)
+        
+        # Set reputation values
+        character.reputation_states = data.get("reputation_states", 0)
+        character.reputation_corporations = data.get("reputation_corporations", 0)
+        character.reputation_pirates = data.get("reputation_pirates", 0)
+        character.reputation_belters = data.get("reputation_belters", 0)
+        character.reputation_traders = data.get("reputation_traders", 0)
+        character.reputation_scientists = data.get("reputation_scientists", 0)
+        character.reputation_military = data.get("reputation_military", 0)
+        character.reputation_explorers = data.get("reputation_explorers", 0)
+        
+        # Set personality traits if available
+        character.positive_trait = data.get("positive_trait", "")
+        character.negative_trait = data.get("negative_trait", "")
+        
+        # Apply trait effects
+        character.apply_trait_effects()
+        
+        return character
 
 class Game:
 
@@ -232,7 +375,7 @@ class Game:
             "player_ship": self.player_ship.to_dict() if self.player_ship else None,
             "debug_flag": self.debug_flag,
             "mute_flag": self.mute_flag,
-            "skip_customization": self.skipc, # Assuming skipc is skip_customization
+            "skip_customization": self.skipc, # Skip customization flag
         }
 
     @classmethod

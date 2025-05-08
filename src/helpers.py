@@ -63,16 +63,61 @@ def select_random_ore() -> Ore:
 
 
 def get_closest_field(solar_system, position, is_at_field=False):
-    if is_at_field:
-        return solar_system.sort_fields('asc', 'distance', position)[1]
-    closest_field = solar_system.sort_fields('asc', 'distance', position)[0]
-    return closest_field
+    """
+    Find the closest asteroid field relative to a given position.
+    
+    Args:
+        solar_system: Either a SolarSystem object or a list of AsteroidField objects
+        position: The position to find the closest field from
+        is_at_field: If True, returns the second closest field (skipping the current one)
+        
+    Returns:
+        The closest AsteroidField object
+    """
+    # Handle when we receive a list of asteroid fields directly
+    if isinstance(solar_system, list):
+        # Sort the fields by distance
+        sorted_fields = sorted(
+            solar_system,
+            key=lambda field: euclidean_distance(position, field.space_object.position)
+        )
+        # Return the second closest if at a field, otherwise the closest
+        return sorted_fields[1] if is_at_field and len(sorted_fields) > 1 else sorted_fields[0]
+    else:
+        # Handle when we receive a SolarSystem object
+        if is_at_field:
+            return solar_system.sort_fields('asc', 'distance', position)[1]
+        return solar_system.sort_fields('asc', 'distance', position)[0]
 
 
 def get_closest_station(solar_system, player_ship, is_at_station=False):
-    if is_at_station:
-        return solar_system.sort_stations('asc', 'distance', player_ship.space_object.get_position())[1]
-    return solar_system.sort_stations('asc', 'distance', player_ship.space_object.get_position())[0]
+    """
+    Find the closest station relative to a player ship's position.
+    
+    Args:
+        solar_system: Either a SolarSystem object or a list of Station objects
+        player_ship: The player's ship object
+        is_at_station: If True, returns the second closest station (skipping the current one)
+        
+    Returns:
+        The closest Station object
+    """
+    position = player_ship.space_object.get_position()
+    
+    # Handle when we receive a list of stations directly
+    if isinstance(solar_system, list):
+        # Sort the stations by distance
+        sorted_stations = sorted(
+            solar_system,
+            key=lambda station: euclidean_distance(position, station.space_object.position)
+        )
+        # Return the second closest if at a station, otherwise the closest
+        return sorted_stations[1] if is_at_station and len(sorted_stations) > 1 else sorted_stations[0]
+    else:
+        # Handle when we receive a SolarSystem object
+        if is_at_station:
+            return solar_system.sort_stations('asc', 'distance', position)[1]
+        return solar_system.sort_stations('asc', 'distance', position)[0]
 
 def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time):
     """Prompts the player to choose between the closest field or station."""
