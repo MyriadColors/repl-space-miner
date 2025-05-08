@@ -39,13 +39,6 @@ Use the command prompt to interact with the game. Type `help` to see a list of a
 - `buy Pyrogen 10`: Buy 10 units of Pyrogen ore from the station.
 - `status`: View your ship's status, credits, and time.
 
-## Future Development
-
-- **Combat:** Encounters with pirates or other dangers.
-- **Ship Upgrades:** Enhance your ship's capabilities.
-- **Deeper Economy:** Fluctuating ore prices and trading opportunities.
-- **Missions and Quests:** Add objectives and rewards.
-- **Narrative Elements:** Add a a backstory and a overarching narrative for the game.
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
