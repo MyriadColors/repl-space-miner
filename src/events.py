@@ -29,12 +29,12 @@ PERSONALITY_TRAITS = {
 
 # Background skill bonuses
 BACKGROUND_BONUSES = {
-    "Ex-Miner": {"mining_speed": 2, "engineering": 2, "belters": 15},
-    "Corp Dropout": {"education": 2, "charisma": 2, "corporations": -15, "traders": 10},
-    "Lunar Drifter": {"piloting": 2, "combat": 1, "pirates": 10},
-    "Void Runner": {"piloting": 3, "explorers": 20},
-    "Xeno-Biologist": {"education": 3, "scientists": 25},
-    "Discharged Trooper": {"combat": 3, "military": -10, "pirates": 10},
+    "Ex-Miner": {"mining_speed": 2, "engineering": 2, "belters": 15, "technical_aptitude": 1, "resilience": 1},
+    "Corp Dropout": {"education": 2, "charisma": 2, "corporations": -15, "traders": 10, "intellect": 1, "presence": 1},
+    "Lunar Drifter": {"piloting": 2, "combat": 1, "pirates": 10, "adaptability": 1, "perception": 1},
+    "Void Runner": {"piloting": 3, "explorers": 20, "perception": 2, "adaptability": 1},
+    "Xeno-Biologist": {"education": 3, "scientists": 25, "intellect": 2},
+    "Discharged Trooper": {"combat": 3, "military": -10, "pirates": 10, "resilience": 2},
 }
 
 
@@ -339,7 +339,80 @@ def intro_event(game_state: "Game"):
         + f"\n{contact_name} studies you thoughtfully. 'Yes, I see the {chosen_positive} in you... and"
     )
     print(f"that hint of {chosen_negative}. Makes you... interesting.'")
-
+    
+    # Stats point allocation
+    base_stats = {
+        "perception": 5,
+        "resilience": 5, 
+        "intellect": 5,
+        "presence": 5,
+        "adaptability": 5,
+        "technical_aptitude": 5,
+    }
+    
+    # Describe what each stat does
+    stat_descriptions = {
+        "perception": "Affects critical hit chance, hidden discovery chance, sensor range",
+        "resilience": "Affects hull integrity, system recovery speed, damage resistance",
+        "intellect": "Affects research speed, market analysis, trading efficiency",
+        "presence": "Affects prices, reputation gains, faction relations",
+        "adaptability": "Affects cross-cultural interactions, skill synergy, environmental adaptation",
+        "technical_aptitude": "Affects repair efficiency, salvage success, mining yields"
+    }
+    
+    # Apply background bonuses to stats
+    for stat, bonus in background_skill_bonuses.items():
+        if stat in base_stats:
+            base_stats[stat] += bonus
+            
+    # Allow manual distribution of stat points
+    remaining_stat_points = 5
+    print(Fore.YELLOW + "\n--- STAT POINT DISTRIBUTION ---")
+    print("Stats are core attributes that reflect your natural capabilities.")
+    print(f"You have {remaining_stat_points} stat points to distribute.")
+    print("Your current stats (including background bonuses):")
+    
+    for stat, value in base_stats.items():
+        formatted_stat = stat.replace('_', ' ').title()
+        print(f"{formatted_stat}: {value} - {stat_descriptions[stat]}")
+    
+    while remaining_stat_points > 0:
+        print(Fore.YELLOW + f"\nRemaining stat points: {remaining_stat_points}")
+        stat_to_improve = input(
+            "Which stat would you like to improve? (perception/resilience/intellect/presence/adaptability/technical_aptitude): "
+        ).lower()
+        
+        # Handle technical_aptitude with underscore or space
+        if stat_to_improve == "technical aptitude":
+            stat_to_improve = "technical_aptitude"
+        
+        if stat_to_improve not in base_stats:
+            print(Fore.RED + "Invalid stat. Please choose from the available stats.")
+            print("Available stats: perception, resilience, intellect, presence, adaptability, technical_aptitude")
+            continue
+        
+        try:
+            points = int(
+                input(
+                    f"How many points to add to {stat_to_improve.replace('_', ' ')}? (1-{remaining_stat_points}): "
+                )
+            )
+            if 1 <= points <= remaining_stat_points:
+                base_stats[stat_to_improve] += points
+                remaining_stat_points -= points
+                formatted_stat = stat_to_improve.replace('_', ' ').title()
+                print(
+                    Fore.GREEN
+                    + f"{formatted_stat} is now {base_stats[stat_to_improve]}"
+                )
+            else:
+                print(
+                    Fore.RED
+                    + f"Please enter a number between 1 and {remaining_stat_points}."
+                )
+        except ValueError:
+            print(Fore.RED + "Invalid input. Please enter a number.")
+    
     # Skill point allocation
     base_skills = {
         "piloting": 5,
@@ -419,6 +492,14 @@ def intro_event(game_state: "Game"):
     character.combat = base_skills["combat"]
     character.education = base_skills["education"]
     character.charisma = base_skills["charisma"]
+    
+    # Apply stat values from user selection
+    character.perception = base_stats["perception"]
+    character.resilience = base_stats["resilience"]
+    character.intellect = base_stats["intellect"]
+    character.presence = base_stats["presence"]
+    character.adaptability = base_stats["adaptability"]
+    character.technical_aptitude = base_stats["technical_aptitude"]
 
     # Apply faction reputation modifiers from background
     for faction, bonus in background_skill_bonuses.items():
@@ -726,10 +807,8 @@ def intro_event(game_state: "Game"):
             else:
                 mod_value = 0.0
 
-            if mod_value < 0:  # For reductions like fuel consumption
-                ship_data[stat_name] = current_value * (1.0 + mod_value)
-            else:  # For increases
-                ship_data[stat_name] = current_value * (1.0 + mod_value)
+            # Apply multiplier modification (handles both increases and reductions)
+            ship_data[stat_name] = current_value * (1.0 + mod_value)
         else:
             # Handle flat additions (convert both to float)
             mod_value = mod.get("value", 0.0)
@@ -892,9 +971,7 @@ def intro_event(game_state: "Game"):
 
     for line in tutorial_text:
         sleep(0.8)  # Slightly faster text for better pacing
-        print(Fore.CYAN + line)
-
-    # Character summary before starting
+        print(Fore.CYAN + line)    # Character summary before starting
     print(Fore.YELLOW + "\n=== CHARACTER SUMMARY ===")
     print(f"Name: {player_name}, Age: {age}, Background: {chosen_background.name}")
     print(
@@ -902,6 +979,12 @@ def intro_event(game_state: "Game"):
     )
     print(f"Positive Trait: {chosen_positive}")
     print(f"Negative Trait: {chosen_negative}")
+    
+    print("\nSTATS:")
+    for stat, value in base_stats.items():
+        formatted_stat = stat.replace('_', ' ').title()
+        print(f"{formatted_stat}: {value}")
+        
     print("\nSKILLS:")
     for skill, value in base_skills.items():
         print(f"{skill.capitalize()}: {value}")

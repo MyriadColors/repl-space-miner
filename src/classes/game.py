@@ -98,11 +98,23 @@ class Character:
         self.age = age
         self.sex = sex
         self.background = background
+        
+        # Stats - primary attributes that are mostly fixed
+        self.perception = 5
+        self.resilience = 5
+        self.intellect = 5
+        self.presence = 5
+        self.adaptability = 5
+        self.technical_aptitude = 5
+        
+        # Skills - can be improved through gameplay
         self.piloting = 5
         self.engineering = 5
         self.combat = 5
         self.education = 5
         self.charisma = 5
+        
+        # Reputation values
         self.reputation_states = 0
         self.reputation_corporations = 0
         self.reputation_pirates = 0
@@ -111,12 +123,15 @@ class Character:
         self.reputation_scientists = 0
         self.reputation_military = 0
         self.reputation_explorers = 0
+        
         self.credits: float = self.round_credits(starting_creds)
         self.debt: float = self.round_credits(starting_debt)
         self.last_interest_time = 0  # Store the last time interest was applied
-        # New personality traits
+        
+        # Personality traits
         self.positive_trait = ""
         self.negative_trait = ""
+        
         # Trait effect modifiers (default to 1.0 = no effect)
         self.damage_resist_mod = 1.0
         self.mining_yield_mod = 1.0
@@ -126,6 +141,18 @@ class Character:
         self.evasion_mod = 1.0
         self.fuel_consumption_mod = 1.0
         self.debt_interest_mod = 1.0
+        
+        # Stats effect modifiers
+        self.critical_hit_chance_mod = 1.0
+        self.hidden_discovery_chance_mod = 1.0
+        self.hull_integrity_mod = 1.0
+        self.system_recovery_mod = 1.0
+        self.research_speed_mod = 1.0
+        self.market_analysis_mod = 1.0
+        self.faction_relation_mod = 1.0
+        self.cross_cultural_mod = 1.0
+        self.repair_efficiency_mod = 1.0
+        self.salvage_success_mod = 1.0
         # Banking system attributes
         self.bank_transactions: list[dict] = []
         self.savings = 0.0
@@ -133,34 +160,171 @@ class Character:
         self.last_savings_interest_time = (
             0  # Store the last time savings interest was applied
         )
+        
+        # Initialize stat effects
+        self.apply_trait_effects()  # This will also call apply_stat_effects
 
+    # Stats implementation methods
+    def apply_stat_effects(self):
+        """Apply effects from all character stats"""
+        self.apply_perception_effects()
+        self.apply_resilience_effects()
+        self.apply_intellect_effects()
+        self.apply_presence_effects()
+        self.apply_adaptability_effects()
+        self.apply_technical_aptitude_effects()
+        
+    def apply_perception_effects(self):
+        """Apply effects from the Perception stat"""
+        # Reset modifier to default
+        self.critical_hit_chance_mod = 1.0
+        self.hidden_discovery_chance_mod = 1.0
+        
+        # Apply Perception-based bonuses
+        # Each point above 5 gives a 5% bonus to critical hits and hidden discovery chances.
+        # This reflects the character's heightened awareness and ability to spot opportunities.
+        if self.perception > 5:
+            bonus_multiplier = 1 + ((self.perception - 5) * 0.05)
+            self.critical_hit_chance_mod = bonus_multiplier
+            self.hidden_discovery_chance_mod = bonus_multiplier
+            
+            # Additionally, perception improves sensor range by 3% per point above 5.
+            # This simulates the character's ability to interpret sensor data more effectively.
+            self.sensor_range_mod *= 1 + ((self.perception - 5) * 0.03)
+    
+    def apply_resilience_effects(self):
+        """Apply effects from the Resilience stat"""
+        # Reset modifier to default
+        self.hull_integrity_mod = 1.0
+        self.system_recovery_mod = 1.0
+        
+        # Apply Resilience-based bonuses
+        # Each point above 5 gives 4% bonus to hull integrity and recovery speed
+        if self.resilience > 5:
+            self.hull_integrity_mod = 1 + ((self.resilience - 5) * 0.04)
+            self.system_recovery_mod = 1 + ((self.resilience - 5) * 0.04)
+            # Also improves damage resistance
+            self.damage_resist_mod *= 1 - ((self.resilience - 5) * 0.02)  # Decrease damage taken
+    
+    def apply_intellect_effects(self):
+        """Apply effects from the Intellect stat"""
+        # Reset modifier to default
+        self.research_speed_mod = 1.0
+        self.market_analysis_mod = 1.0
+        
+        # Apply Intellect-based bonuses
+        # Each point above 5 gives 5% bonus to research speed and 3% to market analysis
+        if self.intellect > 5:
+            self.research_speed_mod = 1 + ((self.intellect - 5) * 0.05)
+            self.market_analysis_mod = 1 + ((self.intellect - 5) * 0.03)
+    
+    def apply_presence_effects(self):
+        """Apply effects from the Presence stat"""
+        # Reset modifier to default
+        self.faction_relation_mod = 1.0
+        
+        # Apply Presence-based bonuses
+        # Each point above 5 gives 5% better prices and 3% faster reputation gains
+        if self.presence > 5:
+            price_bonus = (self.presence - 5) * 0.05
+            self.buy_price_mod *= (1 - price_bonus)  # Lower prices when buying
+            self.sell_price_mod *= (1 + price_bonus)  # Higher prices when selling
+            self.faction_relation_mod = 1 + ((self.presence - 5) * 0.03)  # Faster reputation gains
+    
+    def apply_adaptability_effects(self):
+        """Apply effects from the Adaptability stat"""
+        # Reset modifier to default
+        self.cross_cultural_mod = 1.0
+        
+        # Apply Adaptability-based bonuses
+        # Each point above 5 gives 4% bonus to cross-cultural interactions
+        if self.adaptability > 5:
+            self.cross_cultural_mod = 1 + ((self.adaptability - 5) * 0.04)
+            
+            # Small bonus to skill synergy (this would affect skill experience gains)
+            # This would be used in future skill improvement mechanics
+            skill_synergy_bonus = (self.adaptability - 5) * 0.02
+            
+            # Small bonus to environmental adaptation (used in future environmental hazards)
+            environmental_bonus = (self.adaptability - 5) * 0.03
+    
+    def apply_technical_aptitude_effects(self):
+        """Apply effects from the Technical Aptitude stat"""
+        # Reset modifier to default
+        self.repair_efficiency_mod = 1.0
+        self.salvage_success_mod = 1.0
+        
+        # Apply Technical Aptitude-based bonuses
+        # Each point above 5 gives 5% bonus to repair efficiency and salvaging success
+        if self.technical_aptitude > 5:
+            self.repair_efficiency_mod = 1 + ((self.technical_aptitude - 5) * 0.05)
+            self.salvage_success_mod = 1 + ((self.technical_aptitude - 5) * 0.05)
+            
+    def get_mining_bonus(self):
+        """Calculate mining bonus based on stats and skills"""
+        # Base mining yield modifier from traits
+        mining_bonus = self.mining_yield_mod
+        
+        # Add perception bonus for finding better mining spots (2% per point above 5)
+        if self.perception > 5:
+            mining_bonus *= 1 + ((self.perception - 5) * 0.02)
+        
+        # Add technical aptitude bonus (1% per point above 5)
+        if self.technical_aptitude > 5:
+            mining_bonus *= 1 + ((self.technical_aptitude - 5) * 0.01)
+              # Engineering skill bonus is applied separately in the ship's mining method
+        
+        return mining_bonus
+    
+    def get_trading_bonus(self):
+        """Calculate trading bonuses based on stats and skills"""
+        # Start with base modifiers from traits
+        buy_mod = self.buy_price_mod
+        sell_mod = self.sell_price_mod
+        
+        # Apply presence bonuses (already calculated in apply_presence_effects)
+        
+        # Apply intellect for better market analysis (1% per point above 5)
+        if self.intellect > 5:
+            market_bonus = (self.intellect - 5) * 0.01
+            buy_mod *= (1 - market_bonus)  # Lower prices when buying
+            sell_mod *= (1 + market_bonus)  # Higher prices when selling
+            
+        # Apply charisma skill bonus (2% per point above 5)
+        if self.charisma > 5:
+            charisma_bonus = (self.charisma - 5) * 0.02
+            buy_mod *= (1 - charisma_bonus)  # Lower prices when buying
+            sell_mod *= (1 + charisma_bonus)  # Higher prices when selling
+            
+        return (buy_mod, sell_mod)
+        
     def round_credits(self, value: float) -> float:
         """
         Round credit values to two decimal places.
         If exact halfway case occurs, it rounds up as per requirement.
         """
         return round(value * 100) / 100
-
+        
     def add_credits(self, amount: float) -> float:
         """Add credits and return the new balance"""
         self.credits = self.round_credits(self.credits + amount)
         return self.credits
-
+        
     def remove_credits(self, amount: float) -> float:
         """Remove credits and return the new balance"""
         self.credits = self.round_credits(self.credits - amount)
         return self.credits
-
+        
     def add_debt(self, amount: float) -> float:
         """Add debt and return the new balance"""
         self.debt = self.round_credits(self.debt + amount)
         return self.debt
-
+        
     def remove_debt(self, amount: float) -> float:
         """Remove debt and return the new balance"""
         self.debt = self.round_credits(self.debt - amount)
         return self.debt
-
+        
     def apply_trait_effects(self):
         """Apply effects from personality traits"""
         # Reset modifiers to default
@@ -204,6 +368,9 @@ class Character:
             pass
         elif self.negative_trait == "Indebted":
             self.debt_interest_mod = 1.1  # 10% higher interest
+            
+        # Apply stats-based effects after trait effects
+        self.apply_stat_effects()
 
     def calculate_debt_interest(self, current_time: int):
         """
@@ -248,8 +415,19 @@ class Character:
         if self.positive_trait or self.negative_trait:
             trait_info = f"\nPositive Trait: {self.positive_trait}\nNegative Trait: {self.negative_trait}"
 
+        stats_info = (
+            f"\nSTATS:"
+            + f"\nPerception: {self.perception}"
+            + f"\nResilience: {self.resilience}"
+            + f"\nIntellect: {self.intellect}"
+            + f"\nPresence: {self.presence}"
+            + f"\nAdaptability: {self.adaptability}"
+            + f"\nTechnical Aptitude: {self.technical_aptitude}"
+        )
+
         skill_info = (
-            f"\nPiloting: {self.piloting}\nEngineering: {self.engineering}\nCombat: {self.combat}"
+            f"\nSKILLS:"
+            + f"\nPiloting: {self.piloting}\nEngineering: {self.engineering}\nCombat: {self.combat}"
             + f"\nEducation: {self.education}\nCharisma: {self.charisma}"
         )
 
@@ -261,6 +439,7 @@ class Character:
             + f"\nCredits: {self.credits}"
             + f"\nDebt: {self.debt}"
             + trait_info
+            + stats_info
             + skill_info
             + f"\nReputation States: {self.reputation_states}"
             + f"\nReputation Corporations: {self.reputation_corporations}"
@@ -271,18 +450,27 @@ class Character:
             + f"\nReputation Military: {self.reputation_military}"
             + f"\nReputation Explorers: {self.reputation_explorers}"
         ]
-
+        
     def to_dict(self):
         return {
             "name": self.name,
             "age": self.age,
             "sex": self.sex,
             "background": self.background,
+            # Stats
+            "perception": self.perception,
+            "resilience": self.resilience,
+            "intellect": self.intellect,
+            "presence": self.presence,
+            "adaptability": self.adaptability,
+            "technical_aptitude": self.technical_aptitude,
+            # Skills
             "piloting": self.piloting,
             "engineering": self.engineering,
             "combat": self.combat,
             "education": self.education,
             "charisma": self.charisma,
+            # Reputation
             "reputation_states": self.reputation_states,
             "reputation_corporations": self.reputation_corporations,
             "reputation_pirates": self.reputation_pirates,
@@ -291,13 +479,12 @@ class Character:
             "reputation_scientists": self.reputation_scientists,
             "reputation_military": self.reputation_military,
             "reputation_explorers": self.reputation_explorers,
+            # Other attributes
             "credits": self.credits,
             "debt": self.debt,
             "positive_trait": self.positive_trait,
             "negative_trait": self.negative_trait,
-        }
-
-    @classmethod
+        }    @classmethod
     def from_dict(cls, data):
         character = cls(
             name=data["name"],
@@ -307,6 +494,14 @@ class Character:
             starting_creds=data["credits"],
             starting_debt=data["debt"],
         )
+
+        # Set stat values
+        character.perception = data.get("perception", 5)
+        character.resilience = data.get("resilience", 5)
+        character.intellect = data.get("intellect", 5)
+        character.presence = data.get("presence", 5)
+        character.adaptability = data.get("adaptability", 5)
+        character.technical_aptitude = data.get("technical_aptitude", 5)
 
         # Set skill values
         character.piloting = data.get("piloting", 5)
@@ -327,9 +522,7 @@ class Character:
 
         # Set personality traits if available
         character.positive_trait = data.get("positive_trait", "")
-        character.negative_trait = data.get("negative_trait", "")
-
-        # Apply trait effects
+        character.negative_trait = data.get("negative_trait", "")        # Apply trait effects (which will also apply stat effects)
         character.apply_trait_effects()
 
         return character
