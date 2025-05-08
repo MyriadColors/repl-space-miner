@@ -108,3 +108,5 @@ save
 **/__pycache__/
 **/.mypy_cache/
 
+design_docs.md
+implementation_plan.md
