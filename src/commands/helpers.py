@@ -19,7 +19,7 @@ def update_ore_quantities(
     if player_character is None:
         game_state.ui.error_message("Error: Player character not found.")
         return
-        
+
     if station:
         amount = min(amount, ore_cargo.quantity)
         ore_cargo.quantity -= amount
@@ -41,8 +41,16 @@ def update_ore_quantities(
 
     if station:
         player_character.credits -= price
-        game_state.ui.success_message(f"Report: {amount} {ore_name} bought for {price} credits.")
-        game_state.ui.info_message(f"Station Ore Report:\n{station.ore_cargo_volume} tons of ore remaining")
-        game_state.ui.info_message(f"Your new credit balance: {player_character.credits} credits")
+        game_state.ui.success_message(
+            f"Report: {amount} {ore_name} bought for {price} credits."
+        )
+        game_state.ui.info_message(
+            f"Station Ore Report:\n{station.ore_cargo_volume} tons of ore remaining"
+        )
+        game_state.ui.info_message(
+            f"Your new credit balance: {player_character.credits} credits"
+        )
     else:
-        game_state.ui.info_message(f"Updated player ship cargo with {amount} {ore_name}.") 
+        game_state.ui.info_message(
+            f"Updated player ship cargo with {amount} {ore_name}."
+        )

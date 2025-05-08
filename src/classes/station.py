@@ -7,6 +7,7 @@ from src.helpers import take_input, rnd_float, rnd_int
 class Station:
     def __init__(self, name, station_id, position) -> None:
         from src.classes.ship import IsSpaceObject
+
         self.name: str = name
         self.space_object = IsSpaceObject(position, station_id)
         self.fueltank_cap: float = helpers.rnd_float(5_000, 20_000)
@@ -20,7 +21,7 @@ class Station:
         self.generate_ores_availability()
         self.generate_ore_cargo_instances()
         self.generate_ore_cargo()
-    
+
     @property
     def position(self):
         """Access the station's position directly."""
@@ -133,8 +134,12 @@ class Station:
         player_ship.fueltank += amount
         self.fueltank -= amount
         print(f"You bought {amount} m³ of fuel for {total_cost} credits")
-        print(f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits")
-        print(f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³")
+        print(
+            f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits"
+        )
+        print(
+            f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³"
+        )
 
     def sell_fuel(self, player_ship, amount, game_state):
         total_price = round(amount * self.fuel_price, 2)
@@ -150,13 +155,20 @@ class Station:
         player_ship.add_credits(game_state, total_price)
         self.fueltank += amount
         print(f"You sold {amount} m³ of fuel for {total_price} credits")
-        print(f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits")
-        print(f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³")
+        print(
+            f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits"
+        )
+        print(
+            f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³"
+        )
 
     def to_dict(self):
         return {
             "name": self.name,
-            "position": {"x": self.space_object.position.x, "y": self.space_object.position.y},
+            "position": {
+                "x": self.space_object.position.x,
+                "y": self.space_object.position.y,
+            },
             "id": self.space_object.id,
             "fueltank_cap": self.fueltank_cap,
             "fueltank": self.fueltank,
@@ -170,20 +182,29 @@ class Station:
 
     @classmethod
     def from_dict(cls, data):
-        from src.classes.ore import ORES # Local import
-        from src.classes.ship import IsSpaceObject # Local import
+        from src.classes.ore import ORES  # Local import
+        from src.classes.ship import IsSpaceObject  # Local import
         from pygame import Vector2  # Add missing Vector2 import
+
         station = cls(
             name=data["name"],
             station_id=data["id"],
             position=Vector2(data["position"]["x"], data["position"]["y"]),
         )
-        station.space_object = IsSpaceObject(Vector2(data["position"]["x"], data["position"]["y"]), data["id"])
+        station.space_object = IsSpaceObject(
+            Vector2(data["position"]["x"], data["position"]["y"]), data["id"]
+        )
         station.fueltank_cap = data["fueltank_cap"]
         station.fueltank = data["fueltank"]
         station.fuel_price = data["fuel_price"]
-        station.ores_available = [ORES.get(ore_id) for ore_id in data["ores_available_ids"] if ORES.get(ore_id) is not None]
-        station.ore_cargo = [OreCargo.from_dict(oc_data) for oc_data in data["ore_cargo"]]
+        station.ores_available = [
+            ORES.get(ore_id)
+            for ore_id in data["ores_available_ids"]
+            if ORES.get(ore_id) is not None
+        ]
+        station.ore_cargo = [
+            OreCargo.from_dict(oc_data) for oc_data in data["ore_cargo"]
+        ]
         station.ore_cargo_volume = data["ore_cargo_volume"]
         station.ore_capacity = data["ore_capacity"]
         station.visited = data.get("visited", False)
@@ -191,7 +212,9 @@ class Station:
 
     def add_item(self, ore, quantity):
         """Add an item to the station's inventory."""
-        ore_cargo = next((cargo for cargo in self.ore_cargo if cargo.ore.id == ore.id), None)
+        ore_cargo = next(
+            (cargo for cargo in self.ore_cargo if cargo.ore.id == ore.id), None
+        )
         if ore_cargo:
             ore_cargo.quantity += quantity
         else:
@@ -202,7 +225,9 @@ class Station:
 
     def remove_item(self, ore, quantity):
         """Remove an item from the station's inventory."""
-        ore_cargo = next((cargo for cargo in self.ore_cargo if cargo.ore.id == ore.id), None)
+        ore_cargo = next(
+            (cargo for cargo in self.ore_cargo if cargo.ore.id == ore.id), None
+        )
         if ore_cargo:
             if ore_cargo.quantity >= quantity:
                 ore_cargo.quantity -= quantity

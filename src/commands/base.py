@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable
 
 from .registry import Command, Argument, command_registry
 
@@ -10,7 +10,7 @@ def register_command(
 ):
     """
     Register a command with the global command registry.
-    
+
     Args:
         command_names: List of names that can be used to invoke this command
         command_function: The function to execute when the command is called
@@ -37,4 +37,4 @@ def register_command(
         command = Command(
             function=command_function, arguments=argument_struct_list_with_index
         )
-        command_registry.register(name, command) 
+        command_registry.register(name, command)

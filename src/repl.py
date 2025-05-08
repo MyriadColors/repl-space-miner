@@ -22,13 +22,12 @@ from src.commands import (
     save_game_command,
     load_game_command,
     register_command,
-    Argument
+    Argument,
 )
 from src.command_handlers import process_command
 from src.events import intro_event
-import time
 import pygame as pg
-from colorama import Fore, Back, Style, init
+from colorama import init
 from src.helpers import is_valid_int, is_valid_float, is_valid_bool
 
 init(autoreset=True)
@@ -50,15 +49,22 @@ SHIP_HULL_INTEGRITY = 100
 SHIP_SHIELD_CAPACITY = 0.01
 SHIP_NAME = "Player's Ship"
 
+
 def register_commands(game_state: "Game"):
     """Register all game commands."""
     # System commands
     register_command(["status", "st"], display_time_and_status, [])
-    register_command(["help"], display_help, [Argument("command_name", str, True, 0, None)])
+    register_command(
+        ["help"], display_help, [Argument("command_name", str, True, 0, None)]
+    )
     register_command(["exit"], command_exit, [])
     register_command(["clear", "cl"], clear, [])
-    register_command(["save"], save_game_command, [Argument("filename", str, True, 0, None)])
-    register_command(["load"], load_game_command, [Argument("filename", str, True, 0, None)])
+    register_command(
+        ["save"], save_game_command, [Argument("filename", str, True, 0, None)]
+    )
+    register_command(
+        ["load"], load_game_command, [Argument("filename", str, True, 0, None)]
+    )
 
     # Navigation commands
     register_command(
@@ -175,7 +181,7 @@ def run_game_loop(game_state):
             process_command(game_state, command_input)
         except ValueError as e:
             print(f"Invalid command: {e}")
-        pg.time.wait(100) # Add a small delay to reduce CPU usage
+        pg.time.wait(100)  # Add a small delay to reduce CPU usage
     # Perform necessary cleanup operations here
     print("Performing cleanup operations before exiting the game.")
     pg.quit()

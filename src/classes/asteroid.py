@@ -1,8 +1,6 @@
 import random
-from pygame import Vector2
 from src.classes.ore import Ore
 from src.helpers import rnd_float, meters_cubed_to_km_cubed
-from src.data import OreCargo
 
 
 class Asteroid:
@@ -27,6 +25,7 @@ class Asteroid:
     @classmethod
     def from_dict(cls, data):
         from src.classes.ore import ORES  # Local import to avoid circular dependency
+
         ore_obj = ORES.get(data["ore_id"])
         if ore_obj is None:
             raise ValueError(f"Ore with ID {data['ore_id']} not found.")
@@ -42,6 +41,7 @@ class AsteroidField:
 
     def __init__(self, asteroid_quantity, ores_available, radius, position) -> None:
         from src.classes.ship import IsSpaceObject
+
         self.asteroid_quantity: int = asteroid_quantity
         self.ores_available: list[Ore] = ores_available
         self.radius: float = radius  # in AU
@@ -62,7 +62,9 @@ class AsteroidField:
             f"Position: {self.space_object.position.x:.3f} {self.space_object.position.y:.3f}\n"
         )
         if position:
-            asteroid_field_info += f"Distance: {self.space_object.position.distance_to(position):.3f} AU\n"
+            asteroid_field_info += (
+                f"Distance: {self.space_object.position.distance_to(position):.3f} AU\n"
+            )
         ore_list_info = "\n".join(ore.to_string() for ore in self.ores_available)
         asteroid_field_info += (
             f"Radius: {self.radius:.3f} AU\n"
@@ -96,7 +98,10 @@ class AsteroidField:
             "ores_available_ids": [ore.id for ore in self.ores_available],
             "radius": self.radius,
             "asteroids": [asteroid.to_dict() for asteroid in self.asteroids],
-            "position": {"x": self.space_object.position.x, "y": self.space_object.position.y},
+            "position": {
+                "x": self.space_object.position.x,
+                "y": self.space_object.position.y,
+            },
             "id": self.space_object.id,
             "visited": self.visited,
         }
@@ -106,14 +111,23 @@ class AsteroidField:
         from src.classes.ore import ORES  # Local import
         from src.classes.ship import IsSpaceObject  # Local import
         from pygame import Vector2  # Add missing Vector2 import
-        ores = [ORES.get(ore_id) for ore_id in data["ores_available_ids"] if ORES.get(ore_id) is not None]
+
+        ores = [
+            ORES.get(ore_id)
+            for ore_id in data["ores_available_ids"]
+            if ORES.get(ore_id) is not None
+        ]
         field = cls(
             asteroid_quantity=data["asteroid_quantity"],
             ores_available=ores,
             radius=data["radius"],
             position=Vector2(data["position"]["x"], data["position"]["y"]),
         )
-        field.space_object = IsSpaceObject(Vector2(data["position"]["x"], data["position"]["y"]), data["id"])
-        field.asteroids = [Asteroid.from_dict(ast_data) for ast_data in data["asteroids"]]
+        field.space_object = IsSpaceObject(
+            Vector2(data["position"]["x"], data["position"]["y"]), data["id"]
+        )
+        field.asteroids = [
+            Asteroid.from_dict(ast_data) for ast_data in data["asteroids"]
+        ]
         field.visited = data.get("visited", False)  # Add visited attribute
         return field

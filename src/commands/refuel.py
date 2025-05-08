@@ -1,4 +1,3 @@
-from typing import Optional
 from src.classes.game import Game
 from .registry import Argument
 from .base import register_command
@@ -24,7 +23,7 @@ def refuel_command(game_state: Game, amount: float) -> None:
 
     # Limit amount to what can be added
     amount = min(amount, max_fuel)
-    
+
     # Calculate cost with proper rounding
     total_cost = round(amount * station.fuel_price, 2)
     player_character = game_state.get_player_character()
@@ -37,7 +36,9 @@ def refuel_command(game_state: Game, amount: float) -> None:
         return
 
     # Confirm purchase
-    game_state.ui.info_message(f"Refueling {amount} m³ of fuel will cost {total_cost} credits.")
+    game_state.ui.info_message(
+        f"Refueling {amount} m³ of fuel will cost {total_cost} credits."
+    )
     confirm = input("Confirm purchase? (y/n): ").lower()
     if confirm != "y":
         game_state.ui.info_message("Refueling cancelled.")
@@ -49,7 +50,9 @@ def refuel_command(game_state: Game, amount: float) -> None:
     station.fueltank -= amount
 
     game_state.ui.success_message(f"Successfully refueled {amount} m³ of fuel.")
-    game_state.ui.info_message(f"New fuel level: {player_ship.fuel}/{player_ship.max_fuel} m³")
+    game_state.ui.info_message(
+        f"New fuel level: {player_ship.fuel}/{player_ship.max_fuel} m³"
+    )
     game_state.ui.info_message(f"Remaining credits: {player_character.credits}")
 
 

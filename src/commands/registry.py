@@ -19,6 +19,7 @@ class Command:
     """
     Represents a command that can be executed in the game.
     """
+
     function: Callable
     arguments: list[Argument] = field(default_factory=list)
     number_of_arguments: int = field(init=False)
@@ -46,7 +47,10 @@ class Command:
                     return False, f"Argument {i} ({arg.name}) must be a float."
             elif arg.type == bool:
                 if not self._is_valid_bool(value):
-                    return False, f"Argument {i} ({arg.name}) must be a boolean value (true/false or 1/0)."
+                    return (
+                        False,
+                        f"Argument {i} ({arg.name}) must be a boolean value (true/false or 1/0).",
+                    )
             elif arg.type == str:
                 pass
             else:
@@ -94,4 +98,4 @@ class CommandRegistry:
 
 
 # Create a global command registry instance
-command_registry = CommandRegistry() 
+command_registry = CommandRegistry()

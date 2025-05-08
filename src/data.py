@@ -1,36 +1,196 @@
 from dataclasses import dataclass
 from random import choice
 from enum import Enum, auto
-from typing import Dict, Optional, List, Union
+from typing import Optional, List
 
 from src.classes.ore import Ore, ORES
 
 # This will be used to generate random names
 name_parts = [
-    'ha', 'he', 'hi', 'ho', 'hu', 'ca', 'ce', 'ci', 'co', 'cu',
-    'sa', 'se', 'si', 'so', 'su', 'ja', 'ji', 'je', 'jo', 'ju', 'an',
-    'pa', 'pe', 'pi', 'po', 'pu', 'ta', 'te', 'ti', 'to', 'tu',
-    'kle', 'ke', 'ki', 'ko', 'ku', 'sha', 'she', 'shi', 'sho', 'shu',
-    'hor', 'cer', 'cur', 'her', 'hur', 'sar', 'arn', 'irn', 'kler',
-    'ka', 'la', 'nar', 'kar', 'bar', 'dar', 'blar', 'ger', 'yur',
-    'zor', 'for', 'wor', 'gor', 'noth', 'roth', 'moth', 'zoth',
-    'loth', 'nith', 'lith', 'sith', 'dith', 'ith', 'oth', 'orb', 'urb',
-    'er', 'zer', 'ze', 'zera', 'ter', 'nor', 'za', 'zi', 'di', 'mi',
-    'per', 'pir', 'pera', 'par', 'sta', 'mor', 'kur', 'ker', 'ni'
-                                                             'ler', 'der', 'ber', 'shar', 'sher', 'mer', 'wer', 'fer',
-    'fra'
-    'gra', 'bra', 'zir', 'dir', 'tir', 'sir', 'mir', 'nir', 'por',
-    'lir', 'bir', 'dra', 'tha', 'the', 'tho',
-    'ta', 'te', 'ti', 'to', 'tu', 'ba', 'be', 'bi', 'bo', 'tis', 'ris',
-    'beur', 'bu', 'cu', 'lur', 'mur', 'da', 'de', 'di', 'do', 'ka',
-    'ke', 'ki', 'ko', 'ku', 'la', 'le', 'li', 'lo', 'lu', 'loo', 'koo',
-    'lee', 'kee', 'du', 'lor', 'der', 'ser', 'per', 'fu', 'fer', 'ler',
-    'zer', 'wi', 'na', 'ne', 'no', 'noo', 'ra', 'ri', 'ro', 'roo', 'va',
-    've', 'vi', 'vo', 'vu', 'bre', 'dre', 'pre', 'tre', 'gre']
+    "ha",
+    "he",
+    "hi",
+    "ho",
+    "hu",
+    "ca",
+    "ce",
+    "ci",
+    "co",
+    "cu",
+    "sa",
+    "se",
+    "si",
+    "so",
+    "su",
+    "ja",
+    "ji",
+    "je",
+    "jo",
+    "ju",
+    "an",
+    "pa",
+    "pe",
+    "pi",
+    "po",
+    "pu",
+    "ta",
+    "te",
+    "ti",
+    "to",
+    "tu",
+    "kle",
+    "ke",
+    "ki",
+    "ko",
+    "ku",
+    "sha",
+    "she",
+    "shi",
+    "sho",
+    "shu",
+    "hor",
+    "cer",
+    "cur",
+    "her",
+    "hur",
+    "sar",
+    "arn",
+    "irn",
+    "kler",
+    "ka",
+    "la",
+    "nar",
+    "kar",
+    "bar",
+    "dar",
+    "blar",
+    "ger",
+    "yur",
+    "zor",
+    "for",
+    "wor",
+    "gor",
+    "noth",
+    "roth",
+    "moth",
+    "zoth",
+    "loth",
+    "nith",
+    "lith",
+    "sith",
+    "dith",
+    "ith",
+    "oth",
+    "orb",
+    "urb",
+    "er",
+    "zer",
+    "ze",
+    "zera",
+    "ter",
+    "nor",
+    "za",
+    "zi",
+    "di",
+    "mi",
+    "per",
+    "pir",
+    "pera",
+    "par",
+    "sta",
+    "mor",
+    "kur",
+    "ker",
+    "ni" "ler",
+    "der",
+    "ber",
+    "shar",
+    "sher",
+    "mer",
+    "wer",
+    "fer",
+    "fra" "gra",
+    "bra",
+    "zir",
+    "dir",
+    "tir",
+    "sir",
+    "mir",
+    "nir",
+    "por",
+    "lir",
+    "bir",
+    "dra",
+    "tha",
+    "the",
+    "tho",
+    "ta",
+    "te",
+    "ti",
+    "to",
+    "tu",
+    "ba",
+    "be",
+    "bi",
+    "bo",
+    "tis",
+    "ris",
+    "beur",
+    "bu",
+    "cu",
+    "lur",
+    "mur",
+    "da",
+    "de",
+    "di",
+    "do",
+    "ka",
+    "ke",
+    "ki",
+    "ko",
+    "ku",
+    "la",
+    "le",
+    "li",
+    "lo",
+    "lu",
+    "loo",
+    "koo",
+    "lee",
+    "kee",
+    "du",
+    "lor",
+    "der",
+    "ser",
+    "per",
+    "fu",
+    "fer",
+    "ler",
+    "zer",
+    "wi",
+    "na",
+    "ne",
+    "no",
+    "noo",
+    "ra",
+    "ri",
+    "ro",
+    "roo",
+    "va",
+    "ve",
+    "vi",
+    "vo",
+    "vu",
+    "bre",
+    "dre",
+    "pre",
+    "tre",
+    "gre",
+]
 
 
 def generate_random_name(parts_num: int) -> str:
-    return (''.join(choice(name_parts) for _ in range(parts_num))).capitalize()
+    return ("".join(choice(name_parts) for _ in range(parts_num))).capitalize()
 
 
 @dataclass
@@ -64,6 +224,7 @@ class OreCargo:
 
 class UpgradeCategory(Enum):
     """Categories of ship upgrades"""
+
     PROPULSION = auto()
     MINING = auto()
     CARGO = auto()
@@ -74,6 +235,7 @@ class UpgradeCategory(Enum):
 
 class UpgradeTarget(Enum):
     """Ship attributes that can be upgraded"""
+
     SPEED = auto()
     MINING_SPEED = auto()
     FUEL_CONSUMPTION = auto()
@@ -87,6 +249,7 @@ class UpgradeTarget(Enum):
 @dataclass
 class Upgrade:
     """A template for ship upgrades"""
+
     id: str
     name: str
     description: str
@@ -97,7 +260,7 @@ class Upgrade:
     level: int = 1
     max_level: int = 5
     prerequisites: Optional[List[str]] = None
-    
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -109,9 +272,9 @@ class Upgrade:
             "multiplier": self.multiplier,
             "level": self.level,
             "max_level": self.max_level,
-            "prerequisites": self.prerequisites
+            "prerequisites": self.prerequisites,
         }
-    
+
     @classmethod
     def from_dict(cls, data):
         return cls(
@@ -124,27 +287,27 @@ class Upgrade:
             multiplier=data["multiplier"],
             level=data["level"],
             max_level=data["max_level"],
-            prerequisites=data["prerequisites"]
+            prerequisites=data["prerequisites"],
         )
-    
+
     def get_next_level_price(self) -> float:
         """Calculate the price for the next upgrade level"""
         if self.level >= self.max_level:
-            return float('inf')  # Can't upgrade past max level
+            return float("inf")  # Can't upgrade past max level
         return self.price * (self.level + 1)
-    
+
     def upgrade(self) -> bool:
         """Attempt to upgrade to the next level"""
         if self.level < self.max_level:
             self.level += 1
             return True
         return False
-    
+
     def get_total_multiplier(self) -> float:
         """Get the cumulative multiplier effect based on current level"""
         return 1.0 + (self.multiplier - 1.0) * self.level
-    
-    def copy(self) -> 'Upgrade':
+
+    def copy(self) -> "Upgrade":
         """Create a copy of this upgrade"""
         return Upgrade(
             id=self.id,
@@ -156,7 +319,7 @@ class Upgrade:
             multiplier=self.multiplier,
             level=self.level,
             max_level=self.max_level,
-            prerequisites=self.prerequisites.copy() if self.prerequisites else None
+            prerequisites=self.prerequisites.copy() if self.prerequisites else None,
         )
 
 
@@ -172,7 +335,6 @@ UPGRADES = {
         target=UpgradeTarget.SPEED,
         multiplier=1.05,
     ),
-    
     # Mining upgrades
     "mining_laser": Upgrade(
         id="mining_laser",
@@ -183,7 +345,6 @@ UPGRADES = {
         target=UpgradeTarget.MINING_SPEED,
         multiplier=1.05,
     ),
-    
     # Utility upgrades
     "fuel_optimizer": Upgrade(
         id="fuel_optimizer",
@@ -194,7 +355,6 @@ UPGRADES = {
         target=UpgradeTarget.FUEL_CONSUMPTION,
         multiplier=0.95,  # Note: This is a reduction, so < 1.0
     ),
-    
     "extended_tank": Upgrade(
         id="extended_tank",
         name="Extended Fuel Tank",
@@ -204,7 +364,6 @@ UPGRADES = {
         target=UpgradeTarget.FUEL_CAPACITY,
         multiplier=1.05,
     ),
-    
     # Cargo upgrades
     "cargo_expander": Upgrade(
         id="cargo_expander",
@@ -215,7 +374,6 @@ UPGRADES = {
         target=UpgradeTarget.CARGO_CAPACITY,
         multiplier=1.05,
     ),
-    
     # Sensor upgrades
     "sensor_array": Upgrade(
         id="sensor_array",
@@ -226,7 +384,6 @@ UPGRADES = {
         target=UpgradeTarget.SENSOR_RANGE,
         multiplier=1.1,
     ),
-    
     # Defense upgrades
     "hull_plating": Upgrade(
         id="hull_plating",
