@@ -1,5 +1,6 @@
 import json
 import os
+import pygame as pg  # Add pygame for Vector2
 from datetime import datetime
 from dataclasses import dataclass
 from random import choice
@@ -469,8 +470,7 @@ class Character:
             "engineering": self.engineering,
             "combat": self.combat,
             "education": self.education,
-            "charisma": self.charisma,
-            # Reputation
+            "charisma": self.charisma,            # Reputation
             "reputation_states": self.reputation_states,
             "reputation_corporations": self.reputation_corporations,
             "reputation_pirates": self.reputation_pirates,
@@ -484,7 +484,9 @@ class Character:
             "debt": self.debt,
             "positive_trait": self.positive_trait,
             "negative_trait": self.negative_trait,
-        }    @classmethod
+        }
+        
+    @classmethod
     def from_dict(cls, data):
         character = cls(
             name=data["name"],
@@ -518,11 +520,11 @@ class Character:
         character.reputation_traders = data.get("reputation_traders", 0)
         character.reputation_scientists = data.get("reputation_scientists", 0)
         character.reputation_military = data.get("reputation_military", 0)
-        character.reputation_explorers = data.get("reputation_explorers", 0)
-
-        # Set personality traits if available
+        character.reputation_explorers = data.get("reputation_explorers", 0)        # Set personality traits if available
         character.positive_trait = data.get("positive_trait", "")
-        character.negative_trait = data.get("negative_trait", "")        # Apply trait effects (which will also apply stat effects)
+        character.negative_trait = data.get("negative_trait", "")
+        
+        # Apply trait effects (which will also apply stat effects)
         character.apply_trait_effects()
 
         return character

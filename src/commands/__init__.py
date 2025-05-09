@@ -16,6 +16,7 @@ from .system import (
     save_game_command,
     load_game_command,
 )
+from .character import display_character_sheet
 from .appearance import color_command, reset_command
 from .sound import toggle_sound_command
 from .banking import banking_menu_command
@@ -52,4 +53,5 @@ __all__ = [
     "reset_command",
     "toggle_sound_command",
     "banking_menu_command",
+    "display_character_sheet",
 ]

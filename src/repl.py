@@ -21,6 +21,7 @@ from src.commands import (
     upgrade_command,
     save_game_command,
     load_game_command,
+    display_character_sheet,
     register_command,
     Argument,
 )
@@ -64,6 +65,9 @@ def register_commands(game_state: "Game"):
     )
     register_command(
         ["load"], load_game_command, [Argument("filename", str, True, 0, None)]
+    )
+    register_command(
+        ["character", "char", "c", "character_sheet", "cs"], display_character_sheet, []
     )
 
     # Navigation commands
@@ -143,6 +147,7 @@ def register_commands(game_state: "Game"):
             Argument("ore_name", str, False, 1, None),
         ],
     )
+    # Removed duplicate registration for display_character_sheet
 
 
 def start_repl():

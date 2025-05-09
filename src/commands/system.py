@@ -245,6 +245,7 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         # System commands
         write_command("status", "Display ship and game status", True)
         write_command("time", "Display current game time", True)
+        write_command("character/char/c", "Display character sheet", True)
         write_command("exit", "Exit the game", True)
         write_command("clear", "Clear the screen", True)
         write_command("debug", "Toggle debug mode", True)
