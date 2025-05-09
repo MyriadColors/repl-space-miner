@@ -236,6 +236,12 @@ def display_help(game_state: Game, command_name: str = "") -> None:
 
         # Refuel commands
         write_command("refuel <amount>", "Refuel your ship", True, "docked")
+        
+        # Antimatter commands
+        write_command("refuel_antimatter/refa <amount>", "Refuel with antimatter", True, "docked")
+        write_command("repair_containment/repc", "Repair antimatter containment", True, "docked")
+        write_command("eject_antimatter/eject", "Emergency ejection of antimatter", True)
+        write_command("ftl_jump/ftl <destination> <distance>", "Perform FTL jump", True, "undocked")
 
         # Upgrade commands
         write_command(

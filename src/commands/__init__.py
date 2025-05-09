@@ -8,6 +8,18 @@ from .trading import buy_command, sell_command
 from .mining import mine_command
 from .upgrade import upgrade_command
 from .debug import add_creds_debug_command, add_ore_debug_command, debug_mode_command
+from .antimatter import (
+    refuel_antimatter_command,
+    repair_containment_command, 
+    emergency_ejection_command,
+    ftl_jump_command
+)
+
+# Antimatter Commands:
+# - refuel_antimatter_command: Refuels the antimatter containment system.
+# - repair_containment_command: Repairs the containment system to prevent leaks.
+# - emergency_ejection_command: Ejects antimatter in emergencies to avoid catastrophic failure.
+# - ftl_jump_command: Executes a faster-than-light jump using antimatter propulsion.
 from .system import (
     display_help,
     display_time_and_status,
@@ -43,6 +55,10 @@ __all__ = [
     "add_creds_debug_command",
     "add_ore_debug_command",
     "debug_mode_command",
+    "refuel_antimatter_command",
+    "repair_containment_command",
+    "emergency_ejection_command",
+    "ftl_jump_command",
     "display_help",
     "display_time_and_status",
     "command_exit",

@@ -1,5 +1,6 @@
 from src.classes.game import Character, Game
 from src.classes.ship import Ship
+from src.classes.ship_integration import integrate_dual_fuel_system, update_ship_serialization
 from src.commands import (
     refuel_command,
     scan_field_command,
@@ -26,12 +27,17 @@ from src.commands import (
     Argument,
 )
 from src.command_handlers import process_command
-from src.events import intro_event
+# Import from events.py module directly
+import src.events
 import pygame as pg
 from colorama import init
 from src.helpers import is_valid_int, is_valid_float, is_valid_bool
 
 init(autoreset=True)
+
+# Integrate dual fuel system
+integrate_dual_fuel_system()
+update_ship_serialization()
 
 # Constants for Character and Ship initialization
 CHARACTER_NAME = "Player"
@@ -158,21 +164,25 @@ def start_repl():
 
 
 def run_intro_and_setup(game_state):
-    intro_event(game_state)
+    # Use the properly exported intro_event function
+    import src.events
+    src.events.intro_event(game_state)
     if not game_state.player_character:
         game_state.player_character = Character(
-            name="Player", age=25, sex="male", background="Belter"
+            name="Player", age=25, sex="male", background="Belter",
+            starting_creds=CHARACTER_STARTING_CREDS, starting_debt=CHARACTER_STARTING_DEBT
         )
     if not game_state.player_ship:
         game_state.player_ship = Ship(
-            game_state.rnd_station.position,
-            0.0001,
-            100,
-            0.05,
-            100,
-            100,
-            0.01,
-            "Player's Ship",
+            name=SHIP_NAME,
+            position=game_state.rnd_station.position,
+            speed=SHIP_SPEED,
+            max_fuel=SHIP_FUEL_CAPACITY,
+            fuel_consumption=SHIP_FUEL_CONSUMPTION,
+            cargo_capacity=SHIP_HULL_CAPACITY,
+            value=SHIP_HULL_INTEGRITY,
+            mining_speed=SHIP_SHIELD_CAPACITY,
+            sensor_range=0.25  # Default sensor range
         )
 
 

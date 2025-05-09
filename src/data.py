@@ -4,6 +4,7 @@ from enum import Enum, auto
 from typing import Optional, List
 
 from src.classes.ore import Ore, ORES
+from src.classes.engine import Engine, EngineType
 
 # This will be used to generate random names
 name_parts = [
@@ -101,7 +102,7 @@ name_parts = [
     "mor",
     "kur",
     "ker",
-    "ni" "ler",
+    "ni", "ler",
     "der",
     "ber",
     "shar",
@@ -383,8 +384,7 @@ UPGRADES = {
         category=UpgradeCategory.SENSORS,
         target=UpgradeTarget.SENSOR_RANGE,
         multiplier=1.1,
-    ),
-    # Defense upgrades
+    ),    # Defense upgrades
     "hull_plating": Upgrade(
         id="hull_plating",
         name="Reinforced Hull Plating",
@@ -393,5 +393,69 @@ UPGRADES = {
         category=UpgradeCategory.DEFENSE,
         target=UpgradeTarget.HULL_INTEGRITY,
         multiplier=1.08,
+    ),
+}
+
+# Engine types available in the game
+ENGINES = {
+    "standard": Engine(
+        id="standard",
+        name="Standard Drive",
+        description="The common, workhorse engine with balanced performance.",
+        engine_type=EngineType.STANDARD,
+        price=50_000,
+        speed_modifier=1.0,
+        fuel_consumption_modifier=1.0,
+        sensor_signature_modifier=1.0,
+        maintenance_cost_modifier=1.0,
+        magneton_resistance=0.0,
+    ),
+    "cargo_hauler": Engine(
+        id="cargo_hauler",
+        name="Cargo Hauler Drive",
+        description="Designed for bulk transport with built-in shielding to counteract magnetic interference from ores like Magneton.",
+        engine_type=EngineType.CARGO_HAULER,
+        price=85_000,
+        speed_modifier=0.9,  # Slightly lower speed
+        fuel_consumption_modifier=1.0,  # Baseline fuel consumption
+        sensor_signature_modifier=1.1,  # Slightly higher signature due to dampeners
+        maintenance_cost_modifier=1.2,  # Medium maintenance cost
+        magneton_resistance=0.85,  # Reduces magneton penalties by 85%
+    ),
+    "high_performance": Engine(
+        id="high_performance",
+        name="High-Performance Drive",
+        description="Optimized for maximum speed and acceleration, using advanced magnetic coils.",
+        engine_type=EngineType.HIGH_PERFORMANCE,
+        price=120_000,
+        speed_modifier=1.4,  # Significantly faster
+        fuel_consumption_modifier=1.6,  # Much higher fuel consumption
+        sensor_signature_modifier=1.5,  # Higher signature
+        maintenance_cost_modifier=1.5,  # High maintenance
+        magneton_resistance=-0.2,  # More susceptible to magneton (-20%)
+    ),
+    "stealth": Engine(
+        id="stealth",
+        name="Stealth Drive",
+        description="Designed to minimize sensor footprint (thermal, EM) and avoid detection.",
+        engine_type=EngineType.STEALTH,
+        price=200_000,
+        speed_modifier=0.7,  # Lower speed
+        fuel_consumption_modifier=1.3,  # Moderate to high fuel consumption
+        sensor_signature_modifier=0.3,  # Very low signature
+        maintenance_cost_modifier=2.0,  # Very high maintenance
+        magneton_resistance=0.0,  # Standard magneton sensitivity
+    ),
+    "economy": Engine(
+        id="economy",
+        name="Economy Drive",
+        description="Prioritizes fuel efficiency above all else, perfect for long-haul operations.",
+        engine_type=EngineType.ECONOMY,
+        price=75_000,
+        speed_modifier=0.6,  # Very low speed
+        fuel_consumption_modifier=0.5,  # Very low fuel consumption
+        sensor_signature_modifier=0.8,  # Low signature
+        maintenance_cost_modifier=0.9,  # Low maintenance
+        magneton_resistance=0.0,  # Standard magneton sensitivity
     ),
 }

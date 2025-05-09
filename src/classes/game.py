@@ -165,6 +165,16 @@ class Character:
         # Initialize stat effects
         self.apply_trait_effects()  # This will also call apply_stat_effects
 
+        # Initialize skills and faction standings
+        self.skills = {
+            "piloting": 0, "engineering": 0, "combat": 0,
+            "education": 0, "charisma": 0
+        }
+        self.faction_standings = {
+            "belters": 0, "corporations": 0, "pirates": 0,
+            "explorers": 0, "scientists": 0, "military": 0, "traders": 0
+        }
+
     # Stats implementation methods
     def apply_stat_effects(self):
         """Apply effects from all character stats"""
@@ -548,6 +558,7 @@ class Game:
         self.skipc = skip_customization
         self.sound_init = True if not mute_flag else False
         self.ui = UI()
+        self.sound_enabled: bool = False
 
     def set_player_character(
         self,
