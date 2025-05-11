@@ -451,7 +451,7 @@ def calculate_max_loan(game_state: Game, character) -> float:
     if character.debt > base_max * 1.5:
         max_loan = 0
 
-    return character.round_credits(max_loan)
+    return round(float(max_loan), 2)
 
 
 def calculate_credit_score(game_state: Game, character) -> int:

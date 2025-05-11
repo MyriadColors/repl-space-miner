@@ -6,6 +6,7 @@ from pygame import Vector2
 from src import data
 from src.classes.asteroid import AsteroidField
 from src.classes.station import Station
+from src.classes.space_object import IsSpaceObject
 from src.helpers import (
     euclidean_distance,
     rnd_float,
@@ -76,9 +77,7 @@ class SolarSystem:
 
     def get_all_stations(self) -> list[Station]:
         return self.stations
-
-    from src.classes.ship import IsSpaceObject
-
+        
     def get_all_space_objects(self) -> list[HasSpaceObjectType]:
         return self.asteroid_fields + self.stations
 

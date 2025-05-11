@@ -82,7 +82,7 @@ def travel_command(game_state: Game, **kwargs) -> float:
                 )
 
     game_state.ui.info_message(f"The ship has arrived at {destination}")
-    return travel_time
+    return float(travel_time)
 
 
 def closest_travel(game_state: Game, object_type: str) -> None:

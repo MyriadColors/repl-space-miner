@@ -3,8 +3,10 @@ This module provides functions to integrate the dual fuel system with the main S
 It applies the methods from ship_ftl.py to the Ship class to implement the dual fuel system.
 """
 
+from pygame import Vector2
 from src.classes.ship import Ship
 from src.classes.ship_ftl import DualFuelSystem
+from src.classes.space_object import IsSpaceObject
 
 
 def integrate_dual_fuel_system():
@@ -29,6 +31,10 @@ def integrate_dual_fuel_system():
         self.containment_power_draw = 0.001
         self.containment_failure_risk = 0.0
         self.last_containment_check = 0.0
+        # Add system location attributes
+        self.previous_system = "Unknown"
+        self.current_system = "Unknown"
+        self.location = getattr(self, "space_object", IsSpaceObject(Vector2(0, 0), 0)).position
     
     # Use setattr to avoid direct method assignment
     setattr(Ship, '__init__', extended_init)

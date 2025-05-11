@@ -1,12 +1,15 @@
 from datetime import timedelta
-from typing import Optional, Tuple, Dict, Any, Union
+from typing import Optional, Tuple, Dict, Any, Union, TYPE_CHECKING
 
 import random
 from pygame import Vector2
 
 from src.helpers import format_seconds
 from src.events.ftl_events import get_random_ftl_event
-from src.classes.game import Game
+
+# Use TYPE_CHECKING to avoid circular imports
+if TYPE_CHECKING:
+    from src.classes.game import Game
 
 
 class DualFuelSystem:
@@ -23,6 +26,9 @@ class DualFuelSystem:
     containment_failure_risk: float
     last_containment_check: float
     fuel: float
+    previous_system: str
+    current_system: str
+    location: Vector2
     
     # These type annotations are just for mypy and will never be executed directly on this class
     # They will be added to the Ship class
@@ -33,15 +39,15 @@ class DualFuelSystem:
         Args:
             amount: Amount of antimatter to add in grams
 
-            Returns:
-                float: New antimatter level
+        Returns:
+            float: New antimatter level
         """
         max_add = self.max_antimatter - self.antimatter
         actual_add = min(amount, max_add)
         self.antimatter += actual_add
         return self.antimatter
     
-    def check_containment_status(self, game_state: Game) -> Tuple[bool, float]:
+    def check_containment_status(self, game_state: 'Game') -> Tuple[bool, float]:
         """Check antimatter containment system status.
 
         This updates containment integrity based on time passed and performs power draws.
@@ -51,81 +57,72 @@ class DualFuelSystem:
             game_state: The current game state
 
         Returns:
-            Tuple[bool, float]: (containment_ok, risk_percentage)
+            Tuple[bool, float]: (is_stable, risk_percentage)
         """
-        # Skip if no antimatter to contain
-        if self.antimatter <= 0:
-            self.containment_failure_risk = 0.0
-            return True, 0.0
-
-        # Calculate time since last check
-        time_delta = game_state.global_time - self.last_containment_check
-
-        if time_delta > 0:
-            hours_passed = time_delta / 3600  # Convert seconds to hours
-
-            # Calculate power draw for containment
-            power_needed = hours_passed * self.containment_power_draw * self.antimatter
-
-            # Draw power from hydrogen fuel cells
-            if self.fuel >= power_needed:
-                self.fuel -= power_needed
-            else:
-                # Not enough fuel for containment
-                power_shortage = power_needed - self.fuel
-                self.fuel = 0
-
-                # Increase failure risk based on power shortage
-                risk_increase = (
-                    power_shortage / power_needed
-                ) * 5.0  # 5% per hour without full power
-                self.containment_integrity -= (
-                    risk_increase * 10
-                )  # Integrity decreases faster than risk increases
-                self.containment_failure_risk += risk_increase
-
-            # Small random degradation of containment (0.01-0.05% per hour)
-            random_degradation = random.uniform(0.01, 0.05) * hours_passed
-            self.containment_integrity -= random_degradation
-
-            # Cap integrity at 0-100%
-            self.containment_integrity = max(
-                0.0, min(100.0, self.containment_integrity)
-            )
-
-            # Update failure risk based on integrity
-            if self.containment_integrity < 50:
-                # Below 50% integrity, risk increases more rapidly
-                risk_factor = (50.0 - self.containment_integrity) / 50.0
-                self.containment_failure_risk += 0.1 * risk_factor * hours_passed
-
-            # Cap failure risk
-            self.containment_failure_risk = max(
-                0.0, min(100.0, self.containment_failure_risk)
-            )
-
+        # Calculate time passed since last check
+        last_check = self.last_containment_check
+        current_time = game_state.global_time
+        time_delta = max(0, current_time - last_check)
+        
         # Update last check time
-        self.last_containment_check = game_state.global_time
+        self.last_containment_check = current_time
+        
+        if self.antimatter <= 0 or time_delta <= 0:
+            # No antimatter or no time passed, nothing to update
+            return True, self.containment_failure_risk
+            
+        # Power draw based on time passed and containment amount
+        power_draw = (time_delta / 60) * self.containment_power_draw * (self.antimatter / 100)
+          # Apply power draw
+        player_ship = game_state.player_ship
+        if player_ship is not None and player_ship.power >= power_draw:
+            player_ship.power -= power_draw
+        else:
+            # Not enough power, increase risk significantly
+            if player_ship is not None:
+                self.containment_failure_risk += (power_draw - player_ship.power) * 0.1
+                player_ship.power = 0
+            else:
+                # No player ship reference, apply risk directly
+                self.containment_failure_risk += power_draw * 0.2
 
-        # Containment is OK if risk is below threshold and integrity above 20%
-        containment_ok = (self.containment_failure_risk < 5.0) and (
-            self.containment_integrity > 20.0
-        )
-        return containment_ok, self.containment_failure_risk
+        # Base decay rate (small chance of integrity loss over time)
+        base_decay = 0.001 * (time_delta / 60)
+        decay_modifier = (self.antimatter / self.max_antimatter) * 0.05
+        
+        # Apply decay proportional to antimatter amount
+        integrity_loss = base_decay * (1 + decay_modifier)
+        self.containment_integrity = max(0, self.containment_integrity - integrity_loss)
+        
+        # Calculate risk based on integrity
+        risk_increase: float = 0
+        
+        if self.containment_integrity < 50:
+            # Below 50% integrity, risk increases faster
+            risk_increase = (50 - self.containment_integrity) * 0.02 * (time_delta / 60)
+        
+        self.containment_failure_risk = min(100, self.containment_failure_risk + risk_increase)
+        
+        # Random events for integrity loss
+        if random.random() < 0.001 * (time_delta / 60) * (self.antimatter / self.max_antimatter):
+            # Small random failure, lose some integrity
+            random_loss = random.uniform(0.1, 0.5)
+            self.containment_integrity = max(0, self.containment_integrity - random_loss)
+        
+        # Check if containment system is still stable
+        is_stable = self.containment_integrity > 0 and self.containment_failure_risk < 80
+        return is_stable, self.containment_failure_risk
 
-    def repair_containment(self, repair_amount: float = 20.0) -> float:
-        """Repair antimatter containment system
+    def repair_containment(self, repair_amount: float) -> float:
+        """Repair the antimatter containment system
 
         Args:
-            repair_amount: Amount of containment integrity to restore (percentage)
+            repair_amount: Amount of repair in percentage points
 
         Returns:
             float: New containment integrity level
         """
-        self.containment_integrity = min(
-            100.0, self.containment_integrity + repair_amount
-        )
-        # Repairs also reduce failure risk
+        self.containment_integrity = min(100, self.containment_integrity + repair_amount)
         self.containment_failure_risk = max(
             0.0, self.containment_failure_risk - (repair_amount / 2)
         )
@@ -142,9 +139,9 @@ class DualFuelSystem:
             self.containment_failure_risk = 0.0
             return True
         return False
-
+        
     def ftl_jump(
-        self, game_state: Game, destination_system: str, distance_ly: float
+        self, game_state: 'Game', destination_system: str, distance_ly: float
     ) -> Tuple[bool, str]:
         # Check if antimatter is available
         required_antimatter = distance_ly * self.antimatter_consumption
@@ -160,47 +157,88 @@ class DualFuelSystem:
         if not containment_ok:
             return (
                 False,
-                f"Antimatter containment unstable ({risk:.1f}% failure risk). Repairs needed before FTL jump.",
-            )        # Calculate time for the jump
-        jump_time = distance_ly * 3600  # Simplified: 1 light year = 1 hour of game time
+                f"Antimatter containment system unstable. Current risk: {risk:.1f}%. Repairs needed before FTL jump.",
+            )
 
-        # Perform the jump
+        # All checks passed, perform FTL jump
         self.antimatter -= required_antimatter
-        
-        # Check if an FTL event occurs
-        ftl_event = get_random_ftl_event()
-        
-        # Process event if one occurred
-        event_message = ""
-        if ftl_event:
-            ftl_event.display_intro()
-            event_result = ftl_event.execute(game_state)
-              # Apply event effects to ship or game state
-            if "new_integrity" in event_result and "old_integrity" in event_result:
-                # Calculate the damage based on difference between old and new integrity
-                containment_damage = float(event_result["old_integrity"]) - float(event_result["new_integrity"])
-                event_message = f"\nEncountered: {ftl_event.name} - Containment integrity reduced by {containment_damage:.1f}%."
-            elif "antimatter_loss" in event_result:
-                antimatter_lost = float(event_result["antimatter_loss"])
-                if antimatter_lost > self.antimatter:
-                    antimatter_lost = self.antimatter
-                self.antimatter -= antimatter_lost
-                event_message = f"\nEncountered: {ftl_event.name} - Lost {antimatter_lost:.2f}g of antimatter."
-            elif "journey_time_modifier" in event_result:
-                time_mod = float(event_result["journey_time_modifier"])
-                jump_time *= time_mod
-                if time_mod > 1.0:
-                    event_message = f"\nEncountered: {ftl_event.name} - Journey took {time_mod:.1f}x longer than expected."
-                else:
-                    event_message = f"\nEncountered: {ftl_event.name} - Journey took {time_mod:.1f}x less time than expected."
-            else:
-                event_message = f"\nEncountered: {ftl_event.name}"
-                
-        # Update game time
-        game_state.global_time += int(jump_time)
 
-        # In 1.0, we don't actually change systems, just simulate time passing
-        return (
-            True,
-            f"FTL jump complete. Arrived at {destination_system} after {format_seconds(jump_time)}.{event_message}",
+        # Calculate travel time (30 seconds per light year)
+        travel_time_seconds = distance_ly * 30
+
+        # Get a random event
+        event = get_random_ftl_event()
+        result = event.execute(game_state) if event is not None else None
+        if result is None:
+            result = {
+                "description": "No significant events during the jump.",
+                "success": True,
+            }
+
+        # Create travel summary
+        # Ensure summary is used in the return statement        
+        summary = {
+            "origin": getattr(game_state.player_ship, "current_system", "Unknown"),
+            "destination": destination_system,
+            "distance": distance_ly,
+            "antimatter_used": required_antimatter,
+            "travel_time": travel_time_seconds,
+            "event": result,
+        }
+
+        if hasattr(game_state, "advance_time"):
+            game_state.advance_time(timedelta(seconds=travel_time_seconds))
+        else:
+            raise AttributeError("Game object is missing 'advance_time' method.")
+        if hasattr(game_state, "ship") and game_state.ship is not None:
+            game_state.ship.previous_system = getattr(game_state.ship, "current_system", "Unknown")  # type: ignore
+            game_state.ship.current_system = destination_system  # type: ignore
+            game_state.ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
+        else:
+            raise AttributeError("Game object is missing 'ship' attribute or it is None.")
+        # Set new location
+        assert(game_state.player_ship is not None), "Player ship is None"
+        game_state.player_ship.previous_system = game_state.player_ship.current_system  # type: ignore
+        game_state.player_ship.current_system = destination_system  # type: ignore
+        game_state.player_ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
+
+        # Apply a small degradation to containment integrity from the jump
+        jump_stress = random.uniform(0.5, 1.5) * (distance_ly / 10)
+        self.containment_integrity = max(0, self.containment_integrity - jump_stress)
+
+        # Format travel summary
+        event_desc = result["description"] if "description" in result else "Uneventful journey"
+        antimatter_left = self.antimatter
+        
+        summary_text = (
+            f"FTL Jump complete. Arrival in {destination_system} system.\n"
+            f"Distance traveled: {distance_ly:.2f} light years\n"
+            f"Antimatter consumed: {required_antimatter:.2f}g (Remaining: {antimatter_left:.2f}g)\n"
+            f"Journey time: {format_seconds(travel_time_seconds)}\n"
+            f"\n--- Journey Report ---\n"
+            f"{event_desc}"
         )
+
+        return True, summary_text
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert antimatter system status to dictionary for serialization"""
+        return {
+            "antimatter": self.antimatter,
+            "max_antimatter": self.max_antimatter,
+            "antimatter_consumption": self.antimatter_consumption,
+            "containment_integrity": self.containment_integrity,
+            "containment_power_draw": self.containment_power_draw,
+            "containment_failure_risk": self.containment_failure_risk,
+            "last_containment_check": self.last_containment_check,
+        }
+
+    def from_dict(self, data: Dict[str, Any]) -> None:
+        """Update antimatter system status from dictionary"""
+        self.antimatter = data.get("antimatter", 0.0)
+        self.max_antimatter = data.get("max_antimatter", 100.0)
+        self.antimatter_consumption = data.get("antimatter_consumption", 1.0)
+        self.containment_integrity = data.get("containment_integrity", 100.0)
+        self.containment_power_draw = data.get("containment_power_draw", 1.0)
+        self.containment_failure_risk = data.get("containment_failure_risk", 0.0)
+        self.last_containment_check = data.get("last_containment_check", 0.0)

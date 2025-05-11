@@ -198,9 +198,9 @@ class Station:
         station.fueltank = data["fueltank"]
         station.fuel_price = data["fuel_price"]
         station.ores_available = [
-            ORES.get(ore_id)
+            ore
             for ore_id in data["ores_available_ids"]
-            if ORES.get(ore_id) is not None
+            for ore in [ORES.get(ore_id)] if ore is not None
         ]
         station.ore_cargo = [
             OreCargo.from_dict(oc_data) for oc_data in data["ore_cargo"]

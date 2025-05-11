@@ -6,35 +6,9 @@ from pygame import Vector2
 from src.classes.asteroid import Asteroid, AsteroidField
 from src.classes.engine import Engine, EngineType
 from src.classes.station import Station
+from src.classes.space_object import IsSpaceObject, CanMove
 from src.data import OreCargo, Upgrade, UpgradeTarget, ENGINES
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
-
-
-class IsSpaceObject:
-
-    def __init__(self, position: Vector2, id: int) -> None:
-        self.position: Vector2 = position
-        self.id: int = id
-
-    def get_position(self) -> Vector2:
-        return self.position
-
-    def set_position(self, new_position: Vector2) -> None:
-        self.position = new_position
-
-    def get_id(self):
-        return self.id
-
-
-@dataclass
-class CanMove:
-    speed: float
-
-    def get_speed(self):
-        return self.speed
-
-    def set_speed(self, new_speed):
-        self.speed = new_speed
 
 
 class Ship:
@@ -79,11 +53,15 @@ class Ship:
         self.fuel_consumption = fuel_consumption  # in m3/AU
 
         # Antimatter fuel system for FTL (Faster-Than-Light) travel
-        # Units: antimatter in grams (g), consumption in grams per FTL jump
-        self.antimatter = 0.0  # in g (grams)
+        # Units: antimatter in grams (g), consumption in grams per FTL jump        self.antimatter = 0.0  # in g (grams)
         self.max_antimatter = 5.0  # in g (grams)
         self.antimatter_consumption = 0.5  # in g/FTL jump
+        self.antimatter = 5.0  # in g (grams)
 
+        # Power system for ship operations and containment
+        self.power = 100.0  # Current power level (units)
+        self.max_power = 100.0  # Maximum power capacity (units)
+        
         # Antimatter containment system
         # Ensures safe storage of antimatter; integrity is a percentage (0-100%)
         self.containment_integrity = 100.0  # percentage
@@ -252,8 +230,9 @@ class Ship:
             f"Engine: {self.engine.name}",
             f"Speed: {self.moves.speed:.2f} AU/s",
             f"Hydrogen Fuel: {self.fuel:.2f}/{self.max_fuel} m3",
-            f"Fuel Consumption: {self.fuel_consumption:.4f} m3/AU",
+            f"Fuel Consumption: {self.fuel_consumption:.4f} m3/AU",            
             f"Antimatter: {self.antimatter:.2f}/{self.max_antimatter} g",
+            f"Power: {self.power:.2f}/{self.max_power}",
             f"Containment Integrity: {self.containment_integrity:.1f}%",
             f"Cargohold: {self.cargohold_occupied:.2f}/{self.cargohold_capacity} m3",
             f"Amount of Ores: {ore_units_on_cargohold}",
@@ -468,10 +447,11 @@ class Ship:
                 "x": self.space_object.position.x,
                 "y": self.space_object.position.y,
             },
-            "speed": self.moves.speed,
-            "max_fuel": self.max_fuel,
+            "speed": self.moves.speed,            "max_fuel": self.max_fuel,
             "fuel": self.fuel,
             "fuel_consumption": self.fuel_consumption,
+            "power": self.power,
+            "max_power": self.max_power,
             "cargo_capacity": self.cargohold_capacity,
             "cargohold_occupied": self.cargohold_occupied,
             "cargohold": [cargo.to_dict() for cargo in self.cargohold],
@@ -497,11 +477,17 @@ class Ship:
             max_fuel=data["max_fuel"],
             fuel_consumption=data["fuel_consumption"],
             cargo_capacity=data["cargo_capacity"],
-            value=data["value"],
-            mining_speed=data["mining_speed"],
+            value=data["value"],            mining_speed=data["mining_speed"],
             sensor_range=data["sensor_range"],
         )
         ship.fuel = data["fuel"]
+        
+        # Load power attributes if they exist in saved data, otherwise use defaults
+        if "power" in data:
+            ship.power = data["power"]
+        if "max_power" in data:
+            ship.max_power = data["max_power"]
+            
         ship.cargohold_occupied = data["cargohold_occupied"]
         ship.cargohold = [
             OreCargo.from_dict(cargo_data) for cargo_data in data["cargohold"]
