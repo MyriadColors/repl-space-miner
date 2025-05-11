@@ -173,17 +173,17 @@ class SolarSystem:
         )
         return sorted_objects
 
-    def scan_system_objects(self, player_position, amount) -> list:
+    def scan_system_objects(self, player_position, amount) -> list[HasSpaceObjectType]:
         """Scan the system for objects within a certain distance."""
         sorted_fields = self.sort_fields("des", "d", player_position)
         sorted_stations = self.sort_stations("des", "d", player_position)
 
         scanned_objects = sorted_fields + sorted_stations
-        scanned_objects = self.sort_objects_by_distance(
+        sorted_scanned_objects: list[HasSpaceObjectType] = self.sort_objects_by_distance(
             scanned_objects, player_position
         )[0:amount]
 
-        return scanned_objects
+        return sorted_scanned_objects
 
     def is_object_within_interaction_radius(self, player_ship):
         for station in self.stations:

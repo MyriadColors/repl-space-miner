@@ -108,12 +108,12 @@ class Character:
         self.adaptability = 5
         self.technical_aptitude = 5
         
-        # Skills - can be improved through gameplay
-        self.piloting = 5
-        self.engineering = 5
-        self.combat = 5
-        self.education = 5
-        self.charisma = 5
+        # Skills - can be improved through gameplay (initialized to 0, set by background/events)
+        self.piloting = 0
+        self.engineering = 0
+        self.combat = 0
+        self.education = 0
+        self.charisma = 0
         
         # Reputation values
         self.reputation_states = 0
@@ -165,11 +165,7 @@ class Character:
         # Initialize stat effects
         self.apply_trait_effects()  # This will also call apply_stat_effects
 
-        # Initialize skills and faction standings
-        self.skills = {
-            "piloting": 0, "engineering": 0, "combat": 0,
-            "education": 0, "charisma": 0
-        }
+        # Initialize faction standings (skills are now direct attributes initialized above)
         self.faction_standings = {
             "belters": 0, "corporations": 0, "pirates": 0,
             "explorers": 0, "scientists": 0, "military": 0, "traders": 0

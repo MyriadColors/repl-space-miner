@@ -14,7 +14,17 @@ def command_dock(game_state: Game) -> None:
         game_state.ui.info_message("You are already docked.")
         return
 
-    target_station = get_closest_station(game_state.solar_system, player_ship)
+    # Check if player is already at a station
+    current_station = None
+    for station in game_state.solar_system.stations:
+        if station.space_object.position.distance_to(player_ship.space_object.position) < 0.001: # A very small threshold for being "at" a station
+            current_station = station
+            break
+    
+    target_station = current_station
+    if target_station is None: # if not at a station, find the closest one
+        target_station = get_closest_station(game_state.solar_system, player_ship)
+
     if target_station is None:
         game_state.ui.error_message("There are no stations within range.")
         return
@@ -26,7 +36,7 @@ def command_dock(game_state: Game) -> None:
         > player_ship.interaction_radius
     ):
         game_state.ui.error_message(
-            f"Station is not within docking range (must be within {player_ship.interaction_radius} AUs)."
+            f"Station {target_station.name} is not within docking range (must be within {player_ship.interaction_radius} AUs)."
         )
         return
 

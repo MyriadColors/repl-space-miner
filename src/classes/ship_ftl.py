@@ -175,21 +175,21 @@ class DualFuelSystem:
         if ftl_event:
             ftl_event.display_intro()
             event_result = ftl_event.execute(game_state)
-            
-            # Apply event effects to ship or game state
-            if "containment_damage" in event_result:
-                self.containment_integrity -= event_result["containment_damage"]
-                event_message = f"\nEncountered: {ftl_event.name} - Containment integrity reduced by {event_result['containment_damage']}%."
+              # Apply event effects to ship or game state
+            if "new_integrity" in event_result and "old_integrity" in event_result:
+                # Calculate the damage based on difference between old and new integrity
+                containment_damage = float(event_result["old_integrity"]) - float(event_result["new_integrity"])
+                event_message = f"\nEncountered: {ftl_event.name} - Containment integrity reduced by {containment_damage:.1f}%."
             elif "antimatter_loss" in event_result:
-                antimatter_lost = event_result["antimatter_loss"]
+                antimatter_lost = float(event_result["antimatter_loss"])
                 if antimatter_lost > self.antimatter:
                     antimatter_lost = self.antimatter
                 self.antimatter -= antimatter_lost
                 event_message = f"\nEncountered: {ftl_event.name} - Lost {antimatter_lost:.2f}g of antimatter."
             elif "journey_time_modifier" in event_result:
-                time_mod = event_result["journey_time_modifier"]
+                time_mod = float(event_result["journey_time_modifier"])
                 jump_time *= time_mod
-                if time_mod > 1:
+                if time_mod > 1.0:
                     event_message = f"\nEncountered: {ftl_event.name} - Journey took {time_mod:.1f}x longer than expected."
                 else:
                     event_message = f"\nEncountered: {ftl_event.name} - Journey took {time_mod:.1f}x less time than expected."

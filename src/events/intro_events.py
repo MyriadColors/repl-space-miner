@@ -1,5 +1,6 @@
 # filepath: c:\Users\pedro\Desktop\coding\repos\repl-space-miner\src\events\intro_events.py
 from time import sleep
+from typing import Dict, cast # Added for type hinting
 from colorama import init, Fore
 import pygame as pg
 
@@ -30,7 +31,7 @@ PERSONALITY_TRAITS = {
 }
 
 # Background skill bonuses - expanded to fully determine character skills
-BACKGROUND_BONUSES = {
+BACKGROUND_BONUSES: Dict[str, Dict[str, int]] = {
     "Ex-Miner": {
         # Stats
         "technical_aptitude": 2, "resilience": 2, 
@@ -82,7 +83,7 @@ BACKGROUND_BONUSES = {
 }
 
 
-def intro_event(game_state: "Game"):
+def intro_event(game_state: Game):
     # Quick start option
     quick_start_choice = input(
         Fore.YELLOW + "Do you wish to quick start the game (yes/no)? "
@@ -92,18 +93,59 @@ def intro_event(game_state: "Game"):
 
     # Introduction text with more atmosphere and player involvement
     intro_text = [
-        "The Terminus Bar. A name that sends shivers down the spines of hardened spacers.",
-        "You push through the hissing airlock, hit by a wall of sound and stench.",
-        "Neon bathes grimy walls in sickly green, casting long shadows across desperate faces.",
-        "Three sets of eyes track you across the room: a one-armed mercenary, a hooded engineer, and the bartender.",
+        "The airlock hisses open, a metallic sigh into the cacophony of the Terminus Bar.",
+        "It's a name whispered in hushed tones across the star lanes – a wretched hive of scum and villainy, and occasionally, opportunity.",
+        "You step inside, the stench of stale synth-ale, unwashed bodies, and ozone assaulting your senses.",
+        "Gloomy, flickering neon signs cast long, dancing shadows, painting the grime-caked walls in shades of sickly green and lurid pink.",
+        "Faces, hard-bitten and desperate, turn to observe your entrance. A ripple of curiosity, or perhaps predatory interest, passes through the assembled crowd.",
+        "Across the smoke-filled room, three figures in particular seem to register your arrival:",
+        "A hulking mercenary, scarred and battle-worn, nursing a glass of what looks suspiciously like engine coolant.",
+        "A wiry figure hunched over a flickering datapad, tools scattered around them – an engineer, by the looks of it, lost in some complex schematic.",
+        "And the bartender, a stoic cyborg whose optical implants whir as they scan you, undoubtedly cross-referencing your face with a dozen outstanding bounties."
     ]
 
     for line in intro_text:
-        sleep(1.2)
+        sleep(1.5)  # Slightly increased delay for more dramatic effect
         print(Fore.CYAN + line)
 
     print("\n")
-    sleep(1)
+    sleep(1.5) # Slightly increased delay
+
+    # Handle approaching a character
+    print(Fore.YELLOW + "The denizens of the Terminus watch your every move. Who do you approach first?\n")
+    approach_options = [
+        "The battle-scarred mercenary, whose eyes seem to hold a thousand untold war stories.",
+        "The enigmatic engineer, seemingly oblivious to the chaos, their fingers dancing across the datapad.",
+        "The cybernetic bartender, whose gaze seems to penetrate right through to your credit balance... or lack thereof."
+    ]
+    for i, option in enumerate(approach_options, 1):
+        sleep(0.2)
+        print(f"{Fore.GREEN}{i}. {option}")
+
+    valid_approach_choice = False
+    approach_choice_num = 0
+    while not valid_approach_choice:
+        choice_input = input(Fore.WHITE + "\nYour choice (1-3): ")
+        if is_valid_int(choice_input):
+            choice_num = int(choice_input)
+            if 1 <= choice_num <= 3:
+                valid_approach_choice = True
+                approach_choice_num = choice_num
+            else:
+                print(Fore.RED + "Please enter a number between 1 and 3.")
+        else:
+            print(Fore.RED + "Please enter a valid number.")
+
+    sleep(1.5) # Slightly increased delay
+    if approach_choice_num == 1:
+        print(Fore.CYAN + "\nYou weave through the throng, the mercenary's gaze following you like a targeting system. As you reach his table, he grunts, one scarred eyebrow raised. 'Spit it out, spacer. I ain't got all rotation.'")
+    elif approach_choice_num == 2:
+        print(Fore.CYAN + "\nYou navigate towards the engineer. As you approach, a faint hum emanates from their direction. Without looking up from the datapad, a synthesized voice cuts through the din: 'If it ain't critical, it can wait. If it is critical, make it quick.'")
+    elif approach_choice_num == 3:
+        print(Fore.CYAN + "\nYou slide up to the bar. The bartender's optical sensors focus on you with an audible click. 'The usual for newcomers is trouble, with a shot of desperation. What'll it be for you?'")
+    
+    sleep(2.5)  # Slightly increased pause after interaction
+    print("\n")
 
     # Character creation sequence
     print(Fore.YELLOW + "REPL SPACE MINER - CHARACTER CREATION\n")
@@ -132,11 +174,11 @@ def intro_event(game_state: "Game"):
     valid_sex = False
     sex = ""
     while not valid_sex:
-        sex = input(Fore.WHITE + "Enter your sex (male/female/non-binary/other): ").lower()
-        if sex in ["male", "female", "non-binary", "other"]:
+        sex = input(Fore.WHITE + "Enter your sex (male/female): ").lower()
+        if sex in ["male", "female"]:
             valid_sex = True
         else:
-            print(Fore.RED + "Please enter 'male', 'female', 'non-binary', or 'other'.")
+            print(Fore.RED + "Please enter 'male' or 'female'.")
 
     # Select background with gameplay effects
     print(Fore.YELLOW + "\nCHOOSE YOUR BACKGROUND\n")
@@ -167,7 +209,37 @@ def intro_event(game_state: "Game"):
     }
 
     print(f"{Fore.CYAN}{bg_descriptions[background]}")
-    sleep(2)
+    sleep(1) # Reduced sleep to make way for new questions
+
+    additional_bonus_details = {} # To store what to buff from background specialization
+
+    if background == "Ex-Miner":
+        print(Fore.YELLOW + "\nYOUR MINING SPECIALIZATION:")
+        miner_focus_options = {
+            1: {"text": "Keen Eyes: You excelled at spotting valuable ore pockets. (+1 Perception)", "type": "stat", "name": "perception", "value": 1},
+            2: {"text": "Expert Tinkerer: Your knack for keeping aging mining equipment running was legendary. (+1 Engineering)", "type": "skill", "name": "engineering", "value": 1},
+            3: {"text": "Belt Navigator: You learned to guide even clumsy mining rigs through treacherous asteroid fields. (+1 Piloting)", "type": "skill", "name": "piloting", "value": 1},
+            4: {"text": "Community Ties: You built a reputation for fairness and solidarity among Belter communities. (+5 Belters Standing)", "type": "faction", "name": "belters", "value": 5},
+        }
+        for i, option_data in miner_focus_options.items():
+            sleep(0.2)
+            print(f"{Fore.GREEN}{i}. {option_data['text']}")
+
+        valid_focus_choice = False
+        while not valid_focus_choice:
+            focus_input = input(Fore.WHITE + "\nChoose your specialty (1-4): ")
+            if is_valid_int(focus_input):
+                focus_choice_num = int(focus_input)
+                if focus_choice_num in miner_focus_options:
+                    selected_bonus = miner_focus_options[focus_choice_num]
+                    additional_bonus_details = {"type": selected_bonus["type"], "name": selected_bonus["name"], "value": selected_bonus["value"]}
+                    print(Fore.CYAN + f"Your expertise in {selected_bonus['name']} will undoubtedly be an asset.")
+                    valid_focus_choice = True
+                else:
+                    print(Fore.RED + "Please enter a number between 1 and 4.")
+            else:
+                print(Fore.RED + "Please enter a valid number.")
+        sleep(1.5) # Pause after selection
 
     # Choose positive trait
     print(Fore.YELLOW + "\nCHOOSE A POSITIVE TRAIT\n")
@@ -272,27 +344,57 @@ def intro_event(game_state: "Game"):
     game_state.player_character.positive_trait = positive_trait
     game_state.player_character.negative_trait = negative_trait
     
-    # Initialize skills and faction standings if not already set
-    # These are now initialized in the Character class constructor
-    # if not hasattr(game_state.player_character, 'skills'):
-    #     game_state.player_character.skills = {
-    #         "piloting": 0, "engineering": 0, "combat": 0, 
-    #         "education": 0, "charisma": 0
-    #     }
+    # Apply background bonuses
+    bg_bonus: Dict[str, int] = BACKGROUND_BONUSES[background] # More specific type hint
+    character = game_state.player_character # shorthand
     
-    # if not hasattr(game_state.player_character, 'faction_standings'):
-    #     game_state.player_character.faction_standings = {
-    #         "belters": 0, "corporations": 0, "pirates": 0, 
-    #         "explorers": 0, "scientists": 0, "military": 0, "traders": 0
-    #     }
-    
-    # Apply background bonuses to skills
-    bg_bonus = BACKGROUND_BONUSES[background] # Define bg_bonus
-    for skill, bonus in bg_bonus.items():
-        if skill in game_state.player_character.skills:
-            game_state.player_character.skills[skill] = bonus
-        elif skill in game_state.player_character.faction_standings:
-            game_state.player_character.faction_standings[skill] += bonus
+    for loop_stat_key, bonus_val in bg_bonus.items():
+        current_stat_key = cast(str, loop_stat_key) # Explicitly cast to str for clarity and type hinting
+        
+        # Check if it's a skill (now a direct attribute)
+        if current_stat_key in ["piloting", "engineering", "combat", "education", "charisma"] and hasattr(character, current_stat_key):
+            # Skills from BACKGROUND_BONUSES are the starting values.
+            setattr(character, current_stat_key, bonus_val)
+        elif current_stat_key in character.faction_standings:
+            # Faction standings from BACKGROUND_BONUSES are additive.
+            character.faction_standings[current_stat_key] = character.faction_standings.get(current_stat_key, 0) + bonus_val
+        elif hasattr(character, current_stat_key): 
+            # This handles base stats like 'technical_aptitude', 'resilience', 'perception', etc.
+            # These are direct attributes of the Character class, initialized to a base value (e.g., 5).
+            # The bonus_val from BACKGROUND_BONUSES should be ADDED to this base value.
+            current_base_val = getattr(character, current_stat_key) 
+            setattr(character, current_stat_key, current_base_val + cast(int, bonus_val))
+        # If current_stat_key is not a skill, not a faction, and not an attribute, it's an undefined bonus.
+
+    # Apply additional stored bonus from background specialization
+    if additional_bonus_details:
+        bonus_type = cast(str, additional_bonus_details["type"])
+        bonus_name = cast(str, additional_bonus_details["name"]) 
+        bonus_value = cast(int, additional_bonus_details["value"]) # Assuming value is int
+        applied_bonus_message = ""
+
+        if bonus_type == "skill":
+            # Specialization bonuses for skills are additive to what background might have set.
+            if bonus_name in ["piloting", "engineering", "combat", "education", "charisma"] and hasattr(character, bonus_name):
+                current_skill_value = getattr(character, bonus_name)
+                setattr(character, bonus_name, current_skill_value + bonus_value)
+                applied_bonus_message = f"Your specialization grants an additional +{bonus_value} to {bonus_name} skill."
+        elif bonus_type == "faction":
+            # Specialization bonuses for factions are additive.
+            if bonus_name in character.faction_standings:
+                current_faction_value = character.faction_standings.get(bonus_name, 0)
+                character.faction_standings[bonus_name] = current_faction_value + bonus_value
+                applied_bonus_message = f"Your specialization grants an additional +{bonus_value} to {bonus_name} standing."
+        elif bonus_type == "stat": # Handling for base stats like perception
+            # Specialization bonuses for base stats are additive to the (base_value + background_bonus).
+            if hasattr(character, bonus_name):
+                current_stat_val = getattr(character, bonus_name)
+                setattr(character, bonus_name, current_stat_val + bonus_value)
+                applied_bonus_message = f"Your specialization grants an additional +{bonus_value} to your {bonus_name}."
+        
+        if applied_bonus_message:
+            print(Fore.GREEN + applied_bonus_message)
+            sleep(1)
     
     # Create ship (removed appearance parameter if not supported)
     game_state.player_ship = Ship(name=ship_name, appearance=ship_appearance)
@@ -310,7 +412,7 @@ def quick_start(game_state: "Game"):
     game_state.player_character = Character(
         name="Space Miner", 
         age=30, 
-        sex="non-binary",
+        sex="female", # Changed default to female for quick_start
         background="Ex-Miner",
         starting_creds=CHARACTER_STARTING_CREDS,
         starting_debt=CHARACTER_STARTING_DEBT
@@ -320,12 +422,19 @@ def quick_start(game_state: "Game"):
     game_state.player_character.negative_trait = "Impatient"
     
     # Apply Ex-Miner background bonuses
-    bg_bonus = BACKGROUND_BONUSES["Ex-Miner"]
-    for skill, bonus in bg_bonus.items():
-        if skill in game_state.player_character.skills:
-            game_state.player_character.skills[skill] = bonus
-        elif skill in game_state.player_character.faction_standings:
-            game_state.player_character.faction_standings[skill] += bonus
+    bg_bonus: Dict[str, int] = BACKGROUND_BONUSES["Ex-Miner"] # More specific type hint
+    character = game_state.player_character # shorthand
+
+    for loop_key, bonus in bg_bonus.items():
+        key = cast(str, loop_key) # Ensure key is treated as a string for clarity and type hinting
+        # Check if it's a skill (now a direct attribute)
+        if key in ["piloting", "engineering", "combat", "education", "charisma"] and hasattr(character, key):
+            setattr(character, key, bonus) # Set as base value
+        elif key in character.faction_standings:
+            character.faction_standings[key] = character.faction_standings.get(key, 0) + bonus # Add to existing
+        elif hasattr(character, key): # It's a base stat
+            current_base_val = getattr(character, key)
+            setattr(character, key, current_base_val + cast(int, bonus)) # Add to existing base value
     
     # Create ship
     game_state.player_ship = Ship(name="Rusty Bucket", appearance="Rust Bucket")
