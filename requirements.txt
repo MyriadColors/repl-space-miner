@@ -1,0 +1,17 @@
+# Core dependencies
+pygame>=2.5.0
+colorama>=0.4.6
+
+# Development tools
+mypy>=1.5.0
+
+# Standard libraries used (included with Python)
+# - datetime
+# - dataclasses
+# - enum
+# - json
+# - math
+# - os
+# - random
+# - time
+# - typing
