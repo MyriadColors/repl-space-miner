@@ -7,7 +7,7 @@ from src.classes.asteroid import Asteroid, AsteroidField
 from src.classes.engine import Engine, EngineType
 from src.classes.station import Station
 from src.classes.space_object import IsSpaceObject, CanMove
-from src.data import OreCargo, Upgrade, UpgradeTarget, ENGINES
+from src.data import OreCargo, Upgrade, UpgradeTarget, ENGINES, SHIP_TEMPLATES
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
 
 
@@ -529,6 +529,73 @@ class Ship:
                 ship.docked_at = None
         else:
             ship.docked_at = None
+        return ship
+        
+    @classmethod
+    def from_template(
+        cls, template_id: str, name: Optional[str] = None
+    ) -> "Ship":
+        """
+        Create a ship from a predefined template in SHIP_TEMPLATES
+
+        Args:
+            template_id (str): ID of the template in SHIP_TEMPLATES
+            name (str, optional): Custom name for the ship. If None, uses template name.
+
+        Returns:
+            Ship: A new Ship instance with properties from the template
+        """
+        if template_id not in SHIP_TEMPLATES:
+            raise ValueError(f"Template {template_id} not found in SHIP_TEMPLATES")
+
+        template = SHIP_TEMPLATES[template_id]
+        ship_name: str = str(name) if name is not None else str(template["name"])
+
+        # Create the ship with properties from the template, safely converting to expected types
+        ship = cls(
+            name=ship_name,
+            speed=template["speed"] if isinstance(template["speed"], (int, float)) else 1.0,
+            max_fuel=template["max_fuel"] if isinstance(template["max_fuel"], (int, float)) else 100.0,
+            fuel_consumption=template["fuel_consumption"] if isinstance(template["fuel_consumption"], (int, float)) else 1.0,
+            cargo_capacity=template["cargo_capacity"] if isinstance(template["cargo_capacity"], (int, float)) else 100.0,
+            value=template["value"] if isinstance(template["value"], (int, float)) else 10000.0,
+            mining_speed=template["mining_speed"] if isinstance(template["mining_speed"], (int, float)) else 1.0,
+            sensor_range=template["sensor_range"] if isinstance(template["sensor_range"], (int, float)) else 1.0,
+            appearance=str(template["description"]),
+        )
+
+        # Set additional properties that aren't part of the __init__ params
+        ship.hull_integrity = template["hull_integrity"] if isinstance(template["hull_integrity"], (int, float)) else 100.0
+        ship.shield_capacity = template["shield_capacity"] if isinstance(template["shield_capacity"], (int, float)) else 0.0
+        
+        signature = template.get("sensor_signature", 1.0)
+        ship.sensor_signature = signature if isinstance(signature, (int, float)) else 1.0
+        
+        antimatter = template.get("antimatter_capacity", 5.0)
+        ship.max_antimatter = antimatter if isinstance(antimatter, (int, float)) else 5.0
+        ship.antimatter = ship.max_antimatter  # Start with full antimatter
+
+        # Set the engine if specified
+        engine_id = str(template.get("engine_id", "standard"))
+        if engine_id in ENGINES:
+            engine_obj = ENGINES[engine_id]
+            ship.engine = Engine(
+                id=engine_obj.id,
+                name=engine_obj.name,
+                description=engine_obj.description,
+                engine_type=engine_obj.engine_type,
+                price=engine_obj.price,
+                speed_modifier=engine_obj.speed_modifier,
+                fuel_consumption_modifier=engine_obj.fuel_consumption_modifier,
+                sensor_signature_modifier=engine_obj.sensor_signature_modifier,
+                maintenance_cost_modifier=engine_obj.maintenance_cost_modifier,
+                magneton_resistance=getattr(engine_obj, "magneton_resistance", 0.0),
+            )
+            # Apply engine modifiers
+            ship.moves.speed *= engine_obj.speed_modifier
+            ship.fuel_consumption *= engine_obj.fuel_consumption_modifier
+            ship.sensor_signature *= engine_obj.sensor_signature_modifier
+
         return ship
 
     def apply_upgrade(self, upgrade: Upgrade) -> bool:

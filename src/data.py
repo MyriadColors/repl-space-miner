@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from random import choice
 from enum import Enum, auto
-from typing import Optional, List
+from typing import Dict, Optional, List
 
 from src.classes.ore import Ore, ORES
 from src.classes.engine import Engine, EngineType
@@ -212,7 +212,7 @@ class OreCargo:
     @classmethod
     def from_dict(cls, data):
         ore_obj = ORES.get(data["ore_id"])
-        if ore_obj is None:
+        if (ore_obj is None):
             # Handle missing ore, perhaps raise an error or return None
             raise ValueError(f"Ore with ID {data['ore_id']} not found in ORES map.")
         return cls(
@@ -429,33 +429,333 @@ ENGINES = {
         engine_type=EngineType.HIGH_PERFORMANCE,
         price=120_000,
         speed_modifier=1.4,  # Significantly faster
-        fuel_consumption_modifier=1.6,  # Much higher fuel consumption
-        sensor_signature_modifier=1.5,  # Higher signature
-        maintenance_cost_modifier=1.5,  # High maintenance
-        magneton_resistance=-0.2,  # More susceptible to magneton (-20%)
+        fuel_consumption_modifier=1.5,  # Higher fuel consumption
+        sensor_signature_modifier=1.2,  # Higher signature
+        maintenance_cost_modifier=1.4,  # Higher maintenance
+        magneton_resistance=0.0,  # Standard magneton sensitivity
     ),
     "stealth": Engine(
         id="stealth",
         name="Stealth Drive",
-        description="Designed to minimize sensor footprint (thermal, EM) and avoid detection.",
+        description="Uses advanced dampening technology to minimize detection.",
         engine_type=EngineType.STEALTH,
-        price=200_000,
-        speed_modifier=0.7,  # Lower speed
-        fuel_consumption_modifier=1.3,  # Moderate to high fuel consumption
-        sensor_signature_modifier=0.3,  # Very low signature
-        maintenance_cost_modifier=2.0,  # Very high maintenance
+        price=150_000,
+        speed_modifier=0.8,  # Slower speed due to stealth systems
+        fuel_consumption_modifier=1.1,  # Slightly more fuel consumption
+        sensor_signature_modifier=0.4,  # Very low signature
+        maintenance_cost_modifier=1.5,  # High maintenance
         magneton_resistance=0.0,  # Standard magneton sensitivity
     ),
     "economy": Engine(
         id="economy",
         name="Economy Drive",
-        description="Prioritizes fuel efficiency above all else, perfect for long-haul operations.",
+        description="Optimized for minimal fuel consumption.",
         engine_type=EngineType.ECONOMY,
-        price=75_000,
-        speed_modifier=0.6,  # Very low speed
+        price=70_000,
+        speed_modifier=0.9,  # Slightly slower speed
         fuel_consumption_modifier=0.5,  # Very low fuel consumption
         sensor_signature_modifier=0.8,  # Low signature
         maintenance_cost_modifier=0.9,  # Low maintenance
         magneton_resistance=0.0,  # Standard magneton sensitivity
     ),
+}
+
+# Ship templates for character creation
+SHIP_TEMPLATES = {
+    "armored_behemoth": {
+        "name": "Armored Behemoth",
+        "description": "Thick plating, heavy weapon mounts. Built to take a beating and dish one out.",
+        "speed": 0.8,  # Slower due to heavy armor
+        "max_fuel": 120.0,  # Higher fuel capacity
+        "fuel_consumption": 1.2,  # Higher fuel consumption due to weight
+        "cargo_capacity": 120.0,  # Large cargo hold
+        "value": 12000.0,
+        "mining_speed": 1.0,
+        "sensor_range": 0.8,  # Reduced sensor range
+        "hull_integrity": 150.0,  # High hull strength
+        "shield_capacity": 20.0,  # Basic shields
+        "engine_id": "standard",  # Default standard engine
+        "sensor_signature": 1.2,  # Higher signature due to bulk
+        "antimatter_capacity": 5.0,  # Standard antimatter capacity
+    },
+    "agile_interceptor": {
+        "name": "Agile Interceptor",
+        "description": "Streamlined and fast. Prioritizes speed and maneuverability over raw power.",
+        "speed": 1.4,  # Significantly faster
+        "max_fuel": 80.0,  # Lower fuel capacity
+        "fuel_consumption": 0.8,  # More efficient due to streamlining
+        "cargo_capacity": 70.0,  # Smaller cargo capacity
+        "value": 11000.0,
+        "mining_speed": 0.9,  # Slightly lower mining speed
+        "sensor_range": 1.2,  # Enhanced sensors
+        "hull_integrity": 80.0,  # Lower hull integrity
+        "shield_capacity": 10.0,  # Minimal shields
+        "engine_id": "high_performance",  # High performance engine
+        "sensor_signature": 0.8,  # Lower signature due to smaller profile
+        "antimatter_capacity": 6.0,  # Enhanced antimatter capacity
+    },
+    "balanced_cruiser": {
+        "name": "Balanced Cruiser",
+        "description": "A versatile design. Decent armor, speed, and firepower for most situations.",
+        "speed": 1.0,  # Balanced speed
+        "max_fuel": 100.0,  # Standard fuel capacity
+        "fuel_consumption": 1.0,  # Standard fuel consumption
+        "cargo_capacity": 100.0,  # Standard cargo
+        "value": 10000.0,
+        "mining_speed": 1.0,  # Standard mining speed
+        "sensor_range": 1.0,  # Standard sensor range
+        "hull_integrity": 100.0,  # Standard hull
+        "shield_capacity": 15.0,  # Standard shields
+        "engine_id": "standard",  # Standard engine
+        "sensor_signature": 1.0,  # Standard signature
+        "antimatter_capacity": 5.0,  # Standard antimatter capacity
+    },
+    "mining_vessel": {
+        "name": "Mining Vessel",
+        "description": "Specialized for asteroid mining with enhanced ore extraction systems.",
+        "speed": 0.9,  # Slightly slower
+        "max_fuel": 110.0,  # More fuel for mining operations
+        "fuel_consumption": 1.1,  # Higher consumption due to mining equipment
+        "cargo_capacity": 140.0,  # Large cargo for ore storage
+        "value": 10500.0,
+        "mining_speed": 1.5,  # Significantly higher mining speed
+        "sensor_range": 1.4,  # Better at detecting ore deposits
+        "hull_integrity": 110.0,  # Reinforced hull
+        "shield_capacity": 10.0,  # Basic shields
+        "engine_id": "cargo_hauler",  # Better for hauling cargo
+        "sensor_signature": 1.1,  # Higher signature due to mining equipment
+        "antimatter_capacity": 4.0,  # Lower antimatter capacity
+    },
+    # Special ships for contacts
+    "merc_veteran": {
+        "name": "Mercenary Veteran",
+        "description": "A battle-hardened vessel with custom combat modifications and stealth capabilities.",
+        "speed": 1.1,  # Good speed
+        "max_fuel": 100.0,
+        "fuel_consumption": 0.9,  # Efficient
+        "cargo_capacity": 90.0,
+        "value": 15000.0,
+        "mining_speed": 0.8,  # Not optimized for mining
+        "sensor_range": 1.3,  # Enhanced sensors for combat
+        "hull_integrity": 120.0,  # Reinforced hull
+        "shield_capacity": 25.0,  # Better shields
+        "engine_id": "stealth",  # Stealth engine
+        "sensor_signature": 0.7,  # Low signature for stealth operations
+        "antimatter_capacity": 6.0,  # Enhanced antimatter capacity
+    },
+    "hunter_ship": {
+        "name": "Bounty Hunter's Pursuit",
+        "description": "A sleek, customized vessel with advanced tracking systems and reinforced hull.",
+        "speed": 1.3,  # Very fast
+        "max_fuel": 90.0,
+        "fuel_consumption": 1.0,
+        "cargo_capacity": 80.0,  # Lower cargo capacity
+        "value": 14000.0,
+        "mining_speed": 0.9,
+        "sensor_range": 1.5,  # Excellent sensors for tracking
+        "hull_integrity": 110.0,
+        "shield_capacity": 20.0,
+        "engine_id": "high_performance",
+        "sensor_signature": 0.9,
+        "antimatter_capacity": 5.5,
+    },
+    "research_vessel": {
+        "name": "Scientific Explorer",
+        "description": "A research vessel equipped with advanced sensors and analytical equipment.",
+        "speed": 0.9,
+        "max_fuel": 110.0,
+        "fuel_consumption": 0.7,  # Fuel efficient
+        "cargo_capacity": 80.0,
+        "value": 12000.0,
+        "mining_speed": 0.8,
+        "sensor_range": 1.7,  # Exceptional sensors
+        "hull_integrity": 90.0,
+        "shield_capacity": 10.0,
+        "engine_id": "economy",
+        "sensor_signature": 1.3,  # Higher signature due to scientific equipment
+        "antimatter_capacity": 7.0,  # Higher antimatter for research purposes
+    },
+    "smuggler_ship": {
+        "name": "Smuggler's Edge",
+        "description": "A customized freighter with hidden compartments and stealth modifications.",
+        "speed": 1.2,
+        "max_fuel": 95.0,
+        "fuel_consumption": 0.8,
+        "cargo_capacity": 110.0,  # Good cargo capacity with hidden compartments
+        "value": 13000.0,
+        "mining_speed": 0.9,
+        "sensor_range": 1.1,
+        "hull_integrity": 90.0,
+        "shield_capacity": 15.0,
+        "engine_id": "stealth",
+        "sensor_signature": 0.5,  # Very low signature
+        "antimatter_capacity": 5.0,
+    },
+}
+
+# Personality traits with gameplay effects
+PERSONALITY_TRAITS = {
+    "Positive": {
+        "Resilient": "Recover from setbacks faster. +10% damage resistance.",
+        "Resourceful": "Find more resources when mining. +5% ore yield.",
+        "Charismatic": "Better prices when trading. -5% on purchases, +5% on sales.",
+        "Perceptive": "Better chance to detect valuable items. +15% sensor range.",
+        "Quick": "Faster reaction times. +10% evasion chance in combat.",
+        "Methodical": "More efficient with resources. -8% fuel consumption.",
+    },
+    "Negative": {
+        "Reckless": "Higher chance of accidents. +10% damage taken.",
+        "Paranoid": "Overreact to threats. -5% trading prices due to rush decisions.",
+        "Forgetful": "Miss details. 5% chance to lose small amounts of cargo.",
+        "Impatient": "Rush through tasks. -10% mining efficiency.",
+        "Superstitious": "Avoid 'unlucky' opportunities. Miss occasional deals.",
+        "Indebted": "Poor money management. +10% interest on debt.",
+    },
+}
+
+# Background skill bonuses - expanded to fully determine character skills
+BACKGROUND_BONUSES: Dict[str, Dict[str, int]] = {
+    "Ex-Miner": {
+        # Stats
+        "technical_aptitude": 2,
+        "resilience": 2,
+        # Skills
+        "piloting": 4,
+        "engineering": 8,
+        "combat": 4,
+        "education": 3,
+        "charisma": 3,
+        # Factions
+        "belters": 20,
+    },
+    "Corp Dropout": {
+        # Stats
+        "intellect": 2,
+        "presence": 2,
+        # Skills
+        "piloting": 3,
+        "engineering": 4,
+        "combat": 3,
+        "education": 8,
+        "charisma": 7,
+        # Factions
+        "corporations": -20,
+        "traders": 15,
+    },
+    "Lunar Drifter": {
+        # Stats
+        "adaptability": 2,
+        "perception": 2,
+        # Skills
+        "piloting": 6,
+        "engineering": 3,
+        "combat": 7,
+        "education": 3,
+        "charisma": 5,
+        # Factions
+        "pirates": 15,
+    },
+    "Void Runner": {
+        # Stats
+        "perception": 3,
+        "adaptability": 1,
+        # Skills
+        "piloting": 8,
+        "engineering": 5,
+        "combat": 4,
+        "education": 4,
+        "charisma": 3,
+        # Factions
+        "explorers": 25,
+    },
+    "Xeno-Biologist": {
+        # Stats
+        "intellect": 3,
+        "technical_aptitude": 1,
+        # Skills
+        "piloting": 3,
+        "engineering": 5,
+        "combat": 2,
+        "education": 9,
+        "charisma": 5,
+        # Factions
+        "scientists": 30,
+    },
+    "Discharged Trooper": {
+        # Stats
+        "resilience": 3,
+        "perception": 1,
+        # Skills
+        "piloting": 5,
+        "engineering": 4,
+        "combat": 9,
+        "education": 4,
+        "charisma": 2,
+        # Factions
+        "military": -10,
+        "pirates": 15,
+    },
+    # Special backgrounds unique to each NPC
+    "Battle-Scarred Mercenary": {  # Kell Voss's special background
+        # Stats
+        "resilience": 4,
+        "perception": 2,
+        # Skills
+        "piloting": 5,
+        "engineering": 3,
+        "combat": 10,
+        "education": 3,
+        "charisma": 3,
+        # Factions
+        "military": 10,
+        "pirates": 5,
+        "belters": 10,
+    },
+    "Shadow Operative": {  # Nova Valen's special background
+        # Stats
+        "adaptability": 3,
+        "perception": 3,
+        # Skills
+        "piloting": 7,
+        "engineering": 4,
+        "combat": 8,
+        "education": 5,
+        "charisma": 6,
+        # Factions
+        "corporations": -10,
+        "explorers": 15,
+        "traders": 10,
+    },
+    "Tech Savant": {  # Zeta-9's special background
+        # Stats
+        "technical_aptitude": 4,
+        "intellect": 3,
+        # Skills
+        "piloting": 5,
+        "engineering": 10,
+        "combat": 2,
+        "education": 8,
+        "charisma": 3,
+        # Factions
+        "scientists": 20,
+        "corporations": 10,
+        "traders": 5,
+    },
+    "Station Fixer": {  # Obsidian's special background
+        # Stats
+        "presence": 3,
+        "intellect": 2,
+        "adaptability": 1,
+        # Skills
+        "piloting": 4,
+        "engineering": 5,
+        "combat": 4,
+        "education": 6,
+        "charisma": 9,
+        # Factions
+        "traders": 20,
+        "corporations": 5,
+        "pirates": 5,
+        "belters": 5,
+    },
 }

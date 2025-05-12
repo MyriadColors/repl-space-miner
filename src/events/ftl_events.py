@@ -59,17 +59,10 @@ def quick_start(game_state: "Game"):
     print(Fore.GREEN + f"Negative trait: {chosen_negative}")
       # Create default ship
     from src.classes.ship import Ship
-    game_state.player_ship = Ship(
-        name="Rusty Bucket",
-        position=game_state.rnd_station.position,
-        speed=0.0001,
-        max_fuel=100,
-        fuel_consumption=0.01,
-        cargo_capacity=100,
-        value=25000,
-        mining_speed=1.0,
-        sensor_range=0.5
-    )
+    # Use the balanced cruiser template as a default ship
+    game_state.player_ship = Ship.from_template("balanced_cruiser", "Rusty Bucket")
+    # Position it at the random station
+    game_state.player_ship.space_object.position = game_state.rnd_station.position.copy()
     
     print(Fore.GREEN + f"Ship: {game_state.player_ship.name}")
     print(Fore.CYAN + "Quick start complete. Good luck, Captain!")

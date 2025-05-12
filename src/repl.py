@@ -166,24 +166,28 @@ def start_repl():
 def run_intro_and_setup(game_state):
     # Use the properly exported intro_event function
     import src.events
-    src.events.intro_event(game_state)
+    src.events.intro_event(game_state)    
     if not game_state.player_character:
         game_state.player_character = Character(
             name="Player", age=25, sex="male", background="Belter",
             starting_creds=CHARACTER_STARTING_CREDS, starting_debt=CHARACTER_STARTING_DEBT
         )
+        
     if not game_state.player_ship:
-        game_state.player_ship = Ship(
-            name=SHIP_NAME,
-            position=game_state.rnd_station.position,
-            speed=SHIP_SPEED,
-            max_fuel=SHIP_FUEL_CAPACITY,
-            fuel_consumption=SHIP_FUEL_CONSUMPTION,
-            cargo_capacity=SHIP_HULL_CAPACITY,
-            value=SHIP_HULL_INTEGRITY,
-            mining_speed=SHIP_SHIELD_CAPACITY,
-            sensor_range=0.25  # Default sensor range
-        )
+        # Use the balanced cruiser template as a default when creating a new ship
+        game_state.player_ship = Ship.from_template("balanced_cruiser", SHIP_NAME)
+        # Position it at the random station
+        game_state.player_ship.space_object.position = game_state.rnd_station.position.copy()
+        # Dock the ship at the random station
+        game_state.player_ship.dock_into_station(game_state.rnd_station) # Add this line
+
+    # Ensure the ship is docked even if created during the intro event
+    # Check if player_ship exists and is not docked
+    elif game_state.player_ship and not game_state.player_ship.is_docked:
+         # Position it at the random station (redundant if intro doesn't set position, but safe)
+        game_state.player_ship.space_object.position = game_state.rnd_station.position.copy()
+         # Dock the ship at the random station
+        game_state.player_ship.dock_into_station(game_state.rnd_station) # Add this block
 
 
 def run_game_loop(game_state):

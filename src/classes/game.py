@@ -1,5 +1,6 @@
 import json
 import os
+from typing import List, Dict, Optional, Union
 import pygame as pg  # Add pygame for Vector2
 from datetime import datetime
 from dataclasses import dataclass
@@ -161,6 +162,9 @@ class Character:
         self.last_savings_interest_time = (
             0  # Store the last time savings interest was applied
         )
+        
+        # Roleplaying Fields
+        contacts: List['Character'] = []  # List of contacts (other characters)
         
         # Initialize stat effects
         self.apply_trait_effects()  # This will also call apply_stat_effects
@@ -526,7 +530,7 @@ class Character:
         character.reputation_traders = data.get("reputation_traders", 0)
         character.reputation_scientists = data.get("reputation_scientists", 0)
         character.reputation_military = data.get("reputation_military", 0)
-        character.reputation_explorers = data.get("reputation_explorers", 0)        # Set personality traits if available
+        character.reputation_explorers = data.get("reputation_explorers", 0)
         character.positive_trait = data.get("positive_trait", "")
         character.negative_trait = data.get("negative_trait", "")
         
@@ -534,6 +538,69 @@ class Character:
         character.apply_trait_effects()
 
         return character
+
+
+class Contact(Character):
+    """A specialized character class representing NPCs the player can interact with."""
+    
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        location: str,
+        specialty: str,
+        faction: str,
+        age: int = 30,  # Default age if not specified
+        sex: str = "unknown",  # Default sex if not specified
+    ):
+        # Initialize base Character with minimal stats
+        super().__init__(
+            name=name,
+            age=age,
+            sex=sex,
+            background="NPC",  # NPCs don't have traditional backgrounds
+            starting_creds=0,  # NPCs don't use the credit system like players
+            starting_debt=0    # NPCs don't have debt
+        )
+        
+        self.description = description
+        self.location = location
+        self.specialty = specialty
+        
+        # Set the contact's primary faction
+        self.primary_faction = faction
+        
+        # NPCs might have special dialogue options or missions
+        self.available_missions: List = []
+        self.dialogue_options: Dict[str, Union[str, int]] = {}
+
+        # Relationship with the player (0-100)
+        self.player_standing = 10  # Start with a basic acquaintance level
+        
+        # Track interactions with player
+        self.last_interaction = "Initial meeting"
+        self.met_during = "character_creation"
+        
+    def get_info(self) -> Dict[str, Union[str, int]]:
+        """Return basic information about the contact."""
+        return {
+            "name": self.name,
+            "description": self.description,
+            "location": self.location,
+            "specialty": self.specialty,
+            "faction": self.primary_faction,
+            "standing": self.player_standing,
+            "last_interaction": self.last_interaction
+        }
+        
+    def update_standing(self, change: int) -> int:
+        """Update the contact's standing with the player."""
+        self.player_standing = max(0, min(100, self.player_standing + change))
+        return self.player_standing
+        
+    def record_interaction(self, interaction_type: str) -> None:
+        """Record an interaction with this contact."""
+        self.last_interaction = interaction_type
 
 
 class Game:
