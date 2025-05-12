@@ -15,6 +15,10 @@
 - **Command-Line Interface:** Interact with the game using a simulated terminal within Pygame.
 - **Procedural Generation:** The solar system, asteroid fields, and stations are procedurally generated.
 
+## Note
+
+The lore is not yet defined, and the game is still in development. The current focus is on building a solid foundation for the gameplay mechanics, so the specifics of locations, people and important events are not yet defined and will be changed throughout the development process.
+
 ## Installation
 
 1. **Clone the repository:**
