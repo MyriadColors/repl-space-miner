@@ -6,7 +6,7 @@ These events add depth to the FTL travel experience beyond just a time skip.
 import random
 from colorama import Fore, Style
 from time import sleep
-from typing import Tuple, Dict, List, Any, Optional, Union
+from typing import Dict, Optional, Union
 
 # Define a type alias for our event result dictionaries
 EventResultDict = Dict[str, Union[str, int, float]]

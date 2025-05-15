@@ -1,4 +1,5 @@
 from src.classes.game import Game
+from src.classes.solar_system import SolarSystem
 from src.helpers import take_input
 from .registry import Argument
 from .base import register_command
@@ -49,9 +50,10 @@ def scan_command(game_state: Game, num_objects: str) -> None:
         finally:
             ship.sensor_range = original_range
 
+    current_system: SolarSystem = game_state.get_current_solar_system()
     # Use the context manager to temporarily modify the ship's sensor range
     with temporary_sensor_range(player_ship, effective_sensor_range):
-        objects = game_state.solar_system.scan_system_objects(
+        objects = current_system.scan_system_objects(
             player_ship.space_object.get_position(), amount_of_objects
         )
 

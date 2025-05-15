@@ -188,7 +188,7 @@ class Ship:
             )
 
         # Check if destination is within system boundaries
-        system_size = game_state.solar_system.size
+        system_size = game_state.get_current_solar_system().size  # MODIFIED
         # Assumption: The solar system's center is at (0,0).
         # This is used to calculate the distance of the destination from the center for boundary checking.
         if destination.length() > system_size:
@@ -421,7 +421,7 @@ class Ship:
         return self.cargohold_occupied == self.cargohold_capacity
 
     def check_field_presence(self, game_state) -> Tuple[bool, Optional[AsteroidField]]:
-        for field in game_state.solar_system.asteroid_fields:
+        for field in game_state.get_current_solar_system().asteroid_fields:  # MODIFIED
             if self.interaction_radius > euclidean_distance(
                 self.space_object.position, field.space_object.position
             ):
@@ -429,7 +429,7 @@ class Ship:
         return False, None
 
     def scan_field(self, game_state) -> None:
-        fields: list[AsteroidField] = game_state.solar_system.asteroid_fields
+        fields: list[AsteroidField] = game_state.get_current_solar_system().asteroid_fields  # MODIFIED
 
         is_inside_field, field = self.check_field_presence(game_state)
 
@@ -514,7 +514,7 @@ class Ship:
             docked_station = next(
                 (
                     s
-                    for s in game_state.solar_system.stations
+                    for s in game_state.get_current_solar_system().stations  # MODIFIED
                     if s.space_object.id == data["docked_at_id"]
                 ),
                 None,

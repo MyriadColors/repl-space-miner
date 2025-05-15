@@ -242,6 +242,10 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         write_command("repair_containment/repc", "Repair antimatter containment", True, "docked")
         write_command("eject_antimatter/eject", "Emergency ejection of antimatter", True)
         write_command("ftl_jump/ftl <destination> <distance>", "Perform FTL jump", True, "undocked")
+        
+        # System navigation commands 
+        write_command("listsystems/lsys", "List all available solar systems", True)
+        write_command("system_jump/sjump <index>", "Jump to a solar system by index", True, "undocked")
 
         # Upgrade commands
         write_command(

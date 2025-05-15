@@ -1,3 +1,4 @@
+from pygame import Vector2
 from src.classes.game import Game
 from .registry import Argument
 from .base import register_command
@@ -213,6 +214,104 @@ def ftl_jump_command(game_state: Game, destination: str, distance: float) -> Non
         game_state.ui.error_message(f"FTL jump failed: {message}")
 
 
+def list_systems_command(game_state: Game) -> None:
+    """Lists all available solar systems."""
+    systems = game_state.solar_systems
+    current_system_idx = game_state.current_solar_system_index
+
+    if not systems:
+        game_state.ui.warn_message("No solar systems found.")
+        return
+
+    game_state.ui.info_message("Available Solar Systems:")
+    for idx, system in enumerate(systems):
+        marker = "(Current System)" if idx == current_system_idx else ""
+        # For now, FTL jump 'distance' to any other system is considered 1.0 FTL unit.
+        ftl_distance = "N/A (Current)" if idx == current_system_idx else "1.0 FTL units"
+        game_state.ui.info_message(f"  Index: {idx} | Name: {system.name} {marker} | FTL Cost (approx): {ftl_distance}")
+    game_state.ui.info_message("\nUse 'ftljump <index>' to travel to another system.")
+
+def system_jump_command(game_state: Game, system_index_str: str) -> None:
+    """Initiates an FTL jump to a solar system by index."""
+    try:
+        target_idx = int(system_index_str)
+    except ValueError:
+        game_state.ui.error_message("Invalid system index. Please provide a number.")
+        return
+
+    player_ship = game_state.get_player_ship()
+    if not player_ship:
+        game_state.ui.error_message("Player ship not found.")
+        return
+
+    if not (0 <= target_idx < len(game_state.solar_systems)):
+        game_state.ui.error_message("Invalid system index.")
+        return
+
+    if target_idx == game_state.current_solar_system_index:
+        game_state.ui.info_message("You are already in this system.")
+        return
+
+    target_system = game_state.solar_systems[target_idx]
+    
+    # We'll use a standard FTL "distance" of 1.0 for jumps between systems
+    ftl_distance_parameter = 1.0 
+
+    # Check if ship is docked
+    if player_ship.is_docked:
+        game_state.ui.warn_message(f"Cannot initiate FTL jump while docked at {player_ship.docked_at.name if player_ship.docked_at else 'station'}. Please undock first.")
+        return
+
+    # Check antimatter levels
+    required_antimatter = ftl_distance_parameter * player_ship.antimatter_consumption
+    if player_ship.antimatter < required_antimatter:
+        game_state.ui.error_message(
+            f"Insufficient antimatter. Need {required_antimatter:.2f}g for this jump."
+        )
+        game_state.ui.info_message(
+            f"Current antimatter level: {player_ship.antimatter:.2f}g"
+        )
+        return
+
+    # Check containment integrity
+    containment_ok, risk = player_ship.check_containment_status(game_state)
+    if not containment_ok:
+        game_state.ui.error_message(
+            f"Antimatter containment unstable ({risk:.1f}% failure risk)."
+        )
+        game_state.ui.error_message("Repairs needed before FTL jump is safe.")
+        return
+
+    # Confirm jump
+    game_state.ui.info_message(
+        f"Preparing FTL jump to {target_system.name}, distance: {ftl_distance_parameter} light-years."
+    )
+    game_state.ui.info_message(
+        f"This will consume {required_antimatter:.2f}g of antimatter."
+    )
+    confirm = input("Confirm FTL jump? (y/n): ").lower()
+
+    if confirm != "y":
+        game_state.ui.info_message("FTL jump cancelled.")
+        return
+
+    # Execute jump
+    success, message = player_ship.ftl_jump(game_state, target_system.name, ftl_distance_parameter)
+
+    game_state.ui.info_message(message)
+
+    if success:
+        # Update current system index and reset player position
+        game_state.current_solar_system_index = target_idx
+        player_ship.space_object.position = Vector2(0, 0)
+        game_state.ui.success_message(f"Arrived in {target_system.name}. Ship position reset to system center.")
+        current_system_name = game_state.get_current_solar_system().name
+        game_state.ui.info_message(f"Current system: {current_system_name}")
+        game_state.ui.info_message(f"Remaining antimatter: {player_ship.antimatter:.2f}g")
+    else:
+        game_state.ui.error_message(f"FTL jump failed: {message}")
+
+
 # Register commands
 register_command(
     ["refuel_antimatter", "refa"],
@@ -239,4 +338,17 @@ register_command(
         Argument("destination", str, False),
         Argument("distance", float, False),
     ],
+)
+
+# Register system navigation commands
+register_command(
+    ["listsystems", "lsys"],
+    list_systems_command,
+    [],
+)
+
+register_command(
+    ["system_jump", "sjump"],
+    system_jump_command,
+    [Argument("system_index", str, False)],
 )

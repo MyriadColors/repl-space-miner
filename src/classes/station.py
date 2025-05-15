@@ -10,8 +10,8 @@ class Station:
 
         self.name: str = name
         self.space_object = IsSpaceObject(position, station_id)
-        self.fueltank_cap: float = helpers.rnd_float(5_000, 20_000)
-        self.fueltank: float = self.fueltank_cap / helpers.rnd_int(1, 4)
+        self.fuel_tank_capacity: float = helpers.rnd_float(5_000, 20_000)
+        self.fuel_tank: float = self.fuel_tank_capacity / helpers.rnd_int(1, 4)
         self.fuel_price: float = helpers.rnd_float(8, 20)
         self.ores_available: list[Ore] = []
         self.ore_cargo: list[OreCargo] = []
@@ -102,7 +102,7 @@ class Station:
         return string
 
     def get_info(self):
-        return f"{self.name} {self.space_object.position} {self.space_object.id} {self.fueltank_cap} {self.fueltank} {self.ore_cargo} {self.ore_cargo_volume} {self.ore_capacity} {self.fuel_price}"
+        return f"{self.name} {self.space_object.position} {self.space_object.id} {self.fuel_tank_capacity} {self.fuel_tank} {self.ore_cargo} {self.ore_cargo_volume} {self.ore_capacity} {self.fuel_price}"
 
     def to_string_short(self, position=None):
         if position is None:
@@ -119,7 +119,7 @@ class Station:
             print("----------------------------------")
 
     def to_string(self):
-        return f"{self.name}\nPosition: {self.space_object.position}\nID: {self.space_object.id}\nFuel Tank: {self.fueltank}/{self.fueltank_cap}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"
+        return f"{self.name}\nPosition: {self.space_object.position}\nID: {self.space_object.id}\nFuel Tank: {self.fuel_tank}/{self.fuel_tank_capacity}m³\nFuel price: {self.fuel_price} credits\n\nOre cargo: {self.ore_cargo} {self.ore_cargo_volume}/{self.ore_capacity}m³\n\nOre prices:\n{self.get_ore_buy_price_to_string()}"
 
     def buy_fuel(self, player_ship, amount, game_state):
         total_cost = round(amount * self.fuel_price, 2)
@@ -132,13 +132,13 @@ class Station:
             return
         player_ship.remove_credits(game_state, total_cost)
         player_ship.fueltank += amount
-        self.fueltank -= amount
+        self.fuel_tank -= amount
         print(f"You bought {amount} m³ of fuel for {total_cost} credits")
         print(
             f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits"
         )
         print(
-            f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³"
+            f"The station has {self.fuel_tank} m³ of fuel left out of {self.fuel_tank_capacity} m³"
         )
 
     def sell_fuel(self, player_ship, amount, game_state):
@@ -153,13 +153,13 @@ class Station:
             return
         player_ship.fueltank -= amount
         player_ship.add_credits(game_state, total_price)
-        self.fueltank += amount
+        self.fuel_tank += amount
         print(f"You sold {amount} m³ of fuel for {total_price} credits")
         print(
             f"You now have {player_ship.fueltank} m³ of fuel and {player_ship.credits} credits"
         )
         print(
-            f"The station has {self.fueltank} m³ of fuel left out of {self.fueltank_cap} m³"
+            f"The station has {self.fuel_tank} m³ of fuel left out of {self.fuel_tank_capacity} m³"
         )
 
     def to_dict(self):
@@ -170,8 +170,8 @@ class Station:
                 "y": self.space_object.position.y,
             },
             "id": self.space_object.id,
-            "fueltank_cap": self.fueltank_cap,
-            "fueltank": self.fueltank,
+            "fueltank_cap": self.fuel_tank_capacity,
+            "fueltank": self.fuel_tank,
             "fuel_price": self.fuel_price,
             "ores_available_ids": [ore.id for ore in self.ores_available],
             "ore_cargo": [oc.to_dict() for oc in self.ore_cargo],
@@ -194,8 +194,8 @@ class Station:
         station.space_object = IsSpaceObject(
             Vector2(data["position"]["x"], data["position"]["y"]), data["id"]
         )
-        station.fueltank_cap = data["fueltank_cap"]
-        station.fueltank = data["fueltank"]
+        station.fuel_tank_capacity = data["fueltank_cap"]
+        station.fuel_tank = data["fueltank"]
         station.fuel_price = data["fuel_price"]
         station.ores_available = [
             ore

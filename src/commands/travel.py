@@ -1,6 +1,7 @@
 from pygame import Vector2
 
-from src.classes.game import Game
+from src.classes.game import Game # Ensure this is the updated Game class
+from src.classes.solar_system import SolarSystem # Import SolarSystem for type hinting if needed
 from src.helpers import (
     get_closest_field,
     get_closest_station,
@@ -18,7 +19,8 @@ def travel_command(game_state: Game, **kwargs) -> float:
     )
 
     # Check if destination is within system boundaries
-    system_size = game_state.solar_system.size
+    current_system: SolarSystem = game_state.get_current_solar_system()
+    system_size = current_system.size
     if destination.length() > system_size:
         game_state.ui.error_message(
             f"Destination is outside system boundaries. Maximum distance from center is {system_size} AU."
@@ -88,10 +90,11 @@ def travel_command(game_state: Game, **kwargs) -> float:
 def closest_travel(game_state: Game, object_type: str) -> None:
     """Handle travel to closest object command."""
     player_ship = game_state.get_player_ship()
+    current_system: SolarSystem = game_state.get_current_solar_system()
 
     if object_type.lower() == "field":
         closest_field = get_closest_field(
-            game_state.solar_system.asteroid_fields, player_ship.space_object.position
+            current_system.asteroid_fields, player_ship.space_object.position
         )
         if closest_field:
             travel_command(
@@ -104,7 +107,7 @@ def closest_travel(game_state: Game, object_type: str) -> None:
 
     elif object_type.lower() == "station":
         closest_station = get_closest_station(
-            game_state.solar_system.stations, player_ship.space_object.position
+            current_system.stations, player_ship.space_object.position
         )
         if closest_station:
             travel_command(

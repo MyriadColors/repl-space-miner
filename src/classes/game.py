@@ -4,7 +4,7 @@ from typing import List, Dict, Optional, Union
 import pygame as pg  # Add pygame for Vector2
 from datetime import datetime
 from dataclasses import dataclass
-from random import choice
+import random  # MODIFIED: Changed from 'from random import choice' to 'import random'
 from colorama import Fore, Back, Style, init
 
 from src.classes.ship import Ship
@@ -612,8 +612,18 @@ class Game:
         skip_customization: bool = False,
     ) -> None:
         self.global_time: int = 0
-        self.solar_system: SolarSystem = SolarSystem(200, 100)
-        self.rnd_station = choice(self.solar_system.stations)
+        self.solar_systems: List[SolarSystem] = [
+            SolarSystem(size=250.0, field_quantity=15, station_quantity=7, system_name="Sol")
+        ]
+        for i in range(5):
+            size = random.uniform(100.0, 600.0)
+            field_quantity = random.randint(3, 30)
+            station_quantity = random.randint(1, 20)  # Ensure at least 1 station for variety, can be 0 if desired
+            system_name = f"System-{random.randint(100,999)}-{chr(random.randint(65,90))}"
+            self.add_solar_system(SolarSystem(size, field_quantity, station_quantity, system_name))
+        
+        self.current_solar_system_index: int = 0  # Index of the current solar system
+        self.rnd_station = random.choice(self.get_current_solar_system().stations) if self.get_current_solar_system().stations else None  # MODIFIED: use random.choice
         self.player_character: Character | None = None
         self.player_ship: Ship | None = None
         self.debug_flag = debug_flag
@@ -659,13 +669,22 @@ class Game:
         )
         return self.player_character
 
-    def get_solar_system(self):
-        return self.solar_system
+    def get_current_solar_system(self) -> SolarSystem:
+        """Returns the current solar system the player is in."""
+        return self.solar_systems[self.current_solar_system_index]
+
+    def add_solar_system(self, solar_system: SolarSystem) -> None:
+        """Adds a new solar system to the game."""
+        self.solar_systems.append(solar_system)
+
+    def get_solar_system(self): # Existing method, now returns current system
+        return self.get_current_solar_system()
 
     def to_dict(self):
         return {
             "global_time": self.global_time,
-            "solar_system": self.solar_system.to_dict(),
+            "solar_systems": [ss.to_dict() for ss in self.solar_systems],
+            "current_solar_system_index": self.current_solar_system_index,
             "player_character": (
                 self.player_character.to_dict() if self.player_character else None
             ),
@@ -683,7 +702,14 @@ class Game:
             skip_customization=data.get("skip_customization", False),
         )
         game.global_time = data["global_time"]
-        game.solar_system = SolarSystem.from_dict(data["solar_system"])
+        # Ensure solar_systems are loaded correctly using the new constructor if applicable
+        # The SolarSystem.from_dict should handle the new fields with .get for backward compatibility
+        game.solar_systems = [SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]]
+        game.current_solar_system_index = data.get("current_solar_system_index", 0) 
+        if not game.solar_systems:  # Fallback if a save had no solar systems (unlikely but safe)
+            game.solar_systems = [SolarSystem(size=250.0, field_quantity=15, station_quantity=7, system_name="Default Gen") ]
+            game.current_solar_system_index = 0
+
         if data["player_character"]:
             game.player_character = Character.from_dict(data["player_character"])
         if data["player_ship"]:

@@ -1,6 +1,7 @@
 from src.classes.game import Game
+from src.classes.solar_system import SolarSystem
 from src.classes.station import Station
-from src.helpers import get_closest_station
+from src.helpers import get_closest_station, euclidean_distance, vector_to_string
 from .base import register_command
 
 
@@ -14,19 +15,28 @@ def command_dock(game_state: Game) -> None:
         game_state.ui.info_message("You are already docked.")
         return
 
-    # Check if player is already at a station
-    current_station = None
-    for station in game_state.solar_system.stations:
-        if station.space_object.position.distance_to(player_ship.space_object.position) < 0.001: # A very small threshold for being "at" a station
-            current_station = station
+    current_system: SolarSystem = game_state.get_current_solar_system()
+
+    # Check if player is already at a station (i.e., position matches very closely)
+    current_station_at_loc = None
+    for station_obj in current_system.stations:
+        if station_obj.space_object.position.distance_to(player_ship.space_object.position) < 0.001: 
+            current_station_at_loc = station_obj
             break
     
-    target_station = current_station
-    if target_station is None: # if not at a station, find the closest one
-        target_station = get_closest_station(game_state.solar_system, player_ship)
+    target_station = current_station_at_loc
+    
+    if target_station is None: # If not exactly at a station, find the closest one
+        if not current_system.stations: # Check if there are any stations in the current system
+             game_state.ui.error_message("There are no stations in the current system.")
+             return
+        target_station = get_closest_station(
+            current_system.stations, 
+            player_ship
+        )
 
     if target_station is None:
-        game_state.ui.error_message("There are no stations within range.")
+        game_state.ui.error_message("There are no stations within range or in the system.")
         return
 
     if (

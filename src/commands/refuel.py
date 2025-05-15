@@ -47,7 +47,7 @@ def refuel_command(game_state: Game, amount: float) -> None:
     # Process refueling with proper credit management
     player_character.remove_credits(total_cost)
     player_ship.fuel += amount
-    station.fueltank -= amount
+    station.fuel_tank -= amount
 
     game_state.ui.success_message(f"Successfully refueled {amount} m³ of fuel.")
     game_state.ui.info_message(

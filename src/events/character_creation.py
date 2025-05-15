@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Dict, cast 
+from typing import Dict, cast
 from colorama import init, Fore
 import pygame as pg
 
@@ -10,14 +10,15 @@ from src.data import SHIP_TEMPLATES, BACKGROUND_BONUSES
 
 init(autoreset=True)
 
-def intro_event(game_state: Game):
+
+def character_creation_event(game_state: Game):
     # Default initializations for variables that might not be set in all paths
     ship_name: str = "The Void Jumper"  # Default ship name
     ship_appearance: str = "Stock Model"  # Default ship appearance
     positive_trait: str = "Adaptable"  # Default positive trait
     negative_trait: str = "Wary"  # Default negative trait
-    dialogue_trait_hint: str = "" # Initialize this as it's used to set positive_trait
-    ship_template_id: str = "balanced_cruiser" # Default ship template ID
+    dialogue_trait_hint: str = ""  # Initialize this as it's used to set positive_trait
+    ship_template_id: str = "balanced_cruiser"  # Default ship template ID
 
     app_idx: int = 1  # Default value for all branches
     background: str = "Unknown"  # Default value for all branches
@@ -43,19 +44,19 @@ def intro_event(game_state: Game):
     ]
 
     for line in intro_text:
-        #sleep(1.5)
+        # sleep(1.5)
         game_state.ui.info_message(Fore.CYAN + line)
 
     game_state.ui.info_message("\n")
-    #sleep(
+    # sleep(
     #    1.5
-    #)  # Slightly increased delay    
+    # )  # Slightly increased delay
     # Get basic character info with input validation before approaching anyone
     game_state.ui.info_message(
         Fore.CYAN
         + "\nThe station's customs terminal had required your basic information before granting access..."
     )
-    #sleep(1.5)
+    # sleep(1.5)
 
     name = ""
     while not name:
@@ -85,12 +86,12 @@ def intro_event(game_state: Game):
         else:
             game_state.ui.info_message(Fore.RED + "Please enter 'male' or 'female'.")
 
-    #sleep(1.5)
+    # sleep(1.5)
     game_state.ui.info_message(
         Fore.CYAN
         + f"\nYou, {name}, take a deep breath as you look around the bar. The data pad in your pocket contains your remaining credits and the reminder of your substantial debt."
     )
-    #sleep(1)  # Handle approaching a character
+    # sleep(1)  # Handle approaching a character
     game_state.ui.info_message(
         Fore.YELLOW
         + "The denizens of the Terminus watch your every move. Who do you approach first?\n"
@@ -102,7 +103,7 @@ def intro_event(game_state: Game):
         "The cybernetic bartender, whose gaze seems to penetrate right through to your credit balance... or lack thereof.",
     ]
     for i, option in enumerate(approach_options, 1):
-        #sleep(0.2)
+        # sleep(0.2)
         game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
     valid_approach_choice = False
@@ -115,11 +116,13 @@ def intro_event(game_state: Game):
                 valid_approach_choice = True
                 approach_choice_num = choice_num
             else:
-                game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 4.")
+                game_state.ui.info_message(
+                    Fore.RED + "Please enter a number between 1 and 4."
+                )
         else:
             game_state.ui.info_message(Fore.RED + "Please enter a valid number.")
 
-    #sleep(1.5)  # Slightly increased delay
+    # sleep(1.5)  # Slightly increased delay
 
     # Variables to store dialogue choices and their effects
     dialogue_bonus = {"stat": "", "value": 0}
@@ -131,8 +134,10 @@ def intro_event(game_state: Game):
             + "\nYou weave through the throng, the mercenary's gaze following you like a targeting system. As you reach his table, he grunts, one scarred eyebrow raised. 'Spit it out, spacer. I ain't got all rotation.'"
         )
 
-        #sleep(2)
-        game_state.ui.info_message(Fore.YELLOW + "\nHow do you respond to the intimidating mercenary?\n")
+        # sleep(2)
+        game_state.ui.info_message(
+            Fore.YELLOW + "\nHow do you respond to the intimidating mercenary?\n"
+        )
         merc_dialogue = [
             "Straightforward: 'Looking for work. Heard you might know where the credits flow.'",
             "Confident: 'That's a nasty scar. Bet there's a better story behind it than the one you tell.'",
@@ -140,7 +145,7 @@ def intro_event(game_state: Game):
         ]
 
         for i, option in enumerate(merc_dialogue, 1):
-            #sleep(0.2)
+            # sleep(0.2)
             game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
         valid_dialogue = False
@@ -151,19 +156,21 @@ def intro_event(game_state: Game):
                 valid_dialogue = True
                 merc_choice_num = int(merc_choice)
             else:
-                game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                game_state.ui.info_message(
+                    Fore.RED + "Please enter a number between 1 and 3."
+                )
 
         if merc_choice_num == 1:
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe mercenary sizes you up with a practiced eye. 'Straight to business. I respect that.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "He leans forward. 'Mining's where the real money is these days. Corps pay premium for rare finds, no questions asked. Just watch your back out there.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "He taps his scarred knuckles on the table. 'And if you need muscle, my rates are steep but worth it.'"
@@ -172,11 +179,11 @@ def intro_event(game_state: Game):
             dialogue_trait_hint = "Resilient"
             faction_influenced = "military"
             # Ask about background in a more natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe mercenary studies you for a moment. 'Haven't seen you around before. What's your story?'"
-            )            
+            )
             # Update Kell Voss's background options to include all standard backgrounds plus his unique "Battle-Scarred Mercenary" background.
             background_options = {
                 1: "Ex-Miner: 'Spent years breaking rocks in the belt. Got tired of making other people rich.'",
@@ -189,7 +196,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -200,7 +207,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 7.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 7."
+                    )
 
             # Set background based on choice
             if bg_idx == 1:
@@ -215,7 +224,9 @@ def intro_event(game_state: Game):
                     Fore.CYAN
                     + "\nA flicker of recognition crosses his face. 'Figures. I can spot military a mile away. What unit?'"
                 )
-                game_state.ui.info_message(Fore.CYAN + "You give a vague answer that seems to satisfy him.")
+                game_state.ui.info_message(
+                    Fore.CYAN + "You give a vague answer that seems to satisfy him."
+                )
             elif bg_idx == 3:
                 background = "Lunar Drifter"
                 game_state.ui.info_message(
@@ -256,12 +267,12 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\nThe mercenary's face hardens momentarily, then cracks into a twisted smile. 'Got spine. Unusual in fresh meat.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "He traces the jagged scar across his face. 'Ceresian border dispute. Took a plasma cutter meant for someone more important.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "He narrows his eyes. 'Combat skills keep you breathing out here. Remember that.'"
@@ -271,13 +282,15 @@ def intro_event(game_state: Game):
             faction_influenced = "pirates"
 
             # Ask about background in a more natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\n'You don't flinch easy,' he remarks. 'Where'd you pick that up?'"
             )
 
-            game_state.ui.info_message(Fore.YELLOW + "\nHow do you explain your courage?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nHow do you explain your courage?"
+            )
             background_options = {
                 1: "Void Runner: 'Been in space my whole life. When you're born on freighters, fear's a luxury.'",
                 2: "Discharged Trooper: 'Military training. They drill the fear right out of you.'",
@@ -285,7 +298,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -296,7 +309,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set background based on choice
             if bg_idx == 1:
@@ -323,12 +338,12 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\nThe mercenary's expression doesn't change, but some tension leaves his shoulders. 'Smart approach.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "He glances around before leaning closer. 'Information? Costs more than credits sometimes. But since you asked nice...'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "He gives you some insights on navigating local faction territories and dealing with aggressive miners."
@@ -338,13 +353,15 @@ def intro_event(game_state: Game):
             faction_influenced = "belters"
 
             # Ask about background in a more natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nAfter sharing some valuable intel, he eyes you curiously. 'You seem to know what questions to ask. What's your angle?'"
             )
 
-            game_state.ui.info_message(Fore.YELLOW + "\nHow do you explain your approach?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nHow do you explain your approach?"
+            )
             background_options = {
                 1: "Corp Dropout: 'Let's just say corporate life taught me the value of good intelligence.'",
                 2: "Xeno-Biologist: 'Scientific curiosity. I evaluate all variables before forming conclusions.'",
@@ -352,7 +369,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -363,7 +380,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set background based on choice
             if bg_idx == 1:
@@ -385,9 +404,13 @@ def intro_event(game_state: Game):
                     + "\nHe nods in understanding. 'The void doesn't forgive mistakes. Good pilots know to map the dangerous spots before flying in.'"
                 )
                 # Store the background selected through dialogue
-        game_state.ui.info_message(Fore.YELLOW + f"\nYou reflect on your past as a {background}...")
-        #sleep(1.5)
-        game_state.ui.info_message(Fore.CYAN + f"Your experiences have shaped your skills and connections.")
+        game_state.ui.info_message(
+            Fore.YELLOW + f"\nYou reflect on your past as a {background}..."
+        )
+        # sleep(1.5)
+        game_state.ui.info_message(
+            Fore.CYAN + f"Your experiences have shaped your skills and connections."
+        )
 
         # Assign positive_trait based on dialogue_trait_hint
         if dialogue_trait_hint:
@@ -407,74 +430,100 @@ def intro_event(game_state: Game):
                 negative_trait = "Superstitious"  # default fallback        #sleep(1)
 
         # Prompt for ship name before type selection
-        #sleep(2)
+        # sleep(2)
         ship_name = ""
         while not ship_name:
             ship_name = input(Fore.WHITE + "What do you call your ship? ")
             if not ship_name:
-                game_state.ui.info_message(Fore.RED + "You need to give your ship a name.")
+                game_state.ui.info_message(
+                    Fore.RED + "You need to give your ship a name."
+                )
 
         # Update ship options to provide real gameplay differences
-        game_state.ui.info_message(Fore.YELLOW + f"\n'The {ship_name}, huh?' the mercenary grunts. 'Now, what kind of vessel is she?'")
+        game_state.ui.info_message(
+            Fore.YELLOW
+            + f"\n'The {ship_name}, huh?' the mercenary grunts. 'Now, what kind of vessel is she?'"
+        )
         ship_options = {
             1: "Armored Behemoth: 'Thick plating, heavy weapon mounts. Slower but durable with extra cargo space.'",
             2: "Agile Interceptor: 'Streamlined and fast. Prioritizes speed and sensors over cargo capacity.'",
             3: "Balanced Cruiser: 'A versatile design. Decent armor, speed, and cargo capacity for most situations.'",
-            4: "Mining Vessel: 'Specialized for asteroid mining with enhanced ore extraction and large cargo hold.'"
+            4: "Mining Vessel: 'Specialized for asteroid mining with enhanced ore extraction and large cargo hold.'",
         }
 
         # Special character-specific ship option based on background
         if background == "Battle-Scarred Mercenary":
-            ship_options[5] = "Mercenary Veteran: 'A battle-hardened vessel with custom combat modifications and stealth capabilities.'"
+            ship_options[5] = (
+                "Mercenary Veteran: 'A battle-hardened vessel with custom combat modifications and stealth capabilities.'"
+            )
         elif background == "Xeno-Biologist":
-            ship_options[5] = "Scientific Explorer: 'A research vessel equipped with advanced sensors and analytical equipment.'"
+            ship_options[5] = (
+                "Scientific Explorer: 'A research vessel equipped with advanced sensors and analytical equipment.'"
+            )
         elif background == "Lunar Drifter":
-            ship_options[5] = "Smuggler's Edge: 'A customized freighter with hidden compartments and stealth modifications.'"
+            ship_options[5] = (
+                "Smuggler's Edge: 'A customized freighter with hidden compartments and stealth modifications.'"
+            )
         elif background == "Discharged Trooper":
-            ship_options[5] = "Military Surplus: 'A decommissioned patrol craft with reinforced systems and combat readiness.'"
-            
+            ship_options[5] = (
+                "Military Surplus: 'A decommissioned patrol craft with reinforced systems and combat readiness.'"
+            )
+
         for i, option in ship_options.items():
-            #sleep(0.2)
+            # sleep(0.2)
             game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
         valid_ship_choice = False
         while not valid_ship_choice:
-            ship_choice = input(Fore.WHITE + f"\nYour response (1-{len(ship_options)}): ")
+            ship_choice = input(
+                Fore.WHITE + f"\nYour response (1-{len(ship_options)}): "
+            )
             if is_valid_int(ship_choice) and 1 <= int(ship_choice) <= len(ship_options):
                 valid_ship_choice = True
                 ship_idx = int(ship_choice)
             else:
-                game_state.ui.info_message(Fore.RED + f"Please enter a number between 1 and {len(ship_options)}.")
+                game_state.ui.info_message(
+                    Fore.RED
+                    + f"Please enter a number between 1 and {len(ship_options)}."
+                )
 
         # Map choice to ship template ID
         ship_template_map = {
             1: "armored_behemoth",
             2: "agile_interceptor",
-            3: "balanced_cruiser", 
+            3: "balanced_cruiser",
             4: "mining_vessel",
             5: {
                 "Battle-Scarred Mercenary": "merc_veteran",
                 "Xeno-Biologist": "research_vessel",
                 "Lunar Drifter": "smuggler_ship",
-                "Discharged Trooper": "merc_veteran"
-            }
+                "Discharged Trooper": "merc_veteran",
+            },
         }
-        
+
         # Get the template ID based on choice
         if ship_idx == 5:
-            assert isinstance(ship_template_map[5], dict), "Expected ship_template_map[5] to be a dictionary."
+            assert isinstance(
+                ship_template_map[5], dict
+            ), "Expected ship_template_map[5] to be a dictionary."
             # Cast the result of get() to str to satisfy mypy
-            ship_template_id = cast(str, ship_template_map[5].get(background, "balanced_cruiser"))
+            ship_template_id = cast(
+                str, ship_template_map[5].get(background, "balanced_cruiser")
+            )
         else:
-            assert isinstance(ship_template_map[ship_idx], str), "Expected ship_template_map[ship_idx] to be a string."
+            assert isinstance(
+                ship_template_map[ship_idx], str
+            ), "Expected ship_template_map[ship_idx] to be a string."
             # Cast the map access to str after assertion to satisfy mypy
             ship_template_id = cast(str, ship_template_map[ship_idx])
 
         # Store the ship appearance for later reference
-        assert ship_template_id in SHIP_TEMPLATES, f"Ship template ID {ship_template_id} not found in SHIP_TEMPLATES."
+        assert (
+            ship_template_id in SHIP_TEMPLATES
+        ), f"Ship template ID {ship_template_id} not found in SHIP_TEMPLATES."
         # Explicitly cast dict access for mypy
         ship_appearance = cast(str, SHIP_TEMPLATES[ship_template_id]["name"])
-        
+
         # Display feedback based on ship choice
         if ship_idx == 1:  # Armored Behemoth
             game_state.ui.info_message(
@@ -482,8 +531,7 @@ def intro_event(game_state: Game):
                 + "\nHe nods approvingly. 'A tank in space. Hull integrity at 150%. You'll be hard to take down, but don't expect to win any races.'"
             )
             game_state.ui.info_message(
-                Fore.YELLOW
-                + "Ship Specs: Speed -20%, Hull +50%, Cargo +20%, Fuel +20%"
+                Fore.YELLOW + "Ship Specs: Speed -20%, Hull +50%, Cargo +20%, Fuel +20%"
             )
         elif ship_idx == 2:  # Agile Interceptor
             game_state.ui.info_message(
@@ -500,8 +548,7 @@ def intro_event(game_state: Game):
                 + "\nHe gives a satisfied nod. 'Balanced stats across the board. Versatility is key in the void.'"
             )
             game_state.ui.info_message(
-                Fore.YELLOW
-                + "Ship Specs: Standard baseline values for all systems"
+                Fore.YELLOW + "Ship Specs: Standard baseline values for all systems"
             )
         elif ship_idx == 4:  # Mining Vessel
             game_state.ui.info_message(
@@ -555,7 +602,7 @@ def intro_event(game_state: Game):
             + "\nAs you approach, the bounty hunter's keen eyes track your movement. She gestures to the empty seat across from her with a slight smirk. 'Either you're brave or desperate to approach me directly. Which is it, spacer?'"
         )
 
-        #sleep(2)
+        # sleep(2)
         game_state.ui.info_message(
             Fore.YELLOW
             + "\nHow do you respond to the dangerous-looking bounty hunter?\n"
@@ -567,7 +614,7 @@ def intro_event(game_state: Game):
         ]
 
         for i, option in enumerate(hunter_dialogue, 1):
-            #sleep(0.2)
+            # sleep(0.2)
             game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
         valid_dialogue = False
@@ -578,19 +625,21 @@ def intro_event(game_state: Game):
                 valid_dialogue = True
                 hunter_choice_num = int(hunter_choice)
             else:
-                game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                game_state.ui.info_message(
+                    Fore.RED + "Please enter a number between 1 and 3."
+                )
 
         if hunter_choice_num == 1:
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nNova Valen's expression softens almost imperceptibly. 'Honesty. Rare in these parts.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "She leans forward. 'The ropes are simple - trust no one completely, watch your back, and never underprice your worth. The void is full of predators.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "She taps her finger thoughtfully on the table. 'That said, everyone needs allies. Even loners like us.'"
@@ -599,12 +648,14 @@ def intro_event(game_state: Game):
             dialogue_trait_hint = "Perceptive"
             faction_influenced = "explorers"
             # Ask about background in a more natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\n'So what drives you out here to the edge of civilization?' Nova asks. 'Most people have a story.'"
-            )            
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat do you share about your background?")
+            )
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nWhat do you share about your background?"
+            )
             background_options = {
                 1: "Lunar Drifter: 'Grew up in Luna's shadow districts. Learned to survive by any means necessary.'",
                 2: "Void Runner: 'Born in the deep black. Never known a planet's gravity for more than a few months.'",
@@ -616,7 +667,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -627,7 +678,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 7.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 7."
+                    )
 
             # Set background based on choice
             if bg_idx == 1:
@@ -686,12 +739,12 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\nNova's eyebrow arches slightly as she gives you a measured look, then her lips curl into a dangerous smile."
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'Smooth talker, hmm? That'll get you places... sometimes even where you want to go,' she says with a hint of amusement."
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "She leans back, studying you. 'Just remember - out here, flirtation is a currency. Spend it wisely, and know its value.'"
@@ -701,12 +754,14 @@ def intro_event(game_state: Game):
             faction_influenced = "traders"
 
             # Ask about background in a more natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nAs the conversation continues, Nova gives you an appraising look. 'You've got confidence. What's your story?'"
-            )            
-            game_state.ui.info_message(Fore.YELLOW + "\nHow do you explain your background?")
+            )
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nHow do you explain your background?"
+            )
             background_options = {
                 1: "Ex-Miner: 'Started in the asteroid fields. Found I prefer hunting people to hunting minerals.'",
                 2: "Corp Dropout: 'Used to work corporate security. Got tired of protecting the wrong people.'",
@@ -714,11 +769,11 @@ def intro_event(game_state: Game):
                 4: "Void Runner: 'My family's been traveling the black for generations. It's all I've ever known.'",
                 5: "Xeno-Biologist: 'Used to study alien species. Academia got too political - and dangerous.'",
                 6: "Discharged Trooper: 'Military background. Let's just say there was a disagreement about orders.'",
-                7: "Shadow Operative: 'Similar to your line of work. Extraction specialist looking to be my own boss.'", # Bounty Hunter's special background
+                7: "Shadow Operative: 'Similar to your line of work. Extraction specialist looking to be my own boss.'",  # Bounty Hunter's special background
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -729,7 +784,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 7.")            # Set background based on choice
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 7."
+                    )  # Set background based on choice
             if bg_idx == 1:
                 background = "Ex-Miner"
                 game_state.ui.info_message(
@@ -794,12 +851,12 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\nNova straightens slightly, her demeanor shifting to businesslike. 'Professional. I can work with that.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'Connections are currency out here,' she says quietly. 'More valuable than credits sometimes. Everyone needs someone who can find things... or people.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "She slides a small data chip across the table. 'My contact frequency. Never know when you might need someone found - or need to disappear yourself.'"
@@ -809,12 +866,14 @@ def intro_event(game_state: Game):
             faction_influenced = "military"
 
             # Ask about background in a more natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\n'So what's your specialty?' Nova asks directly. 'Everyone's got an angle out here.'"
-            )            
-            game_state.ui.info_message(Fore.YELLOW + "\nHow do you describe your expertise?")
+            )
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nHow do you describe your expertise?"
+            )
             background_options = {
                 1: "Ex-Miner: 'I know asteroids. Where to find the valuable ones and how to crack them open.'",
                 2: "Corp Dropout: 'Corporate intelligence. I understand how the big players think and move.'",
@@ -822,11 +881,11 @@ def intro_event(game_state: Game):
                 4: "Void Runner: 'Navigation and piloting. I can get to places others can't reach.'",
                 5: "Xeno-Biologist: 'Scientific analysis. I can understand and predict behavior patterns.'",
                 6: "Discharged Trooper: 'Tactical operations. I can handle myself in a fight and plan an approach.'",
-                7: "Shadow Operative: 'Asset acquisition and extraction. Similar to your line of work, but more specialized.'", # Bounty Hunter's special background
+                7: "Shadow Operative: 'Asset acquisition and extraction. Similar to your line of work, but more specialized.'",  # Bounty Hunter's special background
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -837,7 +896,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 7.")            # Set background based on choice
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 7."
+                    )  # Set background based on choice
             if bg_idx == 1:
                 background = "Ex-Miner"
                 game_state.ui.info_message(
@@ -894,16 +955,18 @@ def intro_event(game_state: Game):
                 )
 
         # Store the background selected through dialogue
-        game_state.ui.info_message(Fore.YELLOW + f"\nYou reflect on your past as a {background}...")
-        #sleep(1.5)
+        game_state.ui.info_message(
+            Fore.YELLOW + f"\nYou reflect on your past as a {background}..."
+        )
+        # sleep(1.5)
         game_state.ui.info_message(
             Fore.CYAN
             + f"Nova seems to appreciate your background, and you sense there might be future opportunities for collaboration."
         )
-        #sleep(1)
+        # sleep(1)
 
         # Ask about ship preferences
-        #sleep(2)
+        # sleep(2)
         game_state.ui.info_message(
             Fore.CYAN
             + "\n'What are you flying?' Nova asks, changing the subject. 'In this business, your ship is your lifeline.'"
@@ -914,49 +977,58 @@ def intro_event(game_state: Game):
         while not ship_name:
             ship_name = input(Fore.WHITE + "What's your ship called? ")
             if not ship_name:
-                game_state.ui.info_message(Fore.RED + "You need to give your ship a name.")
+                game_state.ui.info_message(
+                    Fore.RED + "You need to give your ship a name."
+                )
 
         game_state.ui.info_message(
             Fore.CYAN
             + f"\n'The {ship_name},' Nova repeats. 'And what kind of vessel is she?'"
-        )        # Then ask for ship type with actual gameplay differences
+        )  # Then ask for ship type with actual gameplay differences
         ship_options = {
             1: "Hunter's Edge: 'Stealth profile with advanced sensor array. Low signature and high tracking capability.'",
             2: "Combat Bulwark: 'Heavy armor plating, reinforced hull. Not fast, but can withstand serious damage.'",
             3: "Swift Pursuit: 'Sleek design built for speed. Light on armor but can outrun most trouble.'",
-            4: "Balanced Venture: 'Standard all-around vessel with decent capabilities in all areas.'"
+            4: "Balanced Venture: 'Standard all-around vessel with decent capabilities in all areas.'",
         }
-        
+
         # Special ship option based on background
         if background == "Shadow Operative":
-            ship_options[5] = "Ghost Protocol: 'Military-grade stealth vessel with advanced signature masking. Top tier for covert operations.'"
-            
+            ship_options[5] = (
+                "Ghost Protocol: 'Military-grade stealth vessel with advanced signature masking. Top tier for covert operations.'"
+            )
+
         for i, option in ship_options.items():
-            #sleep(0.2)
+            # sleep(0.2)
             game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
         valid_ship_choice = False
         while not valid_ship_choice:
-            ship_choice = input(Fore.WHITE + f"\nYour ship type (1-{len(ship_options)}): ")
+            ship_choice = input(
+                Fore.WHITE + f"\nYour ship type (1-{len(ship_options)}): "
+            )
             if is_valid_int(ship_choice) and 1 <= int(ship_choice) <= len(ship_options):
                 valid_ship_choice = True
                 ship_idx = int(ship_choice)
             else:
-                game_state.ui.info_message(Fore.RED + f"Please enter a number between 1 and {len(ship_options)}.")
+                game_state.ui.info_message(
+                    Fore.RED
+                    + f"Please enter a number between 1 and {len(ship_options)}."
+                )
 
         # Map choice to ship template ID
         ship_template_map = {
             1: "hunter_ship",  # Hunter's Edge maps to the hunter_ship template
             2: "armored_behemoth",  # Combat Bulwark maps to armored_behemoth
             3: "agile_interceptor",  # Swift Pursuit maps to agile_interceptor
-            4: "balanced_cruiser",   # Balanced Venture maps to balanced_cruiser
-            5: "hunter_ship"  # Special Shadow Operative ship with enhanced stats
+            4: "balanced_cruiser",  # Balanced Venture maps to balanced_cruiser
+            5: "hunter_ship",  # Special Shadow Operative ship with enhanced stats
         }
-        
+
         # Get the template ID based on choice
         # Cast map access to str to satisfy mypy
         ship_template_id = cast(str, ship_template_map[ship_idx])
-        
+
         # Store the ship appearance for later reference
         # Explicitly cast dict access for mypy
         ship_appearance = cast(str, SHIP_TEMPLATES[ship_template_id]["name"])
@@ -967,8 +1039,7 @@ def intro_event(game_state: Game):
                 + "\nNova nods approvingly. 'A hunter's vessel. Enhanced sensors, low signature. Perfect for tracking targets across the void.'"
             )
             game_state.ui.info_message(
-                Fore.YELLOW
-                + "Ship Specs: Sensors +50%, Signature -10%, Speed +30%"
+                Fore.YELLOW + "Ship Specs: Sensors +50%, Signature -10%, Speed +30%"
             )
         elif ship_idx == 2:  # Combat Bulwark
             game_state.ui.info_message(
@@ -976,8 +1047,7 @@ def intro_event(game_state: Game):
                 + "\n'Built like a tank,' Nova observes. 'Smart if you're expecting trouble. That hull can take a beating.'"
             )
             game_state.ui.info_message(
-                Fore.YELLOW
-                + "Ship Specs: Hull +50%, Cargo +20%, Speed -20%"
+                Fore.YELLOW + "Ship Specs: Hull +50%, Cargo +20%, Speed -20%"
             )
         elif ship_idx == 3:  # Swift Pursuit
             game_state.ui.info_message(
@@ -985,8 +1055,7 @@ def intro_event(game_state: Game):
                 + "\n'Speed over armor,' she notes. 'My preference too. Can't hit what they can't catch.'"
             )
             game_state.ui.info_message(
-                Fore.YELLOW
-                + "Ship Specs: Speed +40%, Hull -20%, Cargo -30%"
+                Fore.YELLOW + "Ship Specs: Speed +40%, Hull -20%, Cargo -30%"
             )
         elif ship_idx == 4:  # Balanced Venture
             game_state.ui.info_message(
@@ -994,8 +1063,7 @@ def intro_event(game_state: Game):
                 + "\n'Jack of all trades,' she comments. 'Not a bad choice for a beginner. Gives you flexibility.'"
             )
             game_state.ui.info_message(
-                Fore.YELLOW
-                + "Ship Specs: Standard baseline values for all systems"
+                Fore.YELLOW + "Ship Specs: Standard baseline values for all systems"
             )
         elif ship_idx == 5:  # Special Shadow Operative ship
             game_state.ui.info_message(
@@ -1006,7 +1074,7 @@ def intro_event(game_state: Game):
                 Fore.YELLOW
                 + "Ship Specs: Signature -50%, Sensors +70%, Stealth engine, Speed +20%"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'I can hook you up with a contact who specializes in signature-reducing hull modifications if you're interested. For a finder's fee, of course.'"
@@ -1017,7 +1085,7 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\n'Making a statement, I see,' Nova says with a slight smile. 'Sometimes the best defense is looking too dangerous to bother.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'Just remember, those weapons are only useful if you know how to use them effectively. Amateur gunners are just target practice.'"
@@ -1028,14 +1096,16 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\n'Speed,' Nova says with appreciation. 'My preferred strategy too. Can't hit what you can't catch.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'I've outrun more trouble than I've shot my way through. A wise approach in the void.'"
             )
 
-        game_state.ui.info_message(Fore.YELLOW + f"\nYou've told Nova about your ship, the {ship_name}...")
-        #sleep(1)
+        game_state.ui.info_message(
+            Fore.YELLOW + f"\nYou've told Nova about your ship, the {ship_name}..."
+        )
+        # sleep(1)
         game_state.ui.info_message(
             Fore.CYAN
             + f"Its {ship_appearance} design seems to have made an impression on her."
@@ -1055,15 +1125,17 @@ def intro_event(game_state: Game):
             else:
                 negative_trait = "Superstitious"  # default fallback
 
-        #sleep(1)
+        # sleep(1)
     elif approach_choice_num == 3:
         game_state.ui.info_message(
             Fore.CYAN
             + "\nYou navigate towards the engineer. As you approach, a faint hum emanates from their direction. Without looking up from the datapad, a synthesized voice cuts through the din: 'If it ain't critical, it can wait. If it is critical, make it quick.'"
         )
 
-        #sleep(2)
-        game_state.ui.info_message(Fore.YELLOW + "\nHow do you engage with the busy engineer?\n")
+        # sleep(2)
+        game_state.ui.info_message(
+            Fore.YELLOW + "\nHow do you engage with the busy engineer?\n"
+        )
         eng_dialogue = [
             "Technical: 'That's a V7 modulator you're reconfiguring. The efficiency curve flattens if you tweak the harmonic resonance.'",
             "Curious: 'What are you working on? Looks advanced.'",
@@ -1071,7 +1143,7 @@ def intro_event(game_state: Game):
         ]
 
         for i, option in enumerate(eng_dialogue, 1):
-            #sleep(0.2)
+            # sleep(0.2)
             game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
         valid_dialogue = False
@@ -1082,19 +1154,21 @@ def intro_event(game_state: Game):
                 valid_dialogue = True
                 eng_choice_num = int(eng_choice)
             else:
-                game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                game_state.ui.info_message(
+                    Fore.RED + "Please enter a number between 1 and 3."
+                )
 
         if eng_choice_num == 1:
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe engineer's head snaps up, eyes wide with surprise. The synthesized voice switches off as they speak in a natural, excited tone."
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'You know your tech! Everyone else here thinks I'm just fixing broken vidscreens.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "They launch into a detailed explanation of their work on improving deep-space scanner efficiency. 'Your ship has decent tech?'"
@@ -1104,15 +1178,19 @@ def intro_event(game_state: Game):
             faction_influenced = "scientists"
 
             # Integrate ship customization into dialogue
-            #sleep(2)
-            game_state.ui.info_message(Fore.YELLOW + "\nHow do you describe your ship to the engineer?")
+            # sleep(2)
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nHow do you describe your ship to the engineer?"
+            )
 
             # First ask for ship name
             ship_name = ""
             while not ship_name:
                 ship_name = input(Fore.WHITE + "What's your ship's name? ")
                 if not ship_name:
-                    game_state.ui.info_message(Fore.RED + "You need to give your ship a name.")
+                    game_state.ui.info_message(
+                        Fore.RED + "You need to give your ship a name."
+                    )
 
             game_state.ui.info_message(
                 Fore.CYAN
@@ -1127,7 +1205,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in appearance_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_appearance_choice = False
@@ -1138,7 +1216,9 @@ def intro_event(game_state: Game):
                     valid_appearance_choice = True
                     app_idx = int(appearance_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set appearance based on choice
             if app_idx == 1:
@@ -1147,7 +1227,7 @@ def intro_event(game_state: Game):
                     Fore.CYAN
                     + "\nZeta-9 nods appreciatively. 'Those old models have character. More importantly, they have space for upgrades and modifications that the newer, sleeker vessels can't accommodate.'"
                 )
-                #sleep(1.5)
+                # sleep(1.5)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "'I could help you optimize her systems sometime. Those patch jobs actually make her more resilient to damage, if done right.'"
@@ -1158,7 +1238,7 @@ def intro_event(game_state: Game):
                     Fore.CYAN
                     + "\nThe engineer's eyes light up. 'Nice choice. Good aerodynamics for atmospheric entry, and the cooling systems on those models are exceptional.'"
                 )
-                #sleep(1.5)
+                # sleep(1.5)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "'Keep her well-maintained and she'll outrun most trouble you encounter.'"
@@ -1169,18 +1249,18 @@ def intro_event(game_state: Game):
                     Fore.CYAN
                     + "\n'Practical. I like it,' Zeta-9 approves. 'Those haulers can be modified to carry serious equipment. Cargo space is valuable out here.'"
                 )
-                #sleep(1.5)
+                # sleep(1.5)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "'With some reinforced bulkheads, you could even withstand minor asteroid impacts without catastrophic failure.'"
                 )
 
             # Ask about background in a natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\n'You seem to know your tech,' Zeta-9 notes. 'Where'd you pick that up?'"
-            )            
+            )
             game_state.ui.info_message(Fore.YELLOW + "\nHow do you respond?")
             background_options = {
                 1: "Ex-Miner: 'When your life depends on equipment working, you learn fast. Spent years maintaining mining rigs.'",
@@ -1193,7 +1273,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -1204,7 +1284,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 7.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 7."
+                    )
 
             # Set background based on choice
             if bg_idx == 1:
@@ -1231,12 +1313,12 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\nThe engineer glances up briefly, evaluating whether you're worth the distraction."
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'Working on a way to boost mineral scanner range without frying the circuits. Corps pay well for proprietary tech.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "They gesture to the stool beside them. 'You a tech yourself? Market's good for innovation right now.'"
@@ -1246,7 +1328,7 @@ def intro_event(game_state: Game):
             faction_influenced = "corporations"
 
             # Integrate ship customization into dialogue
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.YELLOW
                 + "\nAs you discuss technology, the conversation turns to your vessel."
@@ -1257,7 +1339,9 @@ def intro_event(game_state: Game):
             while not ship_name:
                 ship_name = input(Fore.WHITE + "What's your ship called? ")
                 if not ship_name:
-                    game_state.ui.info_message(Fore.RED + "You need to give your ship a name.")
+                    game_state.ui.info_message(
+                        Fore.RED + "You need to give your ship a name."
+                    )
 
             game_state.ui.info_message(
                 Fore.CYAN
@@ -1272,7 +1356,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in appearance_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_appearance_choice = False
@@ -1283,7 +1367,9 @@ def intro_event(game_state: Game):
                     valid_appearance_choice = True
                     app_idx = int(appearance_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set appearance based on choice
             if app_idx == 1:
@@ -1292,7 +1378,7 @@ def intro_event(game_state: Game):
                     Fore.CYAN
                     + "\nZeta-9 nods appreciatively. 'Classic models have sturdy frameworks. Built to last, not like the disposable junk they manufacture now.'"
                 )
-                #sleep(1.5)
+                # sleep(1.5)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "'I've got some custom firmware that might interest you. Makes those old navigation systems sing.'"
@@ -1303,7 +1389,7 @@ def intro_event(game_state: Game):
                     Fore.CYAN
                     + "\n'Smart choice,' Zeta-9 says quietly. 'Low profile means fewer unwanted encounters. I can appreciate that approach.'"
                 )
-                #sleep(1.5)
+                # sleep(1.5)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "'I might have some sensor-dampening tech that would complement your setup.'"
@@ -1314,20 +1400,22 @@ def intro_event(game_state: Game):
                     Fore.CYAN
                     + "\nThe engineer laughs, a surprisingly human sound. 'Bold! I respect the confidence. Not my approach, but it takes all kinds.'"
                 )
-                #sleep(1.5)
+                # sleep(1.5)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "'Just make sure your defenses are as impressive as your aesthetics. You're not exactly blending in.'"
                 )
 
             # Ask about background in a natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\n'So what's your story?' Zeta-9 asks. 'Most people in this bar are running to or from something.'"
             )
 
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat part of your past do you share?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nWhat part of your past do you share?"
+            )
             background_options = {
                 1: "Void Runner: 'Born on freighters. Never knew a planet as home. The void's in my blood.'",
                 2: "Corp Dropout: 'Left a cushy corporate position. The pay was good, but the soul-crushing monotony wasn't worth it.'",
@@ -1335,7 +1423,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -1346,7 +1434,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set background based on choice
             if bg_idx == 1:
@@ -1373,12 +1463,12 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\nThe engineer continues working but nods slightly, acknowledging your patience."
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "After completing a complex sequence of inputs, they look up. 'Refreshing. Most people demand attention.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'Technical expertise? I've got plenty. What's your ship running? Might have some optimization tips.'"
@@ -1388,7 +1478,7 @@ def intro_event(game_state: Game):
             faction_influenced = "traders"
 
             # Integrate ship customization into dialogue
-            #sleep(2)
+            # sleep(2)
 
             # First ask for ship name
             ship_name = ""
@@ -1400,56 +1490,67 @@ def intro_event(game_state: Game):
             game_state.ui.info_message(
                 Fore.CYAN
                 + f"\n'Ah, the {ship_name}. What class of ship are we talking about?'"
-            )            
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat type of vessel do you pilot?")
+            )
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nWhat type of vessel do you pilot?"
+            )
             ship_options = {
                 1: "Industrial Hauler: 'Modified cargo vessel with expanded holds. Slow but can haul massive loads.'",
                 2: "Sleek Runner: 'Speed-optimized craft with enhanced propulsion and reduced mass.'",
                 3: "Mining Platform: 'Specialized vessel with advanced ore extraction systems and cargo capacity.'",
-                4: "Balanced Explorer: 'Standard vessel with reasonable performance across all systems.'"
+                4: "Balanced Explorer: 'Standard vessel with reasonable performance across all systems.'",
             }
-            
+
             # Special ship option based on background
             if background == "Void Engineering Adept":
-                ship_options[5] = "Tech Maven: 'Experimental vessel with enhanced power systems and engineering interfaces.'"
-            
+                ship_options[5] = (
+                    "Tech Maven: 'Experimental vessel with enhanced power systems and engineering interfaces.'"
+                )
+
             for i, option in ship_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_ship_choice = False
             while not valid_ship_choice:
-                ship_choice = input(Fore.WHITE + f"\nYour ship type (1-{len(ship_options)}): ")
-                if is_valid_int(ship_choice) and 1 <= int(ship_choice) <= len(ship_options):
+                ship_choice = input(
+                    Fore.WHITE + f"\nYour ship type (1-{len(ship_options)}): "
+                )
+                if is_valid_int(ship_choice) and 1 <= int(ship_choice) <= len(
+                    ship_options
+                ):
                     valid_ship_choice = True
                     ship_idx = int(ship_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + f"Please enter a number between 1 and {len(ship_options)}.")
-                    
+                    game_state.ui.info_message(
+                        Fore.RED
+                        + f"Please enter a number between 1 and {len(ship_options)}."
+                    )
+
             # Map choice to ship template ID
             ship_template_map = {
-                1: "cargo_hauler",    # Industrial Hauler maps to cargo_hauler
-                2: "agile_interceptor", # Sleek Runner maps to agile_interceptor
-                3: "mining_vessel",    # Mining Platform maps to mining_vessel
+                1: "cargo_hauler",  # Industrial Hauler maps to cargo_hauler
+                2: "agile_interceptor",  # Sleek Runner maps to agile_interceptor
+                3: "mining_vessel",  # Mining Platform maps to mining_vessel
                 4: "balanced_cruiser",  # Balanced Explorer maps to balanced_cruiser
-                5: "research_vessel"    # Tech Maven maps to research_vessel with enhanced stats
+                5: "research_vessel",  # Tech Maven maps to research_vessel with enhanced stats
             }
-            
+
             # Get the template ID based on choice
             # Cast map access to str to satisfy mypy
             ship_template_id = cast(str, ship_template_map[ship_idx])
-            
+
             # Store the ship appearance for later reference
             # Explicitly cast dict access for mypy
             ship_appearance = cast(str, SHIP_TEMPLATES[ship_template_id]["name"])
             # Removed redundant if app_idx block that was overriding ship_appearance and causing lint issues.
 
             # Ask about background in a natural way
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nZeta-9 gives you an appraising look. 'You're patient. Thoughtful. What brought you into space? Education?'"
-            )            
+            )
             game_state.ui.info_message(Fore.YELLOW + "\nHow do you explain your path?")
             background_options = {
                 1: "Xeno-Biologist: 'Scientific curiosity. Started with research expeditions, then found I preferred the independence.'",
@@ -1458,11 +1559,11 @@ def intro_event(game_state: Game):
                 4: "Ex-Miner: 'Got my start in the asteroid fields. Hard work teaches you to value what you find.'",
                 5: "Corp Dropout: 'Had enough of corporate structure. Out here I make my own decisions.'",
                 6: "Discharged Trooper: 'Military background. Know how to follow and when to question orders.'",
-                7: "Tech Savant: 'Always had a gift for understanding systems. Technology speaks to me in ways people don't.'", # Engineer's special background
+                7: "Tech Savant: 'Always had a gift for understanding systems. Technology speaks to me in ways people don't.'",  # Engineer's special background
             }
 
             for i, option in background_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_bg_choice = False
@@ -1473,7 +1574,9 @@ def intro_event(game_state: Game):
                     valid_bg_choice = True
                     bg_idx = int(bg_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 7.")            # Set background based on choice
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 7."
+                    )  # Set background based on choice
             if bg_idx == 1:
                 background = "Xeno-Biologist"
                 game_state.ui.info_message(
@@ -1525,17 +1628,17 @@ def intro_event(game_state: Game):
             Fore.YELLOW
             + f"\nYou've revealed details about your ship, the {ship_name}..."
         )
-        #sleep(1)
+        # sleep(1)
         game_state.ui.info_message(
             Fore.CYAN
             + f"Its {ship_appearance} design stands out in its own way among the vessels docked at the station."
         )
-        #sleep(1)
+        # sleep(1)
         game_state.ui.info_message(
             Fore.YELLOW
             + f"\nYour past as a {background} has shaped your approach to technology and survival."
         )
-        #sleep(1.5)
+        # sleep(1.5)
 
         # Assign positive_trait based on dialogue_trait_hint
         if dialogue_trait_hint:
@@ -1559,8 +1662,10 @@ def intro_event(game_state: Game):
             + "\nYou slide up to the bar. The bartender's optical sensors focus on you with an audible click. 'The usual for newcomers is trouble, with a shot of desperation. What'll it be for you?'"
         )
 
-        #sleep(2)
-        game_state.ui.info_message(Fore.YELLOW + "\nHow do you interact with the cybernetic bartender?\n")
+        # sleep(2)
+        game_state.ui.info_message(
+            Fore.YELLOW + "\nHow do you interact with the cybernetic bartender?\n"
+        )
         bar_dialogue = [
             "Sociable: 'Whatever's strong and doesn't cause blindness. And I'll take some local intel with it.'",
             "Direct: 'Information. On mining opportunities, security patterns, and who to avoid around here.'",
@@ -1568,7 +1673,7 @@ def intro_event(game_state: Game):
         ]
 
         for i, option in enumerate(bar_dialogue, 1):
-            #sleep(0.2)
+            # sleep(0.2)
             game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
         valid_dialogue = False
@@ -1579,19 +1684,21 @@ def intro_event(game_state: Game):
                 valid_dialogue = True
                 bar_choice_num = int(bar_choice)
             else:
-                game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                game_state.ui.info_message(
+                    Fore.RED + "Please enter a number between 1 and 3."
+                )
 
         if bar_choice_num == 1:
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender's optical implants whir as they slide a glowing blue beverage your way. 'Centaurian Sunset. Won't blind you, might make you see more clearly though.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "They wipe down the bar with a mechanical precision. 'Local intel? Everyone's hunting for Ghost Asteroids these days. Mineral content so pure it's worth killing for.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "They tap the side of their cybernetic eye. 'Keep your sensors sharp and your friends closer than your weapons.'"
@@ -1602,13 +1709,15 @@ def intro_event(game_state: Game):
 
             # Background information through dialogue
             if not "background" in locals():
-                #sleep(2)
+                # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "\nThe bartender studies you with those mechanical eyes. 'You're new to the station. What brings you to our corner of space?'"
                 )
 
-                game_state.ui.info_message(Fore.YELLOW + "\nHow do you explain your presence?")
+                game_state.ui.info_message(
+                    Fore.YELLOW + "\nHow do you explain your presence?"
+                )
                 background_options = {
                     1: "Void Runner: 'Just another port for me. Been traveling the lanes since I was born.'",
                     2: "Xeno-Biologist: 'Research, primarily. The academic circles have gotten too... restrictive.'",
@@ -1616,7 +1725,7 @@ def intro_event(game_state: Game):
                 }
 
                 for i, option in background_options.items():
-                    #sleep(0.2)
+                    # sleep(0.2)
                     game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
                 valid_bg_choice = False
@@ -1627,7 +1736,9 @@ def intro_event(game_state: Game):
                         valid_bg_choice = True
                         bg_idx = int(bg_choice)
                     else:
-                        game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                        game_state.ui.info_message(
+                            Fore.RED + "Please enter a number between 1 and 3."
+                        )
 
                 # Set background based on choice
                 if bg_idx == 1:
@@ -1651,7 +1762,7 @@ def intro_event(game_state: Game):
 
             # Ship details if not already established
             if not "ship_name" in locals():
-                #sleep(2)
+                # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "\n'What are you flying?' the bartender inquires. 'Always good to know what's docked at our station.'"
@@ -1676,7 +1787,7 @@ def intro_event(game_state: Game):
                 }
 
                 for i, option in appearance_options.items():
-                    #sleep(0.2)
+                    # sleep(0.2)
                     game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
                 valid_appearance_choice = False
@@ -1690,7 +1801,9 @@ def intro_event(game_state: Game):
                         valid_appearance_choice = True
                         app_idx = int(appearance_choice)
                     else:
-                        game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                        game_state.ui.info_message(
+                            Fore.RED + "Please enter a number between 1 and 3."
+                        )
 
                 # Set appearance based on choice
                 if app_idx == 1:
@@ -1713,14 +1826,16 @@ def intro_event(game_state: Game):
                     )
 
             # Personality trait selection
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender watches as you drink. 'I pride myself on reading customers. You strike me as someone who's...'"
             )
 
             # Offer positive traits
-            game_state.ui.info_message(Fore.YELLOW + "\nHow do you come across to others?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nHow do you come across to others?"
+            )
             pos_trait_options = {
                 1: f"Perceptive: 'I notice things others miss. Details matter in this line of work.' ({dialogue_trait_hint} - Suggested)",
                 2: "Resilient: 'I've been knocked down plenty. Always get back up stronger.'",
@@ -1728,7 +1843,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in pos_trait_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_trait_choice = False
@@ -1738,7 +1853,9 @@ def intro_event(game_state: Game):
                     valid_trait_choice = True
                     trait_idx = int(trait_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set positive trait based on choice
             if trait_idx == 1:
@@ -1761,7 +1878,7 @@ def intro_event(game_state: Game):
                 )
 
             # Add negative trait selection
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender tilts their head, optical sensors whirring. 'But everyone's got their flaws. You seem like you might be...'"
@@ -1776,7 +1893,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in neg_trait_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.RED}{i}. {option}")
 
             valid_neg_trait_choice = False
@@ -1786,7 +1903,9 @@ def intro_event(game_state: Game):
                     valid_neg_trait_choice = True
                     neg_trait_idx = int(neg_trait_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set negative trait based on choice
             if neg_trait_idx == 1:
@@ -1813,12 +1932,12 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\nThe bartender makes a sound that might be a chuckle. 'Direct. I can work with that.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'Mining's best in the outer rim right now, but pirates are heavy. Station security sweeps every six hours, on schedule you could set your chrono to.'"
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "They lean forward, voice lowering. 'Avoid anyone with a red scarf. Syndicate markers. They ask questions with their fists.'"
@@ -1829,24 +1948,24 @@ def intro_event(game_state: Game):
 
             # Background information through dialogue
             if not "background" in locals():
-                #sleep(2)
+                # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "\n'You seem to know what questions to ask,' the bartender observes. 'What's your background?'"
-                )                
+                )
                 game_state.ui.info_message(Fore.YELLOW + "\nHow do you respond?")
                 background_options = {
                     1: "Corp Dropout: 'Corporate sector. Decided the pay wasn't worth the soul-crushing monotony.'",
                     2: "Discharged Trooper: 'Military. Let's say my discharge wasn't ceremonial.'",
                     3: "Ex-Miner: 'Independent mining operations. Tired of breaking my back for middlemen taking all the profit.'",
-                    4: "Void Runner: 'Born in deep space. Never known a permanent home other than my ship.'", 
+                    4: "Void Runner: 'Born in deep space. Never known a permanent home other than my ship.'",
                     5: "Lunar Drifter: 'Grew up in Luna's shadow districts. Learned to survive by any means necessary.'",
                     6: "Xeno-Biologist: 'Academic background. The limitations of institutional research became... problematic.'",
-                    7: "Station Fixer: 'Been a mediator between factions for years. Know how to grease the right gears.'", # Bartender's special background
+                    7: "Station Fixer: 'Been a mediator between factions for years. Know how to grease the right gears.'",  # Bartender's special background
                 }
 
                 for i, option in background_options.items():
-                    #sleep(0.2)
+                    # sleep(0.2)
                     game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
                 valid_bg_choice = False
@@ -1857,7 +1976,9 @@ def intro_event(game_state: Game):
                         valid_bg_choice = True
                         bg_idx = int(bg_choice)
                     else:
-                        game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 7.")                # Set background based on choice
+                        game_state.ui.info_message(
+                            Fore.RED + "Please enter a number between 1 and 7."
+                        )  # Set background based on choice
                 if bg_idx == 1:
                     background = "Corp Dropout"
                     game_state.ui.info_message(
@@ -1907,7 +2028,7 @@ def intro_event(game_state: Game):
 
             # Ship details if not already established
             if not "ship_name" in locals():
-                #sleep(2)
+                # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "\n'What vessel brought you here?' the bartender asks. 'I like to know what's in our docks.'"
@@ -1932,7 +2053,7 @@ def intro_event(game_state: Game):
                 }
 
                 for i, option in appearance_options.items():
-                    #sleep(0.2)
+                    # sleep(0.2)
                     game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
                 valid_appearance_choice = False
@@ -1946,7 +2067,9 @@ def intro_event(game_state: Game):
                         valid_appearance_choice = True
                         app_idx = int(appearance_choice)
                     else:
-                        game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                        game_state.ui.info_message(
+                            Fore.RED + "Please enter a number between 1 and 3."
+                        )
 
                 # Set appearance based on choice
                 if app_idx == 1:
@@ -1969,14 +2092,16 @@ def intro_event(game_state: Game):
                     )
 
             # Personality trait selection
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender's optical sensors scan you methodically. 'I've served drinks to all types. You strike me as...'"
             )
 
             # Offer positive traits
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat would others say is your greatest strength?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nWhat would others say is your greatest strength?"
+            )
             pos_trait_options = {
                 1: f"Methodical: 'I plan thoroughly. Waste nothing, maximize efficiency.' ({dialogue_trait_hint} - Suggested)",
                 2: "Quick: 'Fast reflexes. I react while others are still processing.'",
@@ -1984,7 +2109,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in pos_trait_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_trait_choice = False
@@ -1994,7 +2119,9 @@ def intro_event(game_state: Game):
                     valid_trait_choice = True
                     trait_idx = int(trait_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set positive trait based on choice
             if trait_idx == 1:
@@ -2017,14 +2144,16 @@ def intro_event(game_state: Game):
                 )
 
             # Add negative trait selection
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\n'But everyone has their weaknesses,' Obsidian continues. 'Yours seems to be...'"
             )
 
             # Offer negative traits
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat might get you into trouble?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nWhat might get you into trouble?"
+            )
             neg_trait_options = {
                 1: "Paranoid: 'I see threats everywhere. Better safe than sorry, but it costs me opportunities.'",
                 2: "Forgetful: 'Details slip my mind sometimes. I focus on the big picture.'",
@@ -2032,7 +2161,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in neg_trait_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.RED}{i}. {option}")
 
             valid_neg_trait_choice = False
@@ -2042,7 +2171,9 @@ def intro_event(game_state: Game):
                     valid_neg_trait_choice = True
                     neg_trait_idx = int(neg_trait_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set negative trait based on choice
             if neg_trait_idx == 1:
@@ -2069,12 +2200,12 @@ def intro_event(game_state: Game):
                 Fore.CYAN
                 + "\nThe bartender's metallic fingers deftly collect your credits. A compartment in their chest hums as they extract a dusty bottle from beneath the bar."
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'Earth whiskey. Real thing, not synthetic.' They pour two glasses, raising one in salutation."
             )
-            #sleep(1.5)
+            # sleep(1.5)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "'Generous types need friends in this sector. Station administrator owes me. Might be able to arrange a discount on docking fees.'"
@@ -2085,13 +2216,15 @@ def intro_event(game_state: Game):
 
             # Background information through dialogue
             if not "background" in locals():
-                #sleep(2)
+                # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "\nObsidian regards you over the rim of the glass. 'You handle yourself well. What's your story?'"
                 )
 
-                game_state.ui.info_message(Fore.YELLOW + "\nWhat do you share about your past?")
+                game_state.ui.info_message(
+                    Fore.YELLOW + "\nWhat do you share about your past?"
+                )
                 background_options = {
                     1: "Corp Dropout: 'Used to wear a suit, push data, make others rich. Decided I'd rather make myself rich.'",
                     2: "Void Runner: 'Born in the black. Third generation spacer. Never known a life planetside.'",
@@ -2099,7 +2232,7 @@ def intro_event(game_state: Game):
                 }
 
                 for i, option in background_options.items():
-                    #sleep(0.2)
+                    # sleep(0.2)
                     game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
                 valid_bg_choice = False
@@ -2110,7 +2243,9 @@ def intro_event(game_state: Game):
                         valid_bg_choice = True
                         bg_idx = int(bg_choice)
                     else:
-                        game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                        game_state.ui.info_message(
+                            Fore.RED + "Please enter a number between 1 and 3."
+                        )
 
                 # Set background based on choice
                 if bg_idx == 1:
@@ -2133,7 +2268,7 @@ def intro_event(game_state: Game):
                     )
             # Ship details if not already established
             if not "ship_name" in locals():
-                #sleep(2)
+                # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
                     + "\n'Tell me about your vessel,' Obsidian says, refilling your glass. 'I like to know my customers' capabilities.'"
@@ -2158,7 +2293,7 @@ def intro_event(game_state: Game):
                 }
 
                 for i, option in appearance_options.items():
-                    #sleep(0.2)
+                    # sleep(0.2)
                     game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
                 valid_appearance_choice = False
@@ -2172,7 +2307,9 @@ def intro_event(game_state: Game):
                         valid_appearance_choice = True
                         app_idx = int(appearance_choice)
                     else:
-                        game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                        game_state.ui.info_message(
+                            Fore.RED + "Please enter a number between 1 and 3."
+                        )
 
                 # Set appearance based on choice
                 if app_idx == 1:
@@ -2195,14 +2332,16 @@ def intro_event(game_state: Game):
                     )
 
             # Personality trait selection
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender swirls the amber liquid in their glass thoughtfully. 'In my line of work, you learn to read people quickly. You strike me as...'"
             )
 
             # Offer positive traits
-            game_state.ui.info_message(Fore.YELLOW + "\nHow would you describe your greatest strength?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nHow would you describe your greatest strength?"
+            )
             pos_trait_options = {
                 1: f"Charismatic: 'I know how to talk to people, make connections. It opens doors.' ({dialogue_trait_hint} - Suggested)",
                 2: "Resourceful: 'I'm adaptable. Can make something from nothing when needed.'",
@@ -2210,7 +2349,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in pos_trait_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
             valid_trait_choice = False
@@ -2220,7 +2359,9 @@ def intro_event(game_state: Game):
                     valid_trait_choice = True
                     trait_idx = int(trait_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set positive trait based on choice
             if trait_idx == 1:
@@ -2243,7 +2384,7 @@ def intro_event(game_state: Game):
                 )
 
             # Add negative trait selection
-            #sleep(2)
+            # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender's expression shifts subtly. 'Of course, we all have our... challenges. Yours seems to be...'"
@@ -2258,7 +2399,7 @@ def intro_event(game_state: Game):
             }
 
             for i, option in neg_trait_options.items():
-                #sleep(0.2)
+                # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.RED}{i}. {option}")
 
             valid_neg_trait_choice = False
@@ -2268,7 +2409,9 @@ def intro_event(game_state: Game):
                     valid_neg_trait_choice = True
                     neg_trait_idx = int(neg_trait_choice)
                 else:
-                    game_state.ui.info_message(Fore.RED + "Please enter a number between 1 and 3.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Please enter a number between 1 and 3."
+                    )
 
             # Set negative trait based on choice
             if neg_trait_idx == 1:
@@ -2294,7 +2437,7 @@ def intro_event(game_state: Game):
             Fore.YELLOW
             + f"\nYour conversation with Obsidian has revealed much about you - your {positive_trait} nature and your tendency to be {negative_trait}."
         )
-        #sleep(1.5)
+        # sleep(1.5)
         if "background" in locals():
             game_state.ui.info_message(
                 Fore.CYAN
@@ -2321,7 +2464,7 @@ def intro_event(game_state: Game):
                 Fore.YELLOW
                 + f"\nYou think about your ship, the {ship_name}, waiting in the dock. Its {ship_appearance} design stands out in its own way."
             )
-    #sleep(2.5)  # Slightly increased pause after interaction
+    # sleep(2.5)  # Slightly increased pause after interaction
     game_state.ui.info_message(
         "\n"
         + Fore.YELLOW
@@ -2331,7 +2474,7 @@ def intro_event(game_state: Game):
 
     # Character information and background were collected through dialogue
     game_state.ui.info_message(Fore.YELLOW + "REPL SPACE MINER - CHARACTER SUMMARY\n")
-    #sleep(0.5)
+    # sleep(0.5)
 
     game_state.ui.info_message(Fore.CYAN + f"Name: {name}")
     game_state.ui.info_message(Fore.CYAN + f"Age: {age}")
@@ -2340,7 +2483,7 @@ def intro_event(game_state: Game):
     game_state.ui.info_message(Fore.CYAN + f"Negative Trait: {negative_trait}")
     game_state.ui.info_message(Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})")
 
-    #sleep(2)  # Background information for the selected background
+    # sleep(2)  # Background information for the selected background
     bg_descriptions = {
         "Ex-Miner": "You've spent years breaking rocks in the belt. Your technical skills are superior, and you know how to survive in harsh environments. You have connections with the Belters Union.",
         "Corp Dropout": "Former middle management at a mega-corp. You understand business and have education, but corporations might not view you favorably after your 'strategic exit'.",
@@ -2351,7 +2494,7 @@ def intro_event(game_state: Game):
     }
 
     game_state.ui.info_message(f"{Fore.CYAN}{bg_descriptions[background]}")
-    #sleep(1)
+    # sleep(1)
 
     # Set background specialization based on background choices made during dialogue
     additional_bonus_details = {}
@@ -2361,7 +2504,7 @@ def intro_event(game_state: Game):
         game_state.ui.info_message(
             Fore.YELLOW + "\nYour mining experience has given you a particular edge..."
         )
-        #sleep(1.5)
+        # sleep(1.5)
         additional_bonus_details = {"type": "skill", "name": "engineering", "value": 1}
         game_state.ui.info_message(
             Fore.CYAN
@@ -2372,7 +2515,7 @@ def intro_event(game_state: Game):
             Fore.YELLOW
             + "\nYour corporate training provided you with valuable business insights..."
         )
-        #sleep(1.5)
+        # sleep(1.5)
         additional_bonus_details = {"type": "stat", "name": "intellect", "value": 1}
         game_state.ui.info_message(
             Fore.CYAN
@@ -2383,15 +2526,17 @@ def intro_event(game_state: Game):
             Fore.YELLOW
             + "\nYour time navigating lunar politics gave you a particular advantage..."
         )
-        #sleep(1.5)
+        # sleep(1.5)
         additional_bonus_details = {"type": "stat", "name": "perception", "value": 1}
         game_state.ui.info_message(
             Fore.CYAN
             + "You learned to spot trouble before it finds you. (+1 Perception)"
         )
     elif background == "Void Runner":
-        game_state.ui.info_message(Fore.YELLOW + "\nBeing born in space has given you a natural affinity...")
-        #sleep(1.5)
+        game_state.ui.info_message(
+            Fore.YELLOW + "\nBeing born in space has given you a natural affinity..."
+        )
+        # sleep(1.5)
         additional_bonus_details = {"type": "skill", "name": "piloting", "value": 1}
         game_state.ui.info_message(
             Fore.CYAN
@@ -2402,7 +2547,7 @@ def intro_event(game_state: Game):
             Fore.YELLOW
             + "\nYour scientific training has given you specialized knowledge..."
         )
-        #sleep(1.5)
+        # sleep(1.5)
         additional_bonus_details = {"type": "skill", "name": "education", "value": 1}
         game_state.ui.info_message(
             Fore.CYAN
@@ -2412,20 +2557,22 @@ def intro_event(game_state: Game):
         game_state.ui.info_message(
             Fore.YELLOW + "\nYour military background has honed your combat reflexes..."
         )
-        #sleep(1.5)
+        # sleep(1.5)
         additional_bonus_details = {"type": "skill", "name": "combat", "value": 1}
         game_state.ui.info_message(
             Fore.CYAN
             + "Your training allows you to react quickly in dangerous situations. (+1 Combat)"
         )
 
-    #sleep(1.5)  # Sound effects question - integrate into narrative
+    # sleep(1.5)  # Sound effects question - integrate into narrative
     game_state.ui.info_message(
         Fore.YELLOW
         + "\nAs you prepare to leave the bar, your communicator displays a message."
     )
-    #sleep(1)
-    game_state.ui.info_message(Fore.WHITE + "SYSTEM QUERY: Enable audio notification system? [yes/no]")
+    # sleep(1)
+    game_state.ui.info_message(
+        Fore.WHITE + "SYSTEM QUERY: Enable audio notification system? [yes/no]"
+    )
     sound_choice = input(Fore.WHITE + "Your response: ")
     enable_sound = sound_choice.lower() in ["yes", "y"]
 
@@ -2445,11 +2592,17 @@ def intro_event(game_state: Game):
     CHARACTER_STARTING_CREDS = 1000
     CHARACTER_STARTING_DEBT = 5000
 
-    game_state.ui.info_message(Fore.YELLOW + "\nYou check your account status as you leave the bar...")
-    #sleep(1)
-    game_state.ui.info_message(Fore.GREEN + f"Available Credits: {CHARACTER_STARTING_CREDS}")
-    game_state.ui.info_message(Fore.RED + f"Outstanding Debt: {CHARACTER_STARTING_DEBT}")
-    #sleep(1.5)
+    game_state.ui.info_message(
+        Fore.YELLOW + "\nYou check your account status as you leave the bar..."
+    )
+    # sleep(1)
+    game_state.ui.info_message(
+        Fore.GREEN + f"Available Credits: {CHARACTER_STARTING_CREDS}"
+    )
+    game_state.ui.info_message(
+        Fore.RED + f"Outstanding Debt: {CHARACTER_STARTING_DEBT}"
+    )
+    # sleep(1.5)
 
     # Create character instance with the information gathered through dialogue
     game_state.player_character = Character(
@@ -2538,7 +2691,7 @@ def intro_event(game_state: Game):
 
         if applied_bonus_message:
             game_state.ui.info_message(Fore.GREEN + applied_bonus_message)
-            #sleep(1)
+            # sleep(1)
 
     # Apply dialogue bonuses from character interaction
     if (
@@ -2615,14 +2768,14 @@ def intro_event(game_state: Game):
 
     # Add the contact to the player's contacts list
     contacts_list = getattr(character, "contacts")
-    contacts_list.append(contact_obj)    
+    contacts_list.append(contact_obj)
     game_state.ui.info_message(
         Fore.CYAN
         + f"\nYou've made a connection with {contact_obj.name}, "
         + f"the {contact_type} at Terminus Bar. This connection may be valuable in the future."
     )
-    
-    #sleep(1.5)
+
+    # sleep(1.5)
 
     # Create ship from the selected template
     game_state.player_ship = Ship.from_template(ship_template_id, ship_name)
@@ -2637,7 +2790,7 @@ def quick_start(game_state: "Game"):
         Fore.CYAN
         + "\nThe station's customs terminal flashes with a quick entry protocol..."
     )
-    #sleep(1)
+    # sleep(1)
 
     # Default values
     name = "Space Miner"
@@ -2706,21 +2859,31 @@ def quick_start(game_state: "Game"):
     bartender.last_interaction = "Quick start"
 
     # Display character summary
-    game_state.ui.info_message(Fore.YELLOW + "\nREPL SPACE MINER - QUICK START CHARACTER\n")
+    game_state.ui.info_message(
+        Fore.YELLOW + "\nREPL SPACE MINER - QUICK START CHARACTER\n"
+    )
     game_state.ui.info_message(Fore.CYAN + f"Name: {name}")
     game_state.ui.info_message(Fore.CYAN + f"Age: {age}")
     game_state.ui.info_message(Fore.CYAN + f"Background: {background}")
     game_state.ui.info_message(Fore.CYAN + f"Positive Trait: {positive_trait}")
     game_state.ui.info_message(Fore.CYAN + f"Negative Trait: {negative_trait}")
     game_state.ui.info_message(Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})")
-    game_state.ui.info_message(f"\n{Fore.GREEN}Quick start initiated! Welcome aboard the {ship_name}.")
-    #sleep(1)
-    game_state.ui.info_message(f"{Fore.YELLOW}Your starting credits: {CHARACTER_STARTING_CREDS}")
-    game_state.ui.info_message(f"{Fore.RED}Your starting debt: {CHARACTER_STARTING_DEBT}")
+    game_state.ui.info_message(
+        f"\n{Fore.GREEN}Quick start initiated! Welcome aboard the {ship_name}."
+    )
+    # sleep(1)
+    game_state.ui.info_message(
+        f"{Fore.YELLOW}Your starting credits: {CHARACTER_STARTING_CREDS}"
+    )
+    game_state.ui.info_message(
+        f"{Fore.RED}Your starting debt: {CHARACTER_STARTING_DEBT}"
+    )
     game_state.ui.info_message(
         f"{Fore.CYAN}You've established a connection with {bartender.name}, the bartender at Terminus Bar."
     )
-    game_state.ui.info_message(f"{Fore.RED}However, being {negative_trait} might present some challenges.")
-    #sleep(1)
+    game_state.ui.info_message(
+        f"{Fore.RED}However, being {negative_trait} might present some challenges."
+    )
+    # sleep(1)
 
     return game_state
