@@ -350,5 +350,5 @@ register_command(
 register_command(
     ["system_jump", "sjump"],
     system_jump_command,
-    [Argument("system_index", str, False)],
+    [Argument("system_index_str", str, False)],
 )

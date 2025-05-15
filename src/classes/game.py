@@ -399,7 +399,8 @@ class Character:
             self.last_interest_time = current_time
             return None
 
-        weeks_passed = (current_time - self.last_interest_time) // WEEK_LENGTH
+        # Ensure weeks_passed is an integer by explicitly casting it
+        weeks_passed = int((current_time - self.last_interest_time) // WEEK_LENGTH)
 
         if weeks_passed >= 1:
             # Apply interest for each week passed
@@ -671,14 +672,27 @@ class Game:
 
     def get_current_solar_system(self) -> SolarSystem:
         """Returns the current solar system the player is in."""
-        return self.solar_systems[self.current_solar_system_index]
-
+        return self.solar_systems[self.current_solar_system_index]    
+    
     def add_solar_system(self, solar_system: SolarSystem) -> None:
         """Adds a new solar system to the game."""
         self.solar_systems.append(solar_system)
-
+        
     def get_solar_system(self): # Existing method, now returns current system
         return self.get_current_solar_system()
+        
+    def advance_time(self, time_delta):
+        """
+        Advance the game time by the specified timedelta
+        
+        Args:
+            time_delta (timedelta): The amount of time to advance
+        """
+        # Convert timedelta to seconds and add to global_time
+        self.global_time += time_delta.total_seconds()
+        
+        # Additional time-based updates can be added here
+        # For example, updating ship systems, applying effects, etc.
 
     def to_dict(self):
         return {

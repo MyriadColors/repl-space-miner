@@ -190,12 +190,12 @@ class DualFuelSystem:
             game_state.advance_time(timedelta(seconds=travel_time_seconds))
         else:
             raise AttributeError("Game object is missing 'advance_time' method.")
-        if hasattr(game_state, "ship") and game_state.ship is not None:
-            game_state.ship.previous_system = getattr(game_state.ship, "current_system", "Unknown")  # type: ignore
-            game_state.ship.current_system = destination_system  # type: ignore
-            game_state.ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
+        if game_state.player_ship is not None:
+            game_state.player_ship.previous_system = getattr(game_state.player_ship, "current_system", "Unknown")  # type: ignore
+            game_state.player_ship.current_system = destination_system  # type: ignore
+            game_state.player_ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
         else:
-            raise AttributeError("Game object is missing 'ship' attribute or it is None.")
+            raise AttributeError("Game object is missing 'player_ship' attribute or it is None.")
         # Set new location
         assert(game_state.player_ship is not None), "Player ship is None"
         game_state.player_ship.previous_system = game_state.player_ship.current_system  # type: ignore
