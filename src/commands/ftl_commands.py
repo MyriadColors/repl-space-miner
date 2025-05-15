@@ -215,9 +215,12 @@ def ftl_jump_command(game_state: Game, destination: str, distance: float) -> Non
 
 
 def list_systems_command(game_state: Game) -> None:
-    """Lists all available solar systems."""
+    """Lists all available solar systems with true distance and FTL cost."""
     systems = game_state.solar_systems
     current_system_idx = game_state.current_solar_system_index
+    player_ship = game_state.get_player_ship()
+    region = game_state.get_region()
+    current_system = game_state.get_current_solar_system()
 
     if not systems:
         game_state.ui.warn_message("No solar systems found.")
@@ -226,9 +229,17 @@ def list_systems_command(game_state: Game) -> None:
     game_state.ui.info_message("Available Solar Systems:")
     for idx, system in enumerate(systems):
         marker = "(Current System)" if idx == current_system_idx else ""
-        # For now, FTL jump 'distance' to any other system is considered 1.0 FTL unit.
-        ftl_distance = "N/A (Current)" if idx == current_system_idx else "1.0 FTL units"
-        game_state.ui.info_message(f"  Index: {idx} | Name: {system.name} {marker} | FTL Cost (approx): {ftl_distance}")
+        if idx == current_system_idx:
+            ftl_distance = "N/A (Current)"
+            distance_str = "-"
+            cost_str = "-"
+        else:
+            distance = region.calculate_distance(current_system.name, system.name)
+            ftl_cost = distance * player_ship.antimatter_consumption
+            distance_str = f"{distance:.2f} LY"
+            cost_str = f"{ftl_cost:.2f}g"
+            ftl_distance = f"{cost_str} (Distance: {distance_str})"
+        game_state.ui.info_message(f"  Index: {idx} | Name: {system.name} {marker} | FTL Cost: {ftl_distance}")
     game_state.ui.info_message("\nUse 'ftljump <index>' to travel to another system.")
 
 def system_jump_command(game_state: Game, system_index_str: str) -> None:
@@ -254,8 +265,10 @@ def system_jump_command(game_state: Game, system_index_str: str) -> None:
 
     target_system = game_state.solar_systems[target_idx]
     
-    # We'll use a standard FTL "distance" of 1.0 for jumps between systems
-    ftl_distance_parameter = 1.0 
+    # Calculate true distance using region coordinates
+    current_system = game_state.get_current_solar_system()
+    region = game_state.get_region()
+    distance = region.calculate_distance(current_system.name, target_system.name)
 
     # Check if ship is docked
     if player_ship.is_docked:
@@ -263,7 +276,7 @@ def system_jump_command(game_state: Game, system_index_str: str) -> None:
         return
 
     # Check antimatter levels
-    required_antimatter = ftl_distance_parameter * player_ship.antimatter_consumption
+    required_antimatter = distance * player_ship.antimatter_consumption
     if player_ship.antimatter < required_antimatter:
         game_state.ui.error_message(
             f"Insufficient antimatter. Need {required_antimatter:.2f}g for this jump."
@@ -284,7 +297,7 @@ def system_jump_command(game_state: Game, system_index_str: str) -> None:
 
     # Confirm jump
     game_state.ui.info_message(
-        f"Preparing FTL jump to {target_system.name}, distance: {ftl_distance_parameter} light-years."
+        f"Preparing FTL jump to {target_system.name}, distance: {distance} light-years."
     )
     game_state.ui.info_message(
         f"This will consume {required_antimatter:.2f}g of antimatter."
@@ -296,7 +309,7 @@ def system_jump_command(game_state: Game, system_index_str: str) -> None:
         return
 
     # Execute jump
-    success, message = player_ship.ftl_jump(game_state, target_system.name, ftl_distance_parameter)
+    success, message = player_ship.ftl_jump(game_state, target_system.name, distance)
 
     game_state.ui.info_message(message)
 

@@ -20,9 +20,11 @@ HasSpaceObjectType = Union[AsteroidField, Station]
 
 class SolarSystem:
 
-    def __init__(self, size: float, field_quantity: int, station_quantity: int, system_name: str | None = None) -> None:
+    def __init__(self, name: str, x: float, y: float, size: float = 100.0, field_quantity: int = 0, station_quantity: int = 0):
+        self.x = x  # X position in region (LY)
+        self.y = y  # Y position in region (LY)
         self.size: float = size
-        self.name: str = system_name if system_name else f"System-{random.randint(1000, 9999)}"
+        self.name: str = name
         self.game_time: int = 0
         self.field_quantity: int = field_quantity
         self.station_quantity: int = station_quantity
@@ -33,6 +35,10 @@ class SolarSystem:
 
     def get_size(self):
         return self.size
+
+    def get_position(self):
+        """Return the (x, y) position of the system in the region."""
+        return (self.x, self.y)
 
     def generate_fields(self):
         for _ in range(self.field_quantity):
@@ -216,8 +222,10 @@ class SolarSystem:
     def to_dict(self):
         return {
             "name": self.name,
+            "x": self.x,
+            "y": self.y,
             "size": self.size,
-            "game_time": self.game_time,  # Although game_time is in Game, saving it here too for potential standalone use
+            "game_time": self.game_time,
             "field_quantity": self.field_quantity,
             "station_quantity": self.station_quantity,
             "asteroid_fields": [field.to_dict() for field in self.asteroid_fields],
@@ -227,17 +235,19 @@ class SolarSystem:
     @classmethod
     def from_dict(cls, data):
         solar_system = cls(
-            size=data["size"], 
-            field_quantity=data["field_quantity"], 
-            station_quantity=data.get("station_quantity", random.randint(5,15)),
-            system_name=data.get("name")
+            name=data["name"],
+            x=data["x"],
+            y=data["y"],
+            size=data.get("size", 100.0),
+            field_quantity=data.get("field_quantity", 0),
+            station_quantity=data.get("station_quantity", 0),
         )
         solar_system.game_time = data.get("game_time", 0)
         solar_system.asteroid_fields = [
             AsteroidField.from_dict(field_data)
-            for field_data in data["asteroid_fields"]
+            for field_data in data.get("asteroid_fields", [])
         ]
         solar_system.stations = [
-            Station.from_dict(station_data) for station_data in data["stations"]
+            Station.from_dict(station_data) for station_data in data.get("stations", [])
         ]
         return solar_system

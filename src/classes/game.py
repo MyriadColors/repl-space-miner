@@ -9,6 +9,7 @@ from colorama import Fore, Back, Style, init
 
 from src.classes.ship import Ship
 from src.classes.solar_system import SolarSystem
+from src.classes.region import Region
 
 # Initialize colorama
 init(autoreset=True)
@@ -613,18 +614,10 @@ class Game:
         skip_customization: bool = False,
     ) -> None:
         self.global_time: int = 0
-        self.solar_systems: List[SolarSystem] = [
-            SolarSystem(size=250.0, field_quantity=15, station_quantity=7, system_name="Sol")
-        ]
-        for i in range(5):
-            size = random.uniform(100.0, 600.0)
-            field_quantity = random.randint(3, 30)
-            station_quantity = random.randint(1, 20)  # Ensure at least 1 station for variety, can be 0 if desired
-            system_name = f"System-{random.randint(100,999)}-{chr(random.randint(65,90))}"
-            self.add_solar_system(SolarSystem(size, field_quantity, station_quantity, system_name))
-        
-        self.current_solar_system_index: int = 0  # Index of the current solar system
-        self.rnd_station = random.choice(self.get_current_solar_system().stations) if self.get_current_solar_system().stations else None  # MODIFIED: use random.choice
+        self.region: Region = Region.generate_random_region("Local Sector", 30)
+        self.solar_systems: List[SolarSystem] = self.region.solar_systems
+        self.current_solar_system_index: int = 0
+        self.rnd_station = random.choice(self.get_current_solar_system().stations) if self.get_current_solar_system().stations else None
         self.player_character: Character | None = None
         self.player_ship: Ship | None = None
         self.debug_flag = debug_flag
@@ -694,6 +687,9 @@ class Game:
         # Additional time-based updates can be added here
         # For example, updating ship systems, applying effects, etc.
 
+    def get_region(self) -> Region:
+        return self.region
+
     def to_dict(self):
         return {
             "global_time": self.global_time,
@@ -721,7 +717,7 @@ class Game:
         game.solar_systems = [SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]]
         game.current_solar_system_index = data.get("current_solar_system_index", 0) 
         if not game.solar_systems:  # Fallback if a save had no solar systems (unlikely but safe)
-            game.solar_systems = [SolarSystem(size=250.0, field_quantity=15, station_quantity=7, system_name="Default Gen") ]
+            game.solar_systems = [SolarSystem(name="Default Gen", x=0.0, y=0.0, size=250.0, field_quantity=15, station_quantity=7)]
             game.current_solar_system_index = 0
 
         if data["player_character"]:
