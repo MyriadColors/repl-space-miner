@@ -614,7 +614,7 @@ class Game:
         skip_customization: bool = False,
     ) -> None:
         self.global_time: int = 0
-        self.region: Region = Region.generate_random_region("Local Sector", 30)
+        self.region: Region = Region.generate_random_region("Local Sector", 25)
         self.solar_systems: List[SolarSystem] = self.region.solar_systems
         self.current_solar_system_index: int = 0
         self.rnd_station = random.choice(self.get_current_solar_system().stations) if self.get_current_solar_system().stations else None

@@ -53,7 +53,7 @@ def travel_command(game_state: Game, **kwargs) -> float:
 
     player_ship.consume_fuel(fuel_consumed)
     player_ship.space_object.position = destination
-    game_state.global_time += travel_time
+    game_state.global_time += round(travel_time)
 
     # Check for debt interest after time has passed
     if game_state.player_character:
@@ -124,6 +124,9 @@ def closest_travel(game_state: Game, object_type: str) -> None:
 def direct_travel_command(game_state: Game, destination_x: str, destination_y: str):
     """Handle direct travel to coordinates command."""
     try:
+        if (game_state.get_player_ship().is_docked):
+            game_state.ui.error_message("You must undock your ship before traveling.")
+            return
         x = float(destination_x)
         y = float(destination_y)
         travel_command(game_state, destination_x=str(x), destination_y=str(y))

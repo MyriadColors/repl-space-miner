@@ -47,6 +47,7 @@ class Region:
                     used_coords.add((x, y))
                     break
             system_name = f"System_{i+1}"
-            system = SolarSystem(system_name, x, y, 100.0, 0, 50)
+            # Todo, add templates for system generation so we can have different parameters for generating systems
+            system = SolarSystem(system_name, x, y, random.uniform(50, 150), random.randrange(15, 50), random.randrange(1, 10))
             region.add_system(system)
         return region
