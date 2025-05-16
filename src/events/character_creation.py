@@ -19,6 +19,9 @@ def character_creation_event(game_state: Game):
     negative_trait: str = "Wary"  # Default negative trait
     dialogue_trait_hint: str = ""  # Initialize this as it's used to set positive_trait
     ship_template_id: str = "balanced_cruiser"  # Default ship template ID
+    ship_idx: int = 0  # Default ship index
+    neg_trait_idx: int = 0  # Default negative trait index
+    trait_idx: int = 0  # Default trait index
 
     app_idx: int = 1  # Default value for all branches
     background: str = "Unknown"  # Default value for all branches
@@ -427,7 +430,9 @@ def character_creation_event(game_state: Game):
             elif positive_trait == "Resilient":
                 negative_trait = "Impatient"
             else:
-                negative_trait = "Superstitious"  # default fallback        #sleep(1)
+                negative_trait = "Superstitious"  # default fallback        
+        
+        #sleep(1)
 
         # Prompt for ship name before type selection
         # sleep(2)
@@ -474,6 +479,7 @@ def character_creation_event(game_state: Game):
             game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
 
         valid_ship_choice = False
+        
         while not valid_ship_choice:
             ship_choice = input(
                 Fore.WHITE + f"\nYour response (1-{len(ship_options)}): "
