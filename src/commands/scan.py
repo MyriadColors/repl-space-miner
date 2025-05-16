@@ -18,68 +18,47 @@ def scan_command(game_state: Game, num_objects: str) -> None:
 
     # Get player character to apply trait effects
     player_character = game_state.get_player_character()
-    effective_sensor_range = player_ship.sensor_range
 
-    # Apply character's sensor range modifier if applicable
-    if player_character and hasattr(player_character, "sensor_range_mod"):
-        # Apply the trait modifier to the sensor range
-        effective_sensor_range *= player_character.sensor_range_mod
-
-        # Apply education skill bonus (0.5% per point above 5)
-        if player_character.education > 5:
-            education_bonus = 1 + ((player_character.education - 5) * 0.005)
-            effective_sensor_range *= education_bonus
-
-        # If Perceptive trait provides significant improvement, mention it
-        if (
-            player_character.positive_trait == "Perceptive"
-            and player_character.sensor_range_mod > 1.1
-        ):
-            game_state.ui.success_message(
-                "Your perceptive nature enhances the scan results."
-            )
-
-    from contextlib import contextmanager
-
-    @contextmanager
-    def temporary_sensor_range(ship, new_range):
-        original_range = ship.sensor_range
-        ship.sensor_range = new_range
-        try:
-            yield
-        finally:
-            ship.sensor_range = original_range
-
-    current_system: SolarSystem = game_state.get_current_solar_system()
-    # Use the context manager to temporarily modify the ship's sensor range
-    with temporary_sensor_range(player_ship, effective_sensor_range):
-        objects = current_system.scan_system_objects(
-            player_ship.space_object.get_position(), amount_of_objects
-        )
-
-    for i in range(amount_of_objects):
+    # Get all objects from the scan - now get them directly without sensor range filtering
+    objects = game_state.get_current_solar_system().scan_system_objects(
+        player_ship.space_object.get_position(), amount_of_objects
+    )
+    
+    # Check if any objects were found
+    if not objects:
+        game_state.ui.warn_message("No objects detected within sensor range.")
+        return
+        
+    # Only iterate through the actual number of objects found
+    for i in range(min(amount_of_objects, len(objects))):
         game_state.ui.info_message(
             f"{i}. {objects[i].to_string_short(player_ship.space_object.get_position())}"
+        )    # Only proceed with selection if objects were found
+    if objects:
+        game_state.ui.warn_message("Enter object to navigate to or -1 to abort:")
+        input_response = take_input(
+            "Enter the number of the object to navigate to or -1 to abort: "
         )
 
-    game_state.ui.warn_message("Enter object to navigate to or -1 to abort:")
-    input_response = take_input(
-        "Enter the number of the object to navigate to or -1 to abort: "
-    )
-
-    if input_response == "-1":
-        return
-    else:
-        try:
-            input_response_index = int(input_response)
-        except ValueError:
-            game_state.ui.error_message("Invalid input. Please enter a valid number.")
+        if input_response == "-1":
             return
-        selected_object = objects[input_response_index]
-        selected_object_position = selected_object.space_object.position
-        direct_travel_command(
-            game_state, str(selected_object_position.x), str(selected_object_position.y)
-        )
+        else:
+            try:
+                input_response_index = int(input_response)
+                
+                # Validate the index is within bounds
+                if input_response_index < 0 or input_response_index >= len(objects):
+                    game_state.ui.error_message(f"Invalid selection. Please choose a number between 0 and {len(objects) - 1}.")
+                    return
+                    
+                selected_object = objects[input_response_index]
+                selected_object_position = selected_object.space_object.position
+                direct_travel_command(
+                    game_state, str(selected_object_position.x), str(selected_object_position.y)
+                )
+            except ValueError:
+                game_state.ui.error_message("Invalid input. Please enter a valid number.")
+                return
 
 
 def scan_field_command(game_state: Game) -> None:

@@ -47,6 +47,6 @@ class Region:
                     used_coords.add((x, y))
                     break
             system_name = f"System_{i+1}"
-            system = SolarSystem(system_name, x, y, 100.0, 0, 1)  # Ensure at least 1 station per system
+            system = SolarSystem(system_name, x, y, 100.0, 0, 50)
             region.add_system(system)
         return region

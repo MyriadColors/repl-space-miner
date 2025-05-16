@@ -570,10 +570,13 @@ class Ship:
         
         signature = template.get("sensor_signature", 1.0)
         ship.sensor_signature = signature if isinstance(signature, (int, float)) else 1.0
-        
         antimatter = template.get("antimatter_capacity", 5.0)
         ship.max_antimatter = antimatter if isinstance(antimatter, (int, float)) else 5.0
         ship.antimatter = ship.max_antimatter  # Start with full antimatter
+        
+        # Set antimatter consumption rate from template (default 0.05g per LY)
+        antimatter_consumption = template.get("antimatter_consumption", 0.05)
+        ship.antimatter_consumption = antimatter_consumption if isinstance(antimatter_consumption, (int, float)) else 0.05
 
         # Set the engine if specified
         engine_id = str(template.get("engine_id", "standard"))

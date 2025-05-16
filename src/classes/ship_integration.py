@@ -22,11 +22,10 @@ def integrate_dual_fuel_system():
     original_init = Ship.__init__
     
     def extended_init(self, *args, **kwargs):
-        original_init(self, *args, **kwargs)
-        # Add antimatter attributes to each instance
+        original_init(self, *args, **kwargs)        # Add antimatter attributes to each instance
         self.antimatter = 0.0
         self.max_antimatter = 5.0
-        self.antimatter_consumption = 0.5
+        self.antimatter_consumption = 0.05  # Standard consumption (0.05g/LY)
         self.containment_integrity = 100.0
         self.containment_power_draw = 0.001
         self.containment_failure_risk = 0.0
@@ -57,38 +56,38 @@ def update_ship_serialization():
     def extended_to_dict(self):
         data = original_to_dict(self)
         # Add antimatter data
-        data.update(
-            {
-                "antimatter": getattr(self, "antimatter", 0.0),
-                "max_antimatter": getattr(self, "max_antimatter", 5.0),
-                "antimatter_consumption": getattr(self, "antimatter_consumption", 0.5),
-                "containment_integrity": getattr(self, "containment_integrity", 100.0),
-                "containment_power_draw": getattr(self, "containment_power_draw", 0.001),
-                "containment_failure_risk": getattr(self, "containment_failure_risk", 0.0),
-                "last_containment_check": getattr(self, "last_containment_check", 0.0),
-            }
-        )
+        data.update({
+            "antimatter": getattr(self, "antimatter", 0.0),
+            "max_antimatter": getattr(self, "max_antimatter", 5.0),
+            "antimatter_consumption": getattr(self, "antimatter_consumption", 0.05),
+            "containment_integrity": getattr(self, "containment_integrity", 100.0),
+            "containment_power_draw": getattr(self, "containment_power_draw", 0.001),
+            "containment_failure_risk": getattr(self, "containment_failure_risk", 0.0),
+            "last_containment_check": getattr(self, "last_containment_check", 0.0),
+        })
         return data
-
+        
     # Store original from_dict method
-    original_from_dict = Ship.from_dict    # Define new from_dict function to handle antimatter fields
+    original_from_dict = Ship.from_dict
+    
+    # Define new from_dict function to handle antimatter fields
     def extended_from_dict(cls, data, game_state):
         ship = original_from_dict(data, game_state)
-
+        
         # Load antimatter data if present
         if "antimatter" in data:
             ship.antimatter = float(data["antimatter"])
             ship.max_antimatter = float(data.get("max_antimatter", 5.0))
-            ship.antimatter_consumption = float(data.get("antimatter_consumption", 0.5))
+            ship.antimatter_consumption = float(data.get("antimatter_consumption", 0.05))
             ship.containment_integrity = float(data.get("containment_integrity", 100.0))
             ship.containment_power_draw = float(data.get("containment_power_draw", 0.001))
             ship.containment_failure_risk = float(data.get("containment_failure_risk", 0.0))
             ship.last_containment_check = float(data.get(
                 "last_containment_check", game_state.global_time
             ))
-
+        
         return ship
-
+        
     # Replace methods using setattr to avoid direct method assignment issues
     setattr(Ship, 'to_dict', extended_to_dict)
     

@@ -461,7 +461,7 @@ ENGINES = {
 }
 
 # Ship templates for character creation
-SHIP_TEMPLATES = {
+SHIP_TEMPLATES = {    
     "armored_behemoth": {
         "name": "Armored Behemoth",
         "description": "Thick plating, heavy weapon mounts. Built to take a beating and dish one out.",
@@ -477,7 +477,8 @@ SHIP_TEMPLATES = {
         "engine_id": "standard",  # Default standard engine
         "sensor_signature": 1.2,  # Higher signature due to bulk
         "antimatter_capacity": 5.0,  # Standard antimatter capacity
-    },
+        "antimatter_consumption": 0.07,  # Higher consumption due to mass (0.07g/LY)
+    },    
     "agile_interceptor": {
         "name": "Agile Interceptor",
         "description": "Streamlined and fast. Prioritizes speed and maneuverability over raw power.",
@@ -493,7 +494,8 @@ SHIP_TEMPLATES = {
         "engine_id": "high_performance",  # High performance engine
         "sensor_signature": 0.8,  # Lower signature due to smaller profile
         "antimatter_capacity": 6.0,  # Enhanced antimatter capacity
-    },
+        "antimatter_consumption": 0.04,  # Efficient antimatter use (0.04g/LY)
+    },    
     "balanced_cruiser": {
         "name": "Balanced Cruiser",
         "description": "A versatile design. Decent armor, speed, and firepower for most situations.",
@@ -509,7 +511,8 @@ SHIP_TEMPLATES = {
         "engine_id": "standard",  # Standard engine
         "sensor_signature": 1.0,  # Standard signature
         "antimatter_capacity": 5.0,  # Standard antimatter capacity
-    },
+        "antimatter_consumption": 0.05,  # Standard consumption rate (0.05g/LY)
+    },    
     "mining_vessel": {
         "name": "Mining Vessel",
         "description": "Specialized for asteroid mining with enhanced ore extraction systems.",
@@ -525,6 +528,7 @@ SHIP_TEMPLATES = {
         "engine_id": "cargo_hauler",  # Better for hauling cargo
         "sensor_signature": 1.1,  # Higher signature due to mining equipment
         "antimatter_capacity": 4.0,  # Lower antimatter capacity
+        "antimatter_consumption": 0.065,  # Higher consumption due to bulk (0.065g/LY)
     },
     # Special ships for contacts
     "merc_veteran": {
@@ -542,7 +546,8 @@ SHIP_TEMPLATES = {
         "engine_id": "stealth",  # Stealth engine
         "sensor_signature": 0.7,  # Low signature for stealth operations
         "antimatter_capacity": 6.0,  # Enhanced antimatter capacity
-    },
+        "antimatter_consumption": 0.048,  # Efficient military-grade system (0.048g/LY)
+    },    
     "hunter_ship": {
         "name": "Bounty Hunter's Pursuit",
         "description": "A sleek, customized vessel with advanced tracking systems and reinforced hull.",
@@ -558,6 +563,7 @@ SHIP_TEMPLATES = {
         "engine_id": "high_performance",
         "sensor_signature": 0.9,
         "antimatter_capacity": 5.5,
+        "antimatter_consumption": 0.045,  # Efficient jump drive (0.045g/LY)
     },
     "research_vessel": {
         "name": "Scientific Explorer",
