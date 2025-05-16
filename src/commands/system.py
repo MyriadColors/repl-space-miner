@@ -95,7 +95,7 @@ def debug_mode_command(game_state: Game) -> None:
     game_state.ui.info_message(f"Debug mode {status}")
 
 
-def save_game_command(game_state: Game, filename: str = "", human_readable: bool = None) -> None:
+def save_game_command(game_state: Game, filename: str = "", human_readable: Optional[bool] = None) -> None:
     """
     Save the current game state.
     
@@ -108,6 +108,11 @@ def save_game_command(game_state: Game, filename: str = "", human_readable: bool
         filename = input("Enter save filename (leave empty for auto-generated name): ")
 
     try:
+        # Handle None case by using a default value (False) or prompting user
+        if human_readable is None:
+            prompt = input("Save in human-readable format? (y/n): ")
+            human_readable = prompt.lower() == 'y'
+        
         game_state.save_game(filename, human_readable)
     except Exception as e:
         game_state.ui.error_message(f"Failed to save game: {str(e)}")
