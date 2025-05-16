@@ -104,10 +104,12 @@ class DualFuelSystem:
         self.containment_failure_risk = min(100, self.containment_failure_risk + risk_increase)
         
         # Random events for integrity loss
+        # Chance of antimatter containment failure based on time and current antimatter levels
+        # Higher antimatter and longer time increase risk
         if random.random() < 0.001 * (time_delta / 60) * (self.antimatter / self.max_antimatter):
-            # Small random failure, lose some integrity
-            random_loss = random.uniform(0.1, 0.5)
-            self.containment_integrity = max(0, self.containment_integrity - random_loss)
+            random_loss = round(random.uniform(0.1, 0.5), 2)
+            lost_antimatter = self.antimatter * random_loss
+            self.antimatter -= lost_antimatter
         
         # Check if containment system is still stable
         is_stable = self.containment_integrity > 0 and self.containment_failure_risk < 80
@@ -203,8 +205,14 @@ class DualFuelSystem:
         game_state.player_ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
 
         # Apply a small degradation to containment integrity from the jump
-        jump_stress = random.uniform(0.5, 1.5) * (distance_ly / 10)
-        self.containment_integrity = max(0, self.containment_integrity - jump_stress)
+        # Simulate the stress of the jump on the FTL drive components
+        # This could be influenced by ship upgrades or current FTL drive health in a more complex system
+        jump_stress = round(random.uniform(0.5, 1.5) * (distance_ly / 10), 2)
+
+        # TODO: add a hull integrity system to the ship class
+        # game_state.get_player_ship().hull_integrity -= jump_stress
+        
+        game_state.ui.info_message(f"The Jump Stress to the Hull Integrity was of {jump_stress:.2f}%.")
 
         # Format travel summary
         event_desc = result["description"] if "description" in result else "Uneventful journey"

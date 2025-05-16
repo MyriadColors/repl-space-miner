@@ -38,7 +38,7 @@ def quick_start(game_state: "Game"):
         # Fallback in case the background isn't found
         print(Fore.RED + "Error: Background not found. Using default settings.")
         return
-      # Create the character with default settings
+    # Create the character with default settings
     from src.classes.game import Character
     game_state.player_character = Character(
         name=player_name,
@@ -62,8 +62,13 @@ def quick_start(game_state: "Game"):
     # Use the balanced cruiser template as a default ship
     game_state.player_ship = Ship.from_template("balanced_cruiser", "Rusty Bucket")
     # Position it at the random station
-    game_state.player_ship.space_object.position = game_state.rnd_station.position.copy()
-    
+    if game_state.rnd_station:
+        game_state.player_ship.space_object.position = game_state.rnd_station.position.copy()
+    else:
+        print(Fore.RED + "Error: Random station not found for quick start. Ship position not set.")
+        # Optionally, set a default position or handle this case as needed
+        # game_state.player_ship.space_object.position = pg.math.Vector2(0, 0) # Example default
+
     print(Fore.GREEN + f"Ship: {game_state.player_ship.name}")
     print(Fore.CYAN + "Quick start complete. Good luck, Captain!")
 
@@ -225,18 +230,27 @@ class AntimatterFluctuation(FTLEvent):
                     f"{Fore.YELLOW}You decide to take no action. Containment remains at {player_ship.containment_integrity:.1f}%.{Style.RESET_ALL}"
                 )
                 # Small chance of further deterioration
-                if random.random() < 0.25:
-                    further_drop = random.uniform(2.0, 5.0)
-                    player_ship.containment_integrity -= further_drop
-                    print(
-                        f"{Fore.RED}The containment field deteriorates further to {player_ship.containment_integrity:.1f}%!{Style.RESET_ALL}"
-                    )
-                else:
-                    print(
-                        f"{Fore.GREEN}Containment field remains stable at {player_ship.containment_integrity:.1f}%.{Style.RESET_ALL}"
-                    )
-            # For minor events, just show the message
-            print(message)
+                if self.severity == 3:
+                    # Minor chance of a secondary effect
+                    if random.random() < 0.25: # Already a probability, no need to round
+                        further_drop = random.uniform(2.0, 5.0)
+                        player_ship.containment_integrity -= further_drop
+                        game_state.ui.info_message(f"Minor cascade failure: Containment integrity decreased by an additional {further_drop:.2f}.")
+                elif self.severity == 4:
+                    # Moderate chance of a secondary effect
+                    if random.random() < 0.5: # Already a probability, no need to round
+                        further_drop = random.uniform(5.0, 10.0)
+                        player_ship.containment_integrity -= further_drop
+                        game_state.ui.info_message(f"Warning: Containment integrity dropped by an additional {further_drop:.2f} due to fluctuations.")
+                else:  # self.severity == 5
+                    # High chance of a critical failure
+                    if random.random() < 0.75: # Already a probability, no need to round
+                        further_drop = random.uniform(10.0, 20.0)
+                        player_ship.containment_integrity -= further_drop
+                        game_state.ui.info_message(f"CRITICAL FAILURE: Containment integrity plummeted by {further_drop:.2f}!! Immediate action required!")
+
+                # For minor events, just show the message
+                print(message)
 
         return {
             "old_integrity": int(old_integrity),
@@ -299,7 +313,7 @@ class SpacetimeDisruption(FTLEvent):
                 }
 
             elif system_affected == "hull":
-                damage = random.uniform(3.0, 8.0)
+                damage = round(random.uniform(3.0, 8.0), 2)
                 player_ship.hull_integrity -= damage
                 print(
                     f"{Fore.YELLOW}Spacetime stress causes minor hull damage.{Style.RESET_ALL}"
@@ -308,7 +322,7 @@ class SpacetimeDisruption(FTLEvent):
                 result_system = {"affected": "hull", "damage": damage}
 
             else:  # antimatter
-                loss = random.uniform(0.1, 0.3)
+                loss = round(random.uniform(0.1, 0.3), 2)  # 10-30% of a random resource
                 if player_ship.antimatter > loss:
                     player_ship.antimatter -= loss
                     print(
@@ -339,7 +353,7 @@ class SpacetimeDisruption(FTLEvent):
             choice = input("\nYour decision (1/2/3): ")
 
             if choice == "1":
-                fuel_needed = random.uniform(10.0, 20.0)
+                fuel_needed = round(random.uniform(10.0, 20.0), 2)
                 if player_ship.fuel >= fuel_needed:
                     player_ship.fuel -= fuel_needed
                     print(
@@ -351,7 +365,7 @@ class SpacetimeDisruption(FTLEvent):
                         "fuel_used": fuel_needed,
                     }
                 elif choice == "2":
-                    added_time = random.uniform(3600, 7200)  # 1-2 hours
+                    added_time = round(random.uniform(3600, 7200), 2)  # 1-2 hours
                     game_state.global_time += int(added_time)
                     print(
                         f"{Fore.YELLOW}You plot a safer course around the disruption.{Style.RESET_ALL}"
@@ -382,7 +396,7 @@ class SpacetimeDisruption(FTLEvent):
                 # Roll the dice!
                 luck = random.random()
                 if luck < 0.4:  # Bad outcome
-                    damage = random.uniform(10.0, 25.0)
+                    damage = round(random.uniform(10.0, 25.0), 2)
                     player_ship.hull_integrity -= damage
                     print(
                         f"{Fore.RED}The ship is violently tossed by the disruption!{Style.RESET_ALL}"
@@ -444,14 +458,13 @@ def get_random_ftl_event() -> Optional[FTLEvent]:
     if random.random() > 0.7:
         return None
 
-    # Select an event type based on weights
+    # Select an event based on weighted probabilities
     total_weight = sum(weight for _, weight in FTL_EVENTS)
-    r = random.uniform(0, total_weight)
+    r = round(random.uniform(0, total_weight), 2)
     upto = 0
-
-    for event_class, weight in FTL_EVENTS:
-        upto += weight
+    for event_data in FTL_EVENTS:
+        upto += event_data[1]
         if upto >= r:
-            return event_class()
+            return event_data[0]()
 
     return None  # Fallback

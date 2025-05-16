@@ -31,7 +31,7 @@ class SolarSystem:
     ):
         self.x = x  # X position in region (LY)
         self.y = y  # Y position in region (LY)
-        self.size: float = size
+        self.size: float = round(size, 2)
         self.name: str = name
         self.game_time: int = 0
         self.field_quantity: int = field_quantity
@@ -153,8 +153,8 @@ class SolarSystem:
 
         for i in range(self.station_quantity):
             position = Vector2(
-                random.uniform(-self.size, self.size),
-                random.uniform(-self.size, self.size),
+                round(random.uniform(-self.size, self.size), 2),
+                round(random.uniform(-self.size, self.size), 2),
             )
             rnd_name = data.generate_random_name(rnd_int(2, 4))
             station = Station(f"Station {rnd_name}", i, position)

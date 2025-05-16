@@ -10,7 +10,7 @@ def euclidean_distance(v1: Vector2, v2: Vector2):
 
 
 def rnd_float(min_val, max_val):
-    return min_val + random.random() * (max_val - min_val)
+    return round(min_val + random.random() * (max_val - min_val), 2)
 
 
 def rnd_int(min_val, max_val):
