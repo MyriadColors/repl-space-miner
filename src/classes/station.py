@@ -173,9 +173,7 @@ class Station:
             "fueltank_cap": self.fuel_tank_capacity,
             "fueltank": self.fuel_tank,
             "fuel_price": self.fuel_price,
-            "ores_available_ids": [ore.id for ore in self.ores_available],
             "ore_cargo": [oc.to_dict() for oc in self.ore_cargo],
-            "ore_cargo_volume": self.ore_cargo_volume,
             "ore_capacity": self.ore_capacity,
             "visited": self.visited,
         }
@@ -184,54 +182,60 @@ class Station:
     def from_dict(cls, data):
         from src.classes.ore import ORES  # Local import
         from src.classes.ship import IsSpaceObject  # Local import
-        from pygame import Vector2  # Add missing Vector2 import
+        from pygame import Vector2
+        from src.data import OreCargo # Ensure OreCargo is imported for from_dict
 
         station = cls(
             name=data["name"],
             station_id=data["id"],
             position=Vector2(data["position"]["x"], data["position"]["y"]),
         )
-        station.space_object = IsSpaceObject(
+
+        station.space_object = IsSpaceObject( 
             Vector2(data["position"]["x"], data["position"]["y"]), data["id"]
         )
         station.fuel_tank_capacity = data["fueltank_cap"]
         station.fuel_tank = data["fueltank"]
         station.fuel_price = data["fuel_price"]
-        station.ores_available = [
-            ore
-            for ore_id in data["ores_available_ids"]
-            for ore in [ORES.get(ore_id)] if ore is not None
-        ]
+        
         station.ore_cargo = [
             OreCargo.from_dict(oc_data) for oc_data in data["ore_cargo"]
         ]
-        station.ore_cargo_volume = data["ore_cargo_volume"]
+        station.ores_available = [oc.ore for oc in station.ore_cargo if oc.ore is not None]
+        station.ore_cargo_volume = sum(oc.ore.volume * oc.quantity for oc in station.ore_cargo if oc.ore is not None)
+        
         station.ore_capacity = data["ore_capacity"]
         station.visited = data.get("visited", False)
         return station
 
-    def add_item(self, ore, quantity):
+    def add_item(self, item_ore: Ore, item_quantity: int):
         """Add an item to the station's inventory."""
         ore_cargo = next(
-            (cargo for cargo in self.ore_cargo if cargo.ore.id == ore.id), None
+            (cargo for cargo in self.ore_cargo if cargo.ore.id == item_ore.id), None
         )
         if ore_cargo:
-            ore_cargo.quantity += quantity
+            ore_cargo.quantity += item_quantity
         else:
             # Create new ore cargo if this ore type isn't in inventory yet
-            buy_price = round(ore.base_value * rnd_float(0.75, 1.25), 2)
+            buy_price = round(item_ore.base_value * rnd_float(0.75, 1.25), 2)
             sell_price = round(buy_price * rnd_float(0.5, 1.0), 2)
-            self.ore_cargo.append(OreCargo(ore, quantity, buy_price, sell_price))
+            self.ore_cargo.append(OreCargo(item_ore, item_quantity, buy_price, sell_price))
+        # Update ores_available and ore_cargo_volume after adding item
+        self.ores_available = [oc.ore for oc in self.ore_cargo if oc.ore is not None]
+        self.ore_cargo_volume = sum(oc.ore.volume * oc.quantity for oc in self.ore_cargo if oc.ore is not None)
 
-    def remove_item(self, ore, quantity):
+    def remove_item(self, item_ore: Ore, item_quantity: int):
         """Remove an item from the station's inventory."""
         ore_cargo = next(
-            (cargo for cargo in self.ore_cargo if cargo.ore.id == ore.id), None
+            (cargo for cargo in self.ore_cargo if cargo.ore.id == item_ore.id), None
         )
         if ore_cargo:
-            if ore_cargo.quantity >= quantity:
-                ore_cargo.quantity -= quantity
+            if ore_cargo.quantity >= item_quantity:
+                ore_cargo.quantity -= item_quantity
                 if ore_cargo.quantity <= 0:
                     self.ore_cargo.remove(ore_cargo)
+                # Update ores_available and ore_cargo_volume after removing item
+                self.ores_available = [oc.ore for oc in self.ore_cargo if oc.ore is not None]
+                self.ore_cargo_volume = sum(oc.ore.volume * oc.quantity for oc in self.ore_cargo if oc.ore is not None)
                 return True
         return False

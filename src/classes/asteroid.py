@@ -94,7 +94,7 @@ class AsteroidField:
 
     def to_dict(self):
         return {
-            "asteroid_quantity": self.asteroid_quantity,
+            # "asteroid_quantity": self.asteroid_quantity, # Removed, can be derived from len(self.asteroids)
             "ores_available_ids": [ore.id for ore in self.ores_available],
             "radius": self.radius,
             "asteroids": [asteroid.to_dict() for asteroid in self.asteroids],
@@ -117,8 +117,12 @@ class AsteroidField:
             for ore_id in data["ores_available_ids"]
             if ORES.get(ore_id) is not None
         ]
+        # asteroid_quantity is now derived from the length of the loaded asteroids list
+        asteroids_data = data["asteroids"]
+        asteroid_quantity = len(asteroids_data)
+
         field = cls(
-            asteroid_quantity=data["asteroid_quantity"],
+            asteroid_quantity=asteroid_quantity,  # Use derived quantity
             ores_available=ores,
             radius=data["radius"],
             position=Vector2(data["position"]["x"], data["position"]["y"]),
@@ -126,8 +130,15 @@ class AsteroidField:
         field.space_object = IsSpaceObject(
             Vector2(data["position"]["x"], data["position"]["y"]), data["id"]
         )
-        field.asteroids = [
-            Asteroid.from_dict(ast_data) for ast_data in data["asteroids"]
-        ]
-        field.visited = data.get("visited", False)  # Add visited attribute
+        # Clear asteroids spawned by __init__ and load from data
+        field.asteroids = []
+        for ast_data in asteroids_data:
+            field.asteroids.append(Asteroid.from_dict(ast_data))
+
+        # Ensure ores_available is reconstructed from the actual ores in the loaded asteroids,
+        # not just the template ores_available_ids, to reflect the true state.
+        actual_ores_in_asteroids = {ast.ore for ast in field.asteroids if ast.ore}
+        field.ores_available = list(actual_ores_in_asteroids)
+
+        field.visited = data.get("visited", False)
         return field

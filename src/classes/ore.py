@@ -17,6 +17,15 @@ class Ore:
 
     def get_name(self) -> str:
         return self.name.lower()
+    
+    def __hash__(self):
+        # Use the ID for hashing since it's a unique identifier
+        return hash(self.id)
+    
+    def __eq__(self, other):
+        if not isinstance(other, Ore):
+            return False
+        return self.id == other.id
 
 
 # Define ores in a dictionary

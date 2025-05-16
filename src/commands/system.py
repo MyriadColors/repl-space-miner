@@ -95,14 +95,20 @@ def debug_mode_command(game_state: Game) -> None:
     game_state.ui.info_message(f"Debug mode {status}")
 
 
-def save_game_command(game_state: Game, filename: str = "") -> None:
-    """Save the current game state."""
+def save_game_command(game_state: Game, filename: str = "", human_readable: bool = None) -> None:
+    """
+    Save the current game state.
+    
+    Args:
+        game_state: The current game state
+        filename: Optional file name for the save
+        human_readable: If True, save in human-readable format; if None, user will be prompted
+    """
     if not filename:
-        filename = input("Enter save filename: ")
+        filename = input("Enter save filename (leave empty for auto-generated name): ")
 
     try:
-        game_state.save_game(filename)
-        game_state.ui.info_message(f"Game saved to {filename}")
+        game_state.save_game(filename, human_readable)
     except Exception as e:
         game_state.ui.error_message(f"Failed to save game: {str(e)}")
 

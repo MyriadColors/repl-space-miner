@@ -722,14 +722,20 @@ class Game:
 
         if data["player_character"]:
             game.player_character = Character.from_dict(data["player_character"])
-        if data["player_ship"]:
-            game.player_ship = Ship.from_dict(
+        if data["player_ship"]:        game.player_ship = Ship.from_dict(
                 data["player_ship"], game
             )  # Pass game instance
         game.ui = ui_instance  # Assign the passed UI instance
         return game
 
-    def save_game(self, filename: str = ""):
+    def save_game(self, filename: str = "", human_readable: bool = False):
+        """
+        Save the current game to a file.
+        
+        Args:
+            filename: Optional file name for the save
+            human_readable: If True, save in human-readable JSON format instead of compressed
+        """
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"RSM_SAVE_{timestamp}.json"
@@ -739,12 +745,59 @@ class Game:
 
         game_data = self.to_dict()
 
-        try:
-            with open(save_path, "w") as f:
-                json.dump(game_data, f, indent=4)
-            self.ui.success_message(f"Game saved to {save_path}")
-        except IOError as e:
-            self.ui.error_message(f"Error saving game: {e}")
+        # If human_readable flag not provided, ask the user
+        if not hasattr(self, 'save_preference'):
+            while True:
+                choice = input("Save as [c]ompressed or [h]uman-readable format? (c/h): ").lower()
+                if choice in ['c', 'h']:
+                    human_readable = (choice == 'h')
+                    # Remember preference for this session
+                    self.save_preference = human_readable
+                    break
+                else:
+                    self.ui.warn_message("Invalid choice. Please enter 'c' or 'h'.")
+        else:
+            # Use remembered preference
+            human_readable = self.save_preference
+
+        if human_readable:
+            # Save as human-readable JSON
+            try:
+                with open(save_path, "w") as f:
+                    json.dump(game_data, f, indent=4)
+                self.ui.success_message(f"Game saved to {save_path} (Human-readable format)")
+            except IOError as e:
+                self.ui.error_message(f"Error saving game: {e}")
+        else:
+            # Save as compressed data
+            try:
+                # Import compression utilities
+                from src.utils.compression import compress_save_data
+                
+                # Compress the save data
+                compressed_data = compress_save_data(game_data)
+                
+                # Calculate compression rate for user feedback
+                original_size = len(json.dumps(game_data))
+                compressed_size = len(compressed_data)
+                compression_rate = (1 - (compressed_size / original_size)) * 100
+                
+                # Write the compressed data to file
+                with open(save_path, "w") as f:
+                    f.write(compressed_data)
+                
+                self.ui.success_message(f"Game saved to {save_path} (Compressed {compression_rate:.1f}%)")
+            except IOError as e:
+                self.ui.error_message(f"Error saving game: {e}")
+            except Exception as e:
+                self.ui.error_message(f"Error during save compression: {e}")
+                # Fallback to uncompressed save if compression fails
+                try:
+                    with open(save_path, "w") as f:
+                        json.dump(game_data, f, indent=4)
+                    self.ui.warn_message(f"Saved uncompressed backup to {save_path}")
+                except IOError as e:
+                    self.ui.error_message(f"Error saving backup: {e}")
 
     @classmethod
     def load_game(cls, ui_instance, filename: str = ""):
@@ -793,11 +846,31 @@ class Game:
         if not os.path.exists(load_path):
             ui_instance.error_message(f"Save file {load_path} not found.")
             return None
-
+            
         try:
+            # Import decompression utility
+            from src.utils.compression import decompress_save_data
+            
+            # Read the file content
             with open(load_path, "r") as f:
-                game_data = json.load(f)
+                file_content = f.read()
+            
+            try:
+                # Try to decompress first (for compressed saves)
+                if file_content.startswith("RSM_COMPRESSED_V1:"):
+                    game_data = decompress_save_data(file_content)
+                    ui_instance.info_message("Loaded compressed save file.")
+                else:
+                    # Handle uncompressed saves (for backward compatibility)
+                    ui_instance.info_message("Loading uncompressed save file...")
+                    game_data = json.loads(file_content)
+            except json.JSONDecodeError:
+                # Last resort, try to load the original way
+                with open(load_path, "r") as f:
+                    game_data = json.load(f)
+                ui_instance.warn_message("Loaded using fallback method.")
 
+            # Create game instance from the loaded data
             game_instance = cls.from_dict(game_data, ui_instance)
             ui_instance.success_message(f"Game loaded from {load_path}")
             return game_instance
