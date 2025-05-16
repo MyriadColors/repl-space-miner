@@ -20,7 +20,15 @@ HasSpaceObjectType = Union[AsteroidField, Station]
 
 class SolarSystem:
 
-    def __init__(self, name: str, x: float, y: float, size: float = 100.0, field_quantity: int = 0, station_quantity: int = 0):
+    def __init__(
+        self,
+        name: str,
+        x: float,
+        y: float,
+        size: float = 100.0,
+        field_quantity: int = 0,
+        station_quantity: int = 0,
+    ):
         self.x = x  # X position in region (LY)
         self.y = y  # Y position in region (LY)
         self.size: float = size
@@ -33,6 +41,12 @@ class SolarSystem:
         self.generate_fields()
         self.generate_stations()
 
+    def print_all_objects(self):
+        for (i, field) in enumerate(self.asteroid_fields):
+            print(f"Field {i}: {field.to_string()}")
+        for (i, station) in enumerate(self.stations):
+            print(f"Station {i}: {station.to_string()}")
+    
     def get_size(self):
         return self.size
 
@@ -85,7 +99,7 @@ class SolarSystem:
 
     def get_all_stations(self) -> list[Station]:
         return self.stations
-        
+
     def get_all_space_objects(self) -> list[HasSpaceObjectType]:
         return self.asteroid_fields + self.stations
 
@@ -185,13 +199,20 @@ class SolarSystem:
 
     def scan_system_objects(self, player_position, amount) -> list[HasSpaceObjectType]:
         """Scan the system for objects within a certain distance."""
-        sorted_fields = self.sort_fields("des", "d", player_position)
-        sorted_stations = self.sort_stations("des", "d", player_position)
 
-        scanned_objects = sorted_fields + sorted_stations
-        sorted_scanned_objects: list[HasSpaceObjectType] = self.sort_objects_by_distance(
-            scanned_objects, player_position
-        )[0:amount]
+        # Get all fields and stations
+        all_fields = self.asteroid_fields
+        all_stations = self.stations
+
+        # Combine all objects
+        all_objects = all_fields + all_stations
+
+        # Sort by distance (closest first)
+        sorted_scanned_objects: list[HasSpaceObjectType] = (
+            self.sort_objects_by_distance(all_objects, player_position)[
+                0 : min(amount, len(all_objects))
+            ]
+        )
 
         return sorted_scanned_objects
 
