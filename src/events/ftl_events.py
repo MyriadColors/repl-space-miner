@@ -62,12 +62,13 @@ def quick_start(game_state: "Game"):
     # Use the balanced cruiser template as a default ship
     game_state.player_ship = Ship.from_template("balanced_cruiser", "Rusty Bucket")
     # Position it at the random station
-    if game_state.rnd_station:
+    if game_state.rnd_station and game_state.player_ship is not None and hasattr(game_state.player_ship, "space_object"):
         game_state.player_ship.space_object.position = game_state.rnd_station.position.copy()
     else:
-        print(Fore.RED + "Error: Random station not found for quick start. Ship position not set.")
+        print(Fore.RED + "Error: Random station or player ship not found for quick start. Ship position not set.")
         # Optionally, set a default position or handle this case as needed
-        # game_state.player_ship.space_object.position = pg.math.Vector2(0, 0) # Example default
+        # if game_state.player_ship and hasattr(game_state.player_ship, "space_object"):
+        #     game_state.player_ship.space_object.position = pg.math.Vector2(0, 0) # Example default
 
     print(Fore.GREEN + f"Ship: {game_state.player_ship.name}")
     print(Fore.CYAN + "Quick start complete. Good luck, Captain!")

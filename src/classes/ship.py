@@ -46,6 +46,7 @@ class Ship:
         self.space_object = IsSpaceObject(position, self.ship_id_counter)
         Ship.ship_id_counter += 1
         self.moves = CanMove(speed)  # in AU/s
+        self.last_position: Optional[Vector2] = None # Initialize last_position
 
         # Standard fuel (Hydrogen Cells) for sub-FTL travel
         self.fuel = max_fuel  # in m3
@@ -216,6 +217,7 @@ class Ship:
                 "Your methodical approach to navigation optimizes the journey, saving fuel."
             )
 
+        self.last_position = self.space_object.position.copy() # Store current position before moving
         self.consume_fuel(fuel_consumed)
         self.space_object.position = destination
         game_state.global_time += travel_time
@@ -349,7 +351,7 @@ class Ship:
                         f"Skipping {ore.name}, as it is not in the selected ores list."
                     )
                     asteroid_being_mined = None
-                    break
+                    continue
 
             # Check if the ore fits in the remaining cargo capacity
             if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
@@ -466,6 +468,7 @@ class Ship:
             },
             "hull_integrity": self.hull_integrity,
             "shield_capacity": self.shield_capacity,
+            "last_position": {"x": self.last_position.x, "y": self.last_position.y} if self.last_position else None,
         }
 
     @classmethod
@@ -508,6 +511,12 @@ class Ship:
             ship.hull_integrity = data["hull_integrity"]
         if "shield_capacity" in data:
             ship.shield_capacity = data["shield_capacity"]
+
+        # Load last_position if present
+        if "last_position" in data and data["last_position"] is not None:
+            ship.last_position = Vector2(data["last_position"]["x"], data["last_position"]["y"])
+        else:
+            ship.last_position = None
 
         if data["docked_at_id"] is not None:
             # Find the station instance from the game_state

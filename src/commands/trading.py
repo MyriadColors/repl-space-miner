@@ -1,5 +1,6 @@
 from src.classes.game import Game
 from src.helpers import rnd_float, rnd_int, take_input
+from src.events.skill_events import process_skill_xp_from_activity, notify_skill_progress
 from .registry import Argument
 from .base import register_command
 
@@ -142,10 +143,16 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
     ):
         game_state.ui.success_message(
             "Your natural charisma helped secure a better deal."
-        )
-
-    # Update game state using our credit management method
+        )    # Update game state using our credit management method
     player_character.remove_credits(final_price)
+
+    # Process skill experience from trading
+    skill_results = process_skill_xp_from_activity(
+        game_state, 
+        "trading", 
+        difficulty=min(2.0, max(1.0, final_price / 1000))  # Higher price = more complex trade
+    )
+    notify_skill_progress(game_state, skill_results)
 
     # Update station inventory by reducing ore quantity
     if ore_cargo:
@@ -294,10 +301,16 @@ def sell_command(game_state: Game) -> None:
             final_price -= lost_amount
             game_state.ui.warn_message(
                 f"You misplaced {lost_amount} credits during the transaction. How forgetful!"
-            )
-
-    # Update game state
+            )    # Update game state
     player_character.add_credits(final_price)
+    
+    # Process skill experience from selling
+    skill_results = process_skill_xp_from_activity(
+        game_state, 
+        "trading", 
+        difficulty=min(2.0, max(1.0, final_price / 1000))  # Higher price = more complex trade
+    )
+    notify_skill_progress(game_state, skill_results)
 
     # Update cargo quantities
     selected_cargo.quantity -= quantity

@@ -10,6 +10,7 @@ from colorama import Fore, Back, Style, init
 from src.classes.ship import Ship
 from src.classes.solar_system import SolarSystem
 from src.classes.region import Region
+from src.classes.skill_system import SkillSystem  # Importing SkillSystem
 
 # Initialize colorama
 init(autoreset=True)
@@ -110,17 +111,13 @@ class Character:
         self.adaptability = 5
         self.technical_aptitude = 5
         
-        # Skills - can be improved through gameplay (initialized to 0, set by background/events)
-        self.piloting = 0
-        self.engineering = 0
-        self.combat = 0
-        self.education = 0
-        self.charisma = 0
+        # Initialize skill system instead of individual skills
+        self.skill_system = SkillSystem()
         
         # Reputation values
         self.reputation_states = 0
         self.reputation_corporations = 0
-        self.reputation_pirates = 0
+        self.reputation_pirates = 0        
         self.reputation_belters = 0
         self.reputation_traders = 0
         self.reputation_scientists = 0
@@ -130,6 +127,9 @@ class Character:
         self.credits: float = self.round_credits(starting_creds)
         self.debt: float = self.round_credits(starting_debt)
         self.last_interest_time = 0  # Store the last time interest was applied
+        
+        # Initialize faction standings
+        self.initialize_faction_standings()
         
         # Personality traits
         self.positive_trait = ""
@@ -145,36 +145,84 @@ class Character:
         self.fuel_consumption_mod = 1.0
         self.debt_interest_mod = 1.0
         
-        # Stats effect modifiers
-        self.critical_hit_chance_mod = 1.0
-        self.hidden_discovery_chance_mod = 1.0
-        self.hull_integrity_mod = 1.0
-        self.system_recovery_mod = 1.0
-        self.research_speed_mod = 1.0
-        self.market_analysis_mod = 1.0
-        self.faction_relation_mod = 1.0
-        self.cross_cultural_mod = 1.0
-        self.repair_efficiency_mod = 1.0
-        self.salvage_success_mod = 1.0
-        # Banking system attributes
-        self.bank_transactions: list[dict] = []
-        self.savings = 0.0
-        self.savings_interest_rate = 0.02  # 2% weekly interest rate
-        self.last_savings_interest_time = (
-            0  # Store the last time savings interest was applied
-        )
-        
-        # Roleplaying Fields
-        contacts: List['Character'] = []  # List of contacts (other characters)
-        
-        # Initialize stat effects
-        self.apply_trait_effects()  # This will also call apply_stat_effects
-
-        # Initialize faction standings (skills are now direct attributes initialized above)
+    def initialize_faction_standings(self):
+        """Initialize the faction standings dictionary with default values."""
         self.faction_standings = {
-            "belters": 0, "corporations": 0, "pirates": 0,
-            "explorers": 0, "scientists": 0, "military": 0, "traders": 0
+            "states": 0,
+            "corporations": 0,
+            "pirates": 0,
+            "belters": 0,
+            "traders": 0,
+            "scientists": 0,
+            "military": 0,
+            "explorers": 0
         }
+        
+    # Backward compatibility properties for individual skills
+    @property
+    def piloting(self) -> int:
+        """Get piloting skill level from skill system"""
+        skill = self.skill_system.get_skill("piloting")
+        return skill.level if skill else 0
+        
+    @piloting.setter
+    def piloting(self, value: int) -> None:
+        """Set piloting skill level"""
+        skill = self.skill_system.get_skill("piloting")
+        if skill:
+            skill._level = value
+    
+    @property
+    def engineering(self) -> int:
+        """Get engineering skill level from skill system"""
+        skill = self.skill_system.get_skill("engineering")
+        return skill.level if skill else 0
+        
+    @engineering.setter
+    def engineering(self, value: int) -> None:
+        """Set engineering skill level"""
+        skill = self.skill_system.get_skill("engineering")
+        if skill:
+            skill._level = value
+    
+    @property
+    def combat(self) -> int:
+        """Get combat skill level from skill system"""
+        skill = self.skill_system.get_skill("combat")
+        return skill.level if skill else 0
+        
+    @combat.setter
+    def combat(self, value: int) -> None:
+        """Set combat skill level"""
+        skill = self.skill_system.get_skill("combat")
+        if skill:
+            skill._level = value
+    
+    @property
+    def education(self) -> int:
+        """Get education skill level from skill system"""
+        skill = self.skill_system.get_skill("education")
+        return skill.level if skill else 0
+        
+    @education.setter
+    def education(self, value: int) -> None:
+        """Set education skill level"""
+        skill = self.skill_system.get_skill("education")
+        if skill:
+            skill._level = value
+    
+    @property
+    def charisma(self) -> int:
+        """Get charisma skill level from skill system"""
+        skill = self.skill_system.get_skill("charisma")
+        return skill.level if skill else 0
+        
+    @charisma.setter
+    def charisma(self, value: int) -> None:
+        """Set charisma skill level"""
+        skill = self.skill_system.get_skill("charisma")
+        if skill:
+            skill._level = value
 
     # Stats implementation methods
     def apply_stat_effects(self):
@@ -392,17 +440,15 @@ class Character:
         # Weekly interest rate (5% per week)
         WEEKLY_INTEREST_RATE = 0.05
         # Define a week as 168 hours (7 days * 24 hours)
-        WEEK_LENGTH = 168
-
-        # Check if a week has passed since last interest calculation
+        WEEK_LENGTH = 168        # Check if a week has passed since last interest calculation
         if self.last_interest_time == 0:
             # First time tracking interest - just store current time
             self.last_interest_time = current_time
             return None
-
+            
         # Ensure weeks_passed is an integer by explicitly casting it
         weeks_passed = int((current_time - self.last_interest_time) // WEEK_LENGTH)
-
+        
         if weeks_passed >= 1:
             # Apply interest for each week passed
             total_interest = 0.0
@@ -418,16 +464,16 @@ class Character:
             # Update debt and last interest time
             self.debt = self.round_credits(current_debt)
             self.last_interest_time = current_time
-
+            
             return (self.round_credits(total_interest), self.debt)
 
         return None
-
+        
     def to_string(self) -> list[str]:
         trait_info = ""
         if self.positive_trait or self.negative_trait:
             trait_info = f"\nPositive Trait: {self.positive_trait}\nNegative Trait: {self.negative_trait}"
-
+            
         stats_info = (
             f"\nSTATS:"
             + f"\nPerception: {self.perception}"
@@ -437,13 +483,14 @@ class Character:
             + f"\nAdaptability: {self.adaptability}"
             + f"\nTechnical Aptitude: {self.technical_aptitude}"
         )
-
+        
         skill_info = (
             f"\nSKILLS:"
             + f"\nPiloting: {self.piloting}\nEngineering: {self.engineering}\nCombat: {self.combat}"
             + f"\nEducation: {self.education}\nCharisma: {self.charisma}"
+            + f"\nUnspent Skill Points: {self.skill_system.unspent_skill_points}"
         )
-
+        
         return [
             f"Name: {self.name}"
             + f"\nAge: {self.age}"
@@ -477,12 +524,15 @@ class Character:
             "presence": self.presence,
             "adaptability": self.adaptability,
             "technical_aptitude": self.technical_aptitude,
-            # Skills
+            # Skills (for backward compatibility)
             "piloting": self.piloting,
             "engineering": self.engineering,
             "combat": self.combat,
             "education": self.education,
-            "charisma": self.charisma,            # Reputation
+            "charisma": self.charisma,
+            # Skill system (new format)
+            "skill_system": self.skill_system.to_dict() if hasattr(self, "skill_system") else None,
+            # Reputation
             "reputation_states": self.reputation_states,
             "reputation_corporations": self.reputation_corporations,
             "reputation_pirates": self.reputation_pirates,
@@ -606,6 +656,10 @@ class Contact(Character):
 
 
 class Game:
+    """
+    Represents the main game state, including the player character, ship,
+    current location, and other game-related information.
+    """
 
     def __init__(
         self,
@@ -613,19 +667,21 @@ class Game:
         mute_flag: bool = False,
         skip_customization: bool = False,
     ) -> None:
-        self.global_time: int = 0
-        self.region: Region = Region.generate_random_region("Local Sector", 25)
-        self.solar_systems: List[SolarSystem] = self.region.solar_systems
-        self.current_solar_system_index: int = 0
-        self.rnd_station = random.choice(self.get_current_solar_system().stations) if self.get_current_solar_system().stations else None
-        self.player_character: Character | None = None
-        self.player_ship: Ship | None = None
+        self.global_time = 0
+        self.region = Region.generate_random_region("Local Sector", 25)
+        self.solar_systems = self.region.solar_systems
+        self.current_solar_system_index = 0
+        # Get stations from the current solar system
+        current_system = self.solar_systems[self.current_solar_system_index]
+        self.rnd_station = random.choice(current_system.stations) if current_system.stations else None
+        self.player_character: Optional[Character] = None
+        self.player_ship: Optional[Ship] = None  # MODIFIED: Allow Ship type
         self.debug_flag = debug_flag
         self.mute_flag = mute_flag
         self.skipc = skip_customization
         self.sound_init = True if not mute_flag else False
         self.ui = UI()
-        self.sound_enabled: bool = False
+        self.sound_enabled = False
 
     def set_player_character(
         self,
@@ -647,7 +703,7 @@ class Game:
             "Please tell me at github if this happens to you."
         )
         return self.player_ship
-
+        
     def get_credits(self) -> float | None:
         if self.player_character is not None:
             return round(self.player_character.credits, 2)
@@ -655,17 +711,17 @@ class Game:
 
     def get_ship(self):
         return self.player_ship
-
+    
     def get_player_character(self) -> Character:
         assert self.player_character is not None, (
             "ERROR: There is no player_character, this should not ever happen so something went very wrong. "
-            "Please tell me at github if this happens to you."
+            "Please tell me at the github page if this happens to you."
         )
         return self.player_character
-
+    
     def get_current_solar_system(self) -> SolarSystem:
         """Returns the current solar system the player is in."""
-        return self.solar_systems[self.current_solar_system_index]    
+        return self.solar_systems[self.current_solar_system_index]
     
     def add_solar_system(self, solar_system: SolarSystem) -> None:
         """Adds a new solar system to the game."""
@@ -697,13 +753,12 @@ class Game:
             "current_solar_system_index": self.current_solar_system_index,
             "player_character": (
                 self.player_character.to_dict() if self.player_character else None
-            ),
-            "player_ship": self.player_ship.to_dict() if self.player_ship else None,
+            ),            "player_ship": self.player_ship.to_dict() if self.player_ship else None,
             "debug_flag": self.debug_flag,
             "mute_flag": self.mute_flag,
             "skip_customization": self.skipc,  # Skip customization flag
         }
-
+        
     @classmethod
     def from_dict(cls, data, ui_instance):
         game = cls(
@@ -715,14 +770,15 @@ class Game:
         # Ensure solar_systems are loaded correctly using the new constructor if applicable
         # The SolarSystem.from_dict should handle the new fields with .get for backward compatibility
         game.solar_systems = [SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]]
-        game.current_solar_system_index = data.get("current_solar_system_index", 0) 
+        game.current_solar_system_index = data.get("current_solar_system_index", 0)
         if not game.solar_systems:  # Fallback if a save had no solar systems (unlikely but safe)
             game.solar_systems = [SolarSystem(name="Default Gen", x=0.0, y=0.0, size=250.0, field_quantity=15, station_quantity=7)]
             game.current_solar_system_index = 0
-
+            
         if data["player_character"]:
             game.player_character = Character.from_dict(data["player_character"])
-        if data["player_ship"]:        game.player_ship = Ship.from_dict(
+        if data["player_ship"]:
+            game.player_ship = Ship.from_dict(
                 data["player_ship"], game
             )  # Pass game instance
         game.ui = ui_instance  # Assign the passed UI instance

@@ -48,6 +48,7 @@ class AsteroidField:
         self.asteroids: list[Asteroid] = []
         self.space_object = IsSpaceObject(position, AsteroidField.belt_counter)
         self.visited: bool = False
+        self.rarity_score: int = self._calculate_field_rarity()  # Added rarity score
         self.spawn_asteroids()
         AsteroidField.belt_counter += 1
 
@@ -91,6 +92,24 @@ class AsteroidField:
 
     def get_total_volume(self):
         return sum(asteroid.volume for asteroid in self.asteroids)
+
+    def _calculate_field_rarity(self) -> int:
+        if not self.ores_available:
+            return 1  # Default rarity if no ores specified
+
+        max_rarity_score = 1
+        for ore in self.ores_available:
+            score = 1  # Common
+            if ore.base_value >= 5000:  # Very Rare (e.g., Jonnite)
+                score = 4
+            elif ore.base_value >= 1000:  # Rare (e.g., Oxynite, Heron)
+                score = 3
+            elif ore.base_value >= 100:  # Uncommon (e.g., Cyclon, Magneton)
+                score = 2
+
+            if score > max_rarity_score:
+                max_rarity_score = score
+        return max_rarity_score
 
     def to_dict(self):
         return {
@@ -139,6 +158,8 @@ class AsteroidField:
         # not just the template ores_available_ids, to reflect the true state.
         actual_ores_in_asteroids = {ast.ore for ast in field.asteroids if ast.ore}
         field.ores_available = list(actual_ores_in_asteroids)
+
+        field.rarity_score = field._calculate_field_rarity()  # Recalculate rarity score after loading
 
         field.visited = data.get("visited", False)
         return field

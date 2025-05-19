@@ -156,8 +156,11 @@ def register_commands(game_state: "Game"):
             Argument("amount", int, False, 0, None),
             Argument("ore_name", str, False, 1, None),
         ],
-    )
-    # Removed duplicate registration for display_character_sheet
+    )    # Removed duplicate registration for display_character_sheet
+    
+    # Register skill commands
+    from src.commands.skills import register_skill_commands
+    register_skill_commands()
 
 
 def start_repl():

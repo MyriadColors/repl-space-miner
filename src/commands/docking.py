@@ -2,6 +2,7 @@ from src.classes.game import Game
 from src.classes.solar_system import SolarSystem
 from src.classes.station import Station
 from src.helpers import get_closest_station, euclidean_distance, vector_to_string
+from src.events.skill_events import process_skill_xp_from_activity, notify_skill_progress
 from .base import register_command
 
 
@@ -59,9 +60,32 @@ def on_dock_complete(game_state: Game, station_to_dock: Station) -> None:
     if player_ship is None:
         game_state.ui.error_message("Error: Player ship not found.")
         return
-
+        
     player_ship.dock_into_station(station_to_dock)
     game_state.ui.success_message(f"Docked with {station_to_dock.name}.")
+
+    # Process skill experience from docking
+    if game_state.player_character:
+        # Calculate difficulty based on distance to station before docking
+        # Use a default value if we can't determine the actual distance
+        distance_to_station = 1.0  # Default value
+        if (
+            hasattr(player_ship, 'last_position') 
+            and player_ship.last_position is not None
+            and hasattr(station_to_dock, 'space_object')
+        ):
+            distance_to_station = player_ship.last_position.distance_to(
+                station_to_dock.space_object.position
+            )
+        
+        difficulty = min(2.0, max(1.0, distance_to_station / 10))
+        
+        skill_results = process_skill_xp_from_activity(
+            game_state, 
+            "dock", 
+            difficulty=difficulty
+        )
+        notify_skill_progress(game_state, skill_results)
 
     ores_available = station_to_dock.ores_available_to_string()
     if ores_available is not None:

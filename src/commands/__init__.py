@@ -36,6 +36,7 @@ from .character import display_character_sheet
 from .appearance import color_command, reset_command
 from .sound import toggle_sound_command
 from .banking import banking_menu_command
+from .skills import register_skill_commands, skills_command
 
 # Export the global command registry
 commands = command_registry
