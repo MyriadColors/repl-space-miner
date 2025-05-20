@@ -278,8 +278,7 @@ def display_help(game_state: Game, command_name: str = "") -> None:
             "mine/m <time> [until_full] [ore]",
             "Mine asteroids for specified time",
             True,
-            "field",
-        )
+            "field",        )
         write_command("scan/s", "Scan current asteroid field", True, "field")
         game_state.ui.info_message("")
 
@@ -290,7 +289,7 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         write_command("cargo/inv/inventory", "Display ship cargo and inventory", True)
         write_command("refine [amount]", "Refine ore to higher purity", True, "docked")
         write_command(
-            "refine_to_minerals [amount]", "Convert ore to minerals", True, "docked"
+            "purify [amount]", "Convert ore to minerals", True, "docked"
         )
         game_state.ui.info_message("")
 

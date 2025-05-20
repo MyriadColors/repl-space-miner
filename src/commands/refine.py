@@ -427,7 +427,7 @@ register_command(
 
 # Register mineral refining command
 register_command(
-    ["refine-minerals", "ref-min"],
+    ["purify", "pur"],
     refine_to_minerals_command,
     [Argument("amount", str, True)],
 )
