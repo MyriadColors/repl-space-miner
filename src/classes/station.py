@@ -63,12 +63,25 @@ class Station:
             self.ore_cargo.append(ore_cargo)
 
     def generate_ore_cargo(self):
-        # Fill the cargo until the capacity is filled
-        while self.ore_cargo_volume < self.ore_capacity / rnd_int(2, 4):
-            how_many_ore_types_available = len(self.ores_available)
-            for ore_type in range(how_many_ore_types_available):
-                self.ore_cargo[ore_type].quantity += 1
-                self.ore_cargo_volume += round(self.ores_available[ore_type].volume, 2)
+        # Assign a random quantity to each ore type, respecting ore capacity
+        import random
+
+        self.ore_cargo_volume = 0.0
+        max_total_volume = self.ore_capacity / helpers.rnd_int(2, 4)
+        for ore_cargo in self.ore_cargo:
+            # Determine max possible quantity for this ore type
+            max_quantity = int(
+                (max_total_volume - self.ore_cargo_volume) // ore_cargo.ore.volume
+            )
+            if max_quantity <= 0:
+                ore_cargo.quantity = 0
+                continue
+            # Assign a random quantity (at least 1, up to max_quantity, but not exceeding a reasonable upper bound)
+            quantity = random.randint(1, min(max_quantity, 1000))
+            ore_cargo.quantity = quantity
+            self.ore_cargo_volume += ore_cargo.ore.volume * quantity
+            if self.ore_cargo_volume >= max_total_volume:
+                break
 
     def get_ore_by_name(self, name) -> OreCargo | None:
         for ore_cargo in self.ore_cargo:
