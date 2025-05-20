@@ -74,7 +74,7 @@ def scan_command(game_state: Game, num_objects: str) -> None:
                 return
 
 
-def scan_field_command(game_state: Game) -> None:
+def scan_asteroids_command(game_state: Game) -> None:
     """Scan the current asteroid field for available ores."""
     player_ship = game_state.get_player_ship()
     if player_ship is None:
@@ -97,7 +97,7 @@ def scan_field_command(game_state: Game) -> None:
         base_difficulty = min(2.0, max(1.0, (ore_variety + asteroid_quantity) / 2))
         
         # Apply rarity modifier - rarer fields are more complex to analyze
-        final_difficulty = base_difficulty * field.rarity_score * 0.7 
+        final_difficulty = base_difficulty * field.rarity_score * 0.7
 
         # Check if the player has enough energy to scan
         energy_cost = 10  # Example energy cost
@@ -124,7 +124,7 @@ register_command(
 )
 
 register_command(
-    ["scan_field", "scf"],
-    scan_field_command,
+    ["scan_asteroids", "scna"],
+    scan_asteroids_command,
     [],
 )

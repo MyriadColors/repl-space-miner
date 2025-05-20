@@ -6,7 +6,7 @@ from src.classes.ship_integration import (
 )
 from src.commands import (
     refuel_command,
-    scan_field_command,
+    scan_asteroids_command,
     sell_command,
     travel_command,
     scan_command,
@@ -98,11 +98,10 @@ def register_commands(game_state: "Game"):
         ],
     )
     register_command(
-        ["scan", "sc"],
-        scan_command,
+        ["scan", "sc"],        scan_command,
         [Argument("num_objects", str, False, 0, is_valid_int)],
     )
-    register_command(["scan_field", "scf"], scan_field_command, [])
+    register_command(["scan_asteroids", "scna"], scan_asteroids_command, [])
 
     # Docking commands
     register_command(["dock", "do"], command_dock, [])
@@ -214,16 +213,13 @@ def run_game_loop(game_state):
     while True:
         command_input = input("> ").lower()
         if command_input in ["exit", "quit"]:
-            should_exit = command_exit(game_state)
-            if should_exit:
-                # Perform necessary cleanup operations here
-                print("Performing cleanup operations before exiting the game.")
-                pg.quit()
-                break
-            # If exit was canceled, continue with the loop
-            continue
+            command_exit(game_state)
+            break
         try:
             process_command(game_state, command_input)
         except ValueError as e:
             print(f"Invalid command: {e}")
         pg.time.wait(100)  # Add a small delay to reduce CPU usage
+    # Perform necessary cleanup operations here
+    print("Performing cleanup operations before exiting the game.")
+    pg.quit()

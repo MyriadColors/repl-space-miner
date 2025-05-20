@@ -259,26 +259,16 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         )        
         write_command("dock/do", "Dock with nearby station", True, "undocked")
         write_command("undock/ud", "Undock from current station", True, "docked")
-        game_state.ui.info_message("")  
-
-        # FTL TRAVEL CATEGORY
+        game_state.ui.info_message("")        # FTL TRAVEL CATEGORY
         game_state.ui.info_message(f"{Fore.CYAN}=== FTL TRAVEL ==={Style.RESET_ALL}")
         write_command("listsystems/lsys", "List all available solar systems", True)
         write_command(
-            "system_jump/sjump <index>",
-            "Jump to a solar system by index",
+            "ftl/ftl_jump <destination>",
+            "Jump to a solar system by name or index",
             True,
             "undocked",
         )
-        write_command(
-            "ftl_jump/ftl <destination> <distance>",
-            "Perform FTL jump",
-            True,
-            "undocked",
-        )
-        game_state.ui.info_message("")
-
-        # MINING CATEGORY
+        game_state.ui.info_message("")        # MINING CATEGORY
         game_state.ui.info_message(
             f"{Fore.CYAN}=== MINING & SCANNING ==={Style.RESET_ALL}"
         )
@@ -286,8 +276,10 @@ def display_help(game_state: Game, command_name: str = "") -> None:
             "mine/m <time> [until_full] [ore]",
             "Mine asteroids for specified time",
             True,
-            "field",        )
-        write_command("scan/s", "Scan current asteroid field", True, "field")
+            "field",
+        )
+        write_command("scan/sc", "Scan for objects in the system", True)
+        write_command("scan_asteroids/scna", "Scan current asteroid field for ores", True, "field")
         game_state.ui.info_message("")
 
         # CARGO & RESOURCES CATEGORY

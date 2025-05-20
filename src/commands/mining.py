@@ -94,6 +94,9 @@ def mine_command(
 def scan_mining_field_command(game_state: Game) -> None:
     """Handle scanning asteroid field command."""
     player_ship = game_state.get_player_ship()
+    if not player_ship:
+        game_state.ui.error_message("Error: Player ship not found.")
+        return
     player_ship.scan_field(game_state)
 
 
