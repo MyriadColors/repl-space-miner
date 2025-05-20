@@ -172,17 +172,23 @@ class DualFuelSystem:
                 False,
                 f"Antimatter containment system unstable. Current risk: {risk:.1f}%. Repairs needed before FTL jump.",
             )  # All checks passed, perform FTL jump
-        self.antimatter -= required_antimatter  # Calculate travel time based on the desired speed of 1e-10 LY per day for fastest ships
-        # 1e-10 LY per day = 1.16e-15 LY per second
-        # For 1 LY, that's approximately 86400 seconds per 1e-10 LY
-        # This gives travel time = (1 LY / 1e-10 LY per day) * 86400 seconds per day
+        self.antimatter -= required_antimatter  # Calculate travel time based on the desired speed of 1e-10 LY per day for fastest ships        # Use a more reasonable scale for FTL travel - 1 LY per day as base speed
+        # This means a distance of 1 LY would take approximately 1 day to travel
+        base_ftl_speed = 1.0  # LY per day
+        
         # Adjust based on ship's antimatter consumption (as a proxy for FTL speed capability)
         # Standard consumption rate is 0.05g/LY, we'll use that as reference
         ftl_speed_modifier = (
             0.05 / self.antimatter_consumption
         )  # Faster ships have lower consumption
+        
         # Calculate days to travel the distance
-        days_to_travel = distance_ly / (1e-10 * ftl_speed_modifier)
+        effective_speed = base_ftl_speed * ftl_speed_modifier
+        days_to_travel = distance_ly / effective_speed
+        
+        # Add some randomization (±10%)
+        days_to_travel *= random.uniform(0.9, 1.1)
+        
         # Convert to seconds
         travel_time_seconds = days_to_travel * 86400
 
@@ -205,9 +211,17 @@ class DualFuelSystem:
             "travel_time": travel_time_seconds,
             "event": result,
         }
-
+        
         if hasattr(game_state, "advance_time"):
-            game_state.advance_time(timedelta(seconds=travel_time_seconds))
+            # Cap the maximum travel time to prevent integer overflow
+            # Use a maximum of 30 days (in seconds) to avoid overflow
+            max_travel_seconds = 30 * 86400  # 30 days in seconds
+            capped_travel_seconds = min(travel_time_seconds, max_travel_seconds)
+            game_state.advance_time(timedelta(seconds=capped_travel_seconds))
+            
+            # Log if we had to cap the travel time
+            if capped_travel_seconds < travel_time_seconds:
+                game_state.ui.info_message(f"FTL travel time was capped to {capped_travel_seconds/86400:.1f} days for system stability.")
         else:
             raise AttributeError("Game object is missing 'advance_time' method.")
         if game_state.player_ship is not None:

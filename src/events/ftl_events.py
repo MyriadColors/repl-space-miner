@@ -77,9 +77,6 @@ def quick_start(game_state: "Game"):
             Fore.RED
             + "Error: Random station or player ship not found for quick start. Ship position not set."
         )
-        # Optionally, set a default position or handle this case as needed
-        # if game_state.player_ship and hasattr(game_state.player_ship, "space_object"):
-        #     game_state.player_ship.space_object.position = pg.math.Vector2(0, 0) # Example default
 
     print(Fore.GREEN + f"Ship: {game_state.player_ship.name}")
     print(Fore.CYAN + "Quick start complete. Good luck, Captain!")
