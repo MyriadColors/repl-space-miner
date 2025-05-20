@@ -11,6 +11,7 @@ from .debug import add_creds_debug_command, add_ore_debug_command, debug_mode_co
 from .refine import refine_command, refine_to_minerals_command
 from .cargo import cargo_command
 from .market import market_command
+from .price_compare import compare_prices_command, find_best_trade_routes
 from .ftl_commands import (
     refuel_antimatter_command,
     repair_containment_command,
@@ -75,10 +76,11 @@ __all__ = [
     "market_command",
     "cargo_command",
     "refuel_antimatter_command",
-    "repair_containment_command",
-    "emergency_ejection_command",
+    "repair_containment_command",    "emergency_ejection_command",
     "ftl_jump_command",
     "list_systems_command",
     "refine_command",
     "refine_to_minerals_command",
+    "compare_prices_command",
+    "find_best_trade_routes",
 ]

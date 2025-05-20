@@ -44,42 +44,59 @@ class Station:
         return False
 
     def generate_ores_availability(self):
-        selected = []
-        for _ in range(5):
-            rnd_ore = helpers.select_random_ore()
-            if rnd_ore not in selected:
-                selected.append(rnd_ore)
+        # Make all ores available at every station
+        from src.classes.ore import ORES
 
-        self.ores_available = selected
+        self.ores_available = list(ORES.values())
 
     def generate_ore_cargo_instances(self) -> None:
-        # create the OreCargo instances
+        # Create OreCargo instances for all available ores, with randomized prices
+        from src.helpers import rnd_float
+
+        self.ore_cargo = []
         for ore in self.ores_available:
-            ore_quantity: int = 0
+            ore_quantity: int = 0  # Will be set in generate_ore_cargo
             ore_buy_price: float = round(ore.base_value * rnd_float(0.75, 1.25), 2)
             ore_sell_price: float = round(ore_buy_price * rnd_float(0.5, 1.0), 2)
             ore_cargo = OreCargo(ore, ore_quantity, ore_buy_price, ore_sell_price)
-
             self.ore_cargo.append(ore_cargo)
 
     def generate_ore_cargo(self):
         # Assign a random quantity to each ore type, respecting ore capacity
+        # All stations will have all products but with varied quantities
         import random
+        from src.helpers import rnd_int
 
         self.ore_cargo_volume = 0.0
-        max_total_volume = self.ore_capacity / helpers.rnd_int(2, 4)
+        max_total_volume = self.ore_capacity / rnd_int(1, 3)  # More generous allocation
+        
+        # First pass - ensure every ore has at least some quantity
+        min_qty_per_ore = 5  # Minimum quantity of each ore type
+        
         for ore_cargo in self.ore_cargo:
-            # Determine max possible quantity for this ore type
-            max_quantity = int(
-                (max_total_volume - self.ore_cargo_volume) // ore_cargo.ore.volume
-            )
+            # Ensure there's at least some of each ore type (for trade diversity)
+            ore_cargo.quantity = min_qty_per_ore
+            self.ore_cargo_volume += ore_cargo.ore.volume * min_qty_per_ore
+        
+        # Second pass - distribute remaining capacity randomly
+        remaining_volume = max_total_volume - self.ore_cargo_volume
+        
+        for ore_cargo in self.ore_cargo:
+            # Calculate max additional quantity for this ore based on remaining volume
+            if remaining_volume <= 0:
+                break
+                
+            max_quantity = int(remaining_volume // ore_cargo.ore.volume)
             if max_quantity <= 0:
-                ore_cargo.quantity = 0
                 continue
-            # Assign a random quantity (at least 1, up to max_quantity, but not exceeding a reasonable upper bound)
-            quantity = random.randint(1, min(max_quantity, 1000))
-            ore_cargo.quantity = quantity
-            self.ore_cargo_volume += ore_cargo.ore.volume * quantity
+                
+            # Generate a random quantity, but avoid using all remaining volume on one ore
+            max_for_this_ore = min(max_quantity, 1000, int(max_quantity * random.random() * 0.8))
+            additional_quantity = random.randint(0, max_for_this_ore)
+              # Update quantity and remaining volume
+            ore_cargo.quantity += additional_quantity
+            remaining_volume -= ore_cargo.ore.volume * additional_quantity
+            self.ore_cargo_volume += ore_cargo.ore.volume * additional_quantity
             if self.ore_cargo_volume >= max_total_volume:
                 break
 

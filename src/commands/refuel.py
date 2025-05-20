@@ -4,7 +4,18 @@ from .base import register_command
 
 
 def refuel_command(game_state: Game, amount: float) -> None:
-    """Handle refueling the ship at a station."""
+    """Handle refueling the ship at a station.
+
+    Args:
+        game_state (Game): The current game state.
+        amount (float): The amount of fuel to refuel.
+    """
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        game_state.ui.error_message("Invalid amount specified for refueling.")
+        return
+
     player_ship = game_state.get_player_ship()
     if not player_ship.is_docked:
         game_state.ui.error_message("Must be docked at a station to refuel.")

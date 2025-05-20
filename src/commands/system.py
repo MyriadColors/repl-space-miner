@@ -8,18 +8,54 @@ from .base import register_command
 
 
 def display_status(game_state: Game) -> None:
-    """Display current ship and game status."""
+    """Display current ship and game status in a structured, parse-friendly format."""
     player_ship = game_state.get_player_ship()
     if player_ship is None:
         game_state.ui.error_message("Error: Player ship not found.")
         return
 
-    status_lines = player_ship.status_to_string()
+    # --- SHIP SECTION ---
+    game_state.ui.info_message("\n===== SHIP STATUS =====")
+    game_state.ui.info_message(f"Name: {player_ship.name}")
+    game_state.ui.info_message(f"Position: ({player_ship.space_object.position.x:.3f}, {player_ship.space_object.position.y:.3f})")
+    game_state.ui.info_message(f"Engine: {player_ship.engine.name}")
+    game_state.ui.info_message(f"Speed: {player_ship.moves.speed:.2f} AU/s")
+    if player_ship.is_docked and player_ship.docked_at:
+        game_state.ui.info_message(f"Docked at: {player_ship.docked_at.name}")
+    else:
+        game_state.ui.info_message("Docked at: None")
+    game_state.ui.info_message("------------------------")
 
-    game_state.ui.info_message("Ship Status:")
-    for line in status_lines:
-        game_state.ui.info_message(line)
+    # --- FUEL & POWER SECTION ---
+    game_state.ui.info_message("FUEL & POWER:")
+    game_state.ui.info_message(f"Hydrogen Fuel: {player_ship.fuel:.2f}/{player_ship.max_fuel} m3")
+    game_state.ui.info_message(f"Fuel Consumption: {player_ship.fuel_consumption:.4f} m3/AU")
+    game_state.ui.info_message(f"Antimatter: {player_ship.antimatter:.2f}/{player_ship.max_antimatter} g")
+    game_state.ui.info_message(f"Antimatter Consumption: {player_ship.antimatter_consumption:.3f} g/FTL jump")
+    game_state.ui.info_message(f"Power: {player_ship.power:.2f}/{player_ship.max_power}")
+    game_state.ui.info_message(f"Containment Integrity: {player_ship.containment_integrity:.1f}%")
+    game_state.ui.info_message("------------------------")
 
+    # --- CARGO SECTION ---
+    game_state.ui.info_message("CARGO:")
+    game_state.ui.info_message(f"Cargo Total: {player_ship.cargohold_occupied + player_ship.mineralhold_occupied:.2f}/{player_ship.cargohold_capacity:.1f} m3")
+    game_state.ui.info_message(f"Ores: {sum(c.quantity for c in getattr(player_ship, 'cargohold', []))} units ({player_ship.cargohold_occupied:.2f} m3)")
+    game_state.ui.info_message(f"Minerals: {sum(c.quantity for c in getattr(player_ship, 'mineralhold', []))} units ({player_ship.mineralhold_occupied:.2f} m3)")
+    game_state.ui.info_message("------------------------")
+
+    # --- DEFENSE SECTION ---
+    game_state.ui.info_message("DEFENSE:")
+    game_state.ui.info_message(f"Hull Integrity: {player_ship.hull_integrity:.1f}%")
+    game_state.ui.info_message(f"Shield Capacity: {player_ship.shield_capacity:.1f}%")
+    game_state.ui.info_message("------------------------")
+
+    # --- SENSORS SECTION ---
+    game_state.ui.info_message("SENSORS:")
+    game_state.ui.info_message(f"Sensor Range: {player_ship.sensor_range:.2f} AU")
+    game_state.ui.info_message(f"Sensor Signature: {player_ship.sensor_signature:.2f}")
+    game_state.ui.info_message("========================\n")
+
+    # --- FINANCIAL STATUS ---
     if game_state.player_character:
         # Check for debt interest first
         interest_result = game_state.player_character.calculate_debt_interest(
@@ -31,38 +67,32 @@ def display_status(game_state: Game) -> None:
                 f"DEBT ALERT: {interest_amount:.2f} credits of interest has been applied to your debt!"
             )
 
-        # Display financial status with emphasis on debt
-        game_state.ui.info_message(f"\nFinancial Status:")
-        game_state.ui.info_message(
-            f"Credits: {game_state.player_character.credits:.2f}"
-        )
-
-        # Highlight debt with color based on amount
+        game_state.ui.info_message("FINANCIAL STATUS:")
+        game_state.ui.info_message(f"Credits: {game_state.player_character.credits:.2f}")
         debt = game_state.player_character.debt
         if debt > 10000:
-            # Red for high debt
             game_state.ui.error_message(f"DEBT: {debt:.2f} credits")
             game_state.ui.warn_message(
                 f"Warning: High debt levels! Banks may send debt collectors."
             )
         elif debt > 5000:
-            # Yellow for medium debt
             game_state.ui.warn_message(f"DEBT: {debt:.2f} credits")
         else:
-            # Normal for low debt
             game_state.ui.info_message(f"Debt: {debt:.2f} credits")
 
         if game_state.player_character.debt_interest_mod > 1.0:
             game_state.ui.warn_message(
                 f"Your 'Indebted' trait increases interest by {(game_state.player_character.debt_interest_mod - 1.0) * 100:.0f}%"
-            )  # Show daily interest rate
+            )
         daily_rate = 0.007 * game_state.player_character.debt_interest_mod
         game_state.ui.info_message(f"Daily Interest Rate: {daily_rate:.1%}")
         next_interest = game_state.player_character.last_interest_time + 24
         time_to_next = next_interest - game_state.global_time
         game_state.ui.info_message(f"Next interest in: {format_seconds(time_to_next)}")
+        game_state.ui.info_message("------------------------")
 
-    game_state.ui.info_message(f"\nGame Time: {format_seconds(game_state.global_time)}")
+    # --- GAME TIME ---
+    game_state.ui.info_message(f"Game Time: {format_seconds(game_state.global_time)}")
 
 
 def display_time_and_status(game_state: Game) -> None:
@@ -291,7 +321,7 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         write_command("refine [amount]", "Refine ore to higher purity", True, "docked")
         write_command("purify [amount]", "Convert ore to minerals", True, "docked")
         game_state.ui.info_message("")
-
+        
         # TRADING CATEGORY
         game_state.ui.info_message(
             f"{Fore.CYAN}=== TRADING & COMMERCE ==={Style.RESET_ALL}"
@@ -303,6 +333,16 @@ def display_help(game_state: Game, command_name: str = "") -> None:
             "View current station market prices and available goods",
             True,
             "docked",
+        )
+        write_command(
+            "compare/comp [option] [show_all]",
+            "Compare prices across all stations in the system",
+            True,
+        )
+        write_command(
+            "routes/tr [max_routes] [include_unreachable]",
+            "Find most profitable trade routes in the system",
+            True,
         )
         write_command(
             "upgrade/up [id]", "View or purchase ship upgrades", True, "docked"
