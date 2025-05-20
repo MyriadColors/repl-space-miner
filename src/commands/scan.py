@@ -63,9 +63,10 @@ def scan_command(game_state: Game, num_objects: str) -> None:
                 if input_response_index < 0 or input_response_index >= len(objects):
                     game_state.ui.error_message(f"Invalid selection. Please choose a number between 0 and {len(objects) - 1}.")
                     return
-                    
+                
                 selected_object = objects[input_response_index]
                 selected_object_position = selected_object.space_object.position
+                # Ensure debt interest is calculated by properly handling the travel command
                 direct_travel_command(
                     game_state, str(selected_object_position.x), str(selected_object_position.y)
                 )
@@ -91,7 +92,8 @@ def scan_asteroids_command(game_state: Game) -> None:
         game_state.ui.info_message(f"- {ore.name}")
         
     # Process skill experience from field scanning
-    if game_state.player_character:        # Calculate difficulty based on variety of ores and field properties
+    if game_state.player_character:
+        # Calculate difficulty based on variety of ores and field properties
         ore_variety = len(field.ores_available) / 5  # Higher variety = higher difficulty
         asteroid_quantity = field.asteroid_quantity / 50  # More asteroids = higher difficulty
         base_difficulty = min(2.0, max(1.0, (ore_variety + asteroid_quantity) / 2))
@@ -101,12 +103,12 @@ def scan_asteroids_command(game_state: Game) -> None:
 
         # Check if the player has enough energy to scan
         energy_cost = 10  # Example energy cost
-        if player_ship.power < energy_cost: # MODIFIED: Check ship's power
-            game_state.ui.warn_message("Not enough ship power to perform scan.") # MODIFIED: Message reflects ship power
+        if player_ship.power < energy_cost:
+            game_state.ui.warn_message("Not enough ship power to perform scan.")
             return
 
         # Deduct energy cost
-        player_ship.power -= energy_cost # MODIFIED: Deduct from ship's power
+        player_ship.power -= energy_cost
 
         skill_results = process_skill_xp_from_activity(
             game_state, 

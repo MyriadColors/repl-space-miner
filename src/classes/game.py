@@ -113,21 +113,27 @@ class Character:
         
         # Initialize skill system instead of individual skills
         self.skill_system = SkillSystem()
-        
-        # Reputation values
+          # Reputation values
         self.reputation_states = 0
         self.reputation_corporations = 0
-        self.reputation_pirates = 0        
+        self.reputation_pirates = 0
         self.reputation_belters = 0
         self.reputation_traders = 0
         self.reputation_scientists = 0
         self.reputation_military = 0
         self.reputation_explorers = 0
-        
         self.credits: float = self.round_credits(starting_creds)
         self.debt: float = self.round_credits(starting_debt)
-        self.last_interest_time = 0  # Store the last time interest was applied
+        # Initialize interest time to 0, allowing calculate_debt_interest to set it properly
+        # This way the first interest calculation will happen soon after game start
+        self.last_interest_time = 0  # Will be initialized properly on first debt check
         
+        # Savings account
+        self.savings: float = 0.0
+        self.savings_interest_rate: float = 0.02  # 2% weekly interest rate
+        # Banking transaction history
+        self.bank_transactions: list = []  # List of BankingTransaction objects
+
         # Initialize faction standings
         self.initialize_faction_standings()
         
@@ -422,8 +428,7 @@ class Character:
             # Forgetful has a random chance effect, handled in mining
             pass
         elif self.negative_trait == "Impatient":
-            self.mining_yield_mod *= 0.9  # 10% less mining efficiency
-        elif self.negative_trait == "Superstitious":
+            self.mining_yield_mod *= 0.9  # 10% less mining efficiency        elif self.negative_trait == "Superstitious":
             # Superstitious has special event handling, no modifier needed
             pass
         elif self.negative_trait == "Indebted":
@@ -431,42 +436,52 @@ class Character:
             
         # Apply stats-based effects after trait effects
         self.apply_stat_effects()
-
+    
     def calculate_debt_interest(self, current_time: int):
         """
-        Calculate and apply weekly interest on the debt
+        Calculate and apply interest on the debt
         Returns a tuple of (interest_amount, new_debt) if interest was applied, None otherwise
         """
-        # Weekly interest rate (5% per week)
-        WEEKLY_INTEREST_RATE = 0.05
-        # Define a week as 168 hours (7 days * 24 hours)
-        WEEK_LENGTH = 168        # Check if a week has passed since last interest calculation
+        # Daily interest rate (0.7% per day - approximately 5% per week)
+        DAILY_INTEREST_RATE = 0.007
+        # Define a day as 24 hours
+        PERIOD_LENGTH = 24
+
+        # If this is the first call, set last_interest_time to the current time minus any elapsed time
         if self.last_interest_time == 0:
-            # First time tracking interest - just store current time
-            self.last_interest_time = current_time
-            return None
-            
-        # Ensure weeks_passed is an integer by explicitly casting it
-        weeks_passed = int((current_time - self.last_interest_time) // WEEK_LENGTH)
-        
-        if weeks_passed >= 1:
-            # Apply interest for each week passed
+            # Apply interest for all full days that have already passed since game start
+            days_passed = int(current_time // PERIOD_LENGTH)
             total_interest = 0.0
             current_debt = self.debt
+            if days_passed >= 1 and self.debt > 0:
+                for _ in range(days_passed):
+                    adjusted_rate = DAILY_INTEREST_RATE * self.debt_interest_mod
+                    interest = current_debt * adjusted_rate
+                    current_debt += interest
+                    total_interest += interest
+                self.debt = self.round_credits(current_debt)
+                self.last_interest_time = days_passed * PERIOD_LENGTH
+                return (self.round_credits(total_interest), self.debt)
+            else:
+                # No full days have passed, set last_interest_time so next interest is due in 6 hours
+                self.last_interest_time = max(0, current_time - PERIOD_LENGTH + 6)
+                return None
 
-            for _ in range(weeks_passed):
-                # Apply the "Indebted" trait modifier if it exists
-                adjusted_rate = WEEKLY_INTEREST_RATE * self.debt_interest_mod
+        # Calculate time difference in hours since last interest calculation
+        time_diff = current_time - self.last_interest_time
+        days_passed = int(time_diff // PERIOD_LENGTH)
+
+        if days_passed >= 1 and self.debt > 0:
+            total_interest = 0.0
+            current_debt = self.debt
+            for _ in range(days_passed):
+                adjusted_rate = DAILY_INTEREST_RATE * self.debt_interest_mod
                 interest = current_debt * adjusted_rate
                 current_debt += interest
                 total_interest += interest
-
-            # Update debt and last interest time
             self.debt = self.round_credits(current_debt)
-            self.last_interest_time = current_time
-            
+            self.last_interest_time += days_passed * PERIOD_LENGTH
             return (self.round_credits(total_interest), self.debt)
-
         return None
         
     def to_string(self) -> list[str]:

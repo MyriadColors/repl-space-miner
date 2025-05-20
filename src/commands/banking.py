@@ -126,15 +126,13 @@ def display_financial_summary(game_state: Game, character) -> None:
     elif debt > 5000:
         game_state.ui.warn_message(f"Current Debt: {debt:.2f} credits (Moderate)")
     else:
-        game_state.ui.info_message(f"Current Debt: {debt:.2f} credits (Low)")
-
-    # Calculate weekly interest
-    weekly_rate = 0.05 * character.debt_interest_mod
-    weekly_interest = debt * weekly_rate
+        game_state.ui.info_message(f"Current Debt: {debt:.2f} credits (Low)")    # Calculate daily interest
+    daily_rate = 0.007 * character.debt_interest_mod
+    daily_interest = debt * daily_rate
 
     if debt > 0:
-        game_state.ui.info_message(f"Interest Rate: {weekly_rate:.1%}/week")
-        game_state.ui.info_message(f"Weekly Interest: {weekly_interest:.2f} credits")
+        game_state.ui.info_message(f"Interest Rate: {daily_rate:.1%}/day")
+        game_state.ui.info_message(f"Daily Interest: {daily_interest:.2f} credits")
 
         # Calculate time to pay off at current rate
         if game_state.global_time > 0 and character.credits > 0:
@@ -163,15 +161,13 @@ def debt_management_menu(game_state: Game, character) -> None:
         game_state.ui.clear_screen()
         game_state.ui.info_message(f"\n{'=' * 50}")
         game_state.ui.info_message(f"{Fore.CYAN}DEBT MANAGEMENT{Style.RESET_ALL}")
-        game_state.ui.info_message(f"{'=' * 50}")
-
-        # Show current debt status
-        weekly_rate = 0.05 * character.debt_interest_mod
-        weekly_interest = character.debt * weekly_rate
+        game_state.ui.info_message(f"{'=' * 50}")        # Show current debt status
+        daily_rate = 0.007 * character.debt_interest_mod
+        daily_interest = character.debt * daily_rate
 
         game_state.ui.info_message(f"\nCurrent Debt: {character.debt:.2f} credits")
-        game_state.ui.info_message(f"Interest Rate: {weekly_rate:.1%}/week")
-        game_state.ui.info_message(f"Weekly Interest: {weekly_interest:.2f} credits")
+        game_state.ui.info_message(f"Interest Rate: {daily_rate:.1%}/day")
+        game_state.ui.info_message(f"Daily Interest: {daily_interest:.2f} credits")
         game_state.ui.info_message(f"Available Credits: {character.credits:.2f}")
 
         # Debt repayment options
@@ -181,7 +177,7 @@ def debt_management_menu(game_state: Game, character) -> None:
         game_state.ui.info_message(f"1. Make Custom Payment")
         game_state.ui.info_message(f"2. Pay in Full ({character.debt:.2f} credits)")
         game_state.ui.info_message(
-            f"3. Pay Minimum (Interest Only: {weekly_interest:.2f} credits)"
+            f"3. Pay Minimum (Interest Only: {daily_interest:.2f} credits)"
         )
         game_state.ui.info_message(f"4. Return to Banking Menu")
 
@@ -208,8 +204,8 @@ def debt_management_menu(game_state: Game, character) -> None:
                 time.sleep(1.5)
         elif choice == "3":
             # Pay minimum (interest only)
-            if character.credits >= weekly_interest:
-                repay_debt(game_state, character, weekly_interest)
+            if character.credits >= daily_interest:
+                repay_debt(game_state, character, daily_interest)
             else:
                 game_state.ui.error_message(
                     "You don't have enough credits to make the minimum payment."
@@ -232,12 +228,12 @@ def loan_menu(game_state: Game, character) -> None:
         game_state.ui.info_message(f"{'=' * 50}")
 
         # Show current debt status
-        max_loan = calculate_max_loan(game_state, character)
-        weekly_rate = 0.05 * character.debt_interest_mod
+        max_loan = calculate_max_loan(game_state, character)        
+        daily_rate = 0.007 * character.debt_interest_mod
 
         game_state.ui.info_message(f"\nCurrent Debt: {character.debt:.2f} credits")
         game_state.ui.info_message(f"Available Credits: {character.credits:.2f}")
-        game_state.ui.info_message(f"Interest Rate: {weekly_rate:.1%}/week")
+        game_state.ui.info_message(f"Interest Rate: {daily_rate:.1%}/day")
 
         # Credit score based on debt and repayment history
         credit_score = calculate_credit_score(game_state, character)
@@ -304,12 +300,10 @@ def savings_menu(game_state: Game, character) -> None:
         game_state.ui.info_message(
             f"Interest Rate: {character.savings_interest_rate:.1%}/week"
         )
-        game_state.ui.info_message(f"Available Credits: {character.credits:.2f}")
-
-        # Calculate projected interest
-        weekly_interest = character.savings * character.savings_interest_rate
+        game_state.ui.info_message(f"Available Credits: {character.credits:.2f}")        # Calculate projected interest
+        daily_interest_savings = character.savings * (character.savings_interest_rate / 7) # Assuming weekly rate, convert to daily
         game_state.ui.info_message(
-            f"Projected Weekly Interest: +{weekly_interest:.2f} credits"
+            f"Projected Daily Interest (Savings): +{daily_interest_savings:.2f} credits"
         )
 
         # Savings options

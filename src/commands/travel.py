@@ -58,8 +58,8 @@ def travel_command(game_state: Game, **kwargs) -> float:
     # Check for debt interest after time has passed
     if game_state.player_character:
         interest_result = game_state.player_character.calculate_debt_interest(
-            game_state.global_time
-        )
+                int(game_state.global_time / 3600)
+            )
         if interest_result:
             interest_amount, new_debt = interest_result
             game_state.ui.warn_message(f"\n⚠️ DEBT ALERT! ⚠️")
@@ -129,7 +129,8 @@ def direct_travel_command(game_state: Game, destination_x: str, destination_y: s
             return
         x = float(destination_x)
         y = float(destination_y)
-        travel_command(game_state, destination_x=str(x), destination_y=str(y))
+        # Ensure we pass the return value properly so debt interest calculation happens
+        return travel_command(game_state, destination_x=str(x), destination_y=str(y))
     except ValueError:
         game_state.ui.error_message(
             "Invalid coordinates. Please provide valid numbers."

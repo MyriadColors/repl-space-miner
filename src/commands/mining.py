@@ -47,7 +47,7 @@ def mine_command(
         
         # Calculate debt interest
         interest_result = game_state.player_character.calculate_debt_interest(
-            game_state.global_time
+            int(game_state.global_time / 3600)  # Convert seconds to hours and cast to int
         )
         if interest_result:
             interest_amount, new_debt = interest_result

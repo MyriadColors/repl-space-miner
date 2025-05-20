@@ -23,7 +23,7 @@ def display_status(game_state: Game) -> None:
     if game_state.player_character:
         # Check for debt interest first
         interest_result = game_state.player_character.calculate_debt_interest(
-            game_state.global_time
+            int(game_state.global_time / 3600)
         )
         if interest_result:
             interest_amount, new_debt = interest_result
@@ -55,12 +55,10 @@ def display_status(game_state: Game) -> None:
         if game_state.player_character.debt_interest_mod > 1.0:
             game_state.ui.warn_message(
                 f"Your 'Indebted' trait increases interest by {(game_state.player_character.debt_interest_mod - 1.0) * 100:.0f}%"
-            )
-
-        # Show weekly interest rate
-        weekly_rate = 0.05 * game_state.player_character.debt_interest_mod
-        game_state.ui.info_message(f"Weekly Interest Rate: {weekly_rate:.1%}")
-        next_interest = game_state.player_character.last_interest_time + 168
+            )        # Show daily interest rate
+        daily_rate = 0.007 * game_state.player_character.debt_interest_mod
+        game_state.ui.info_message(f"Daily Interest Rate: {daily_rate:.1%}")
+        next_interest = game_state.player_character.last_interest_time + 24
         time_to_next = next_interest - game_state.global_time
         game_state.ui.info_message(f"Next interest in: {format_seconds(time_to_next)}")
 
