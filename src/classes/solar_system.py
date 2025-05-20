@@ -1,4 +1,5 @@
 import random
+import math
 from typing import Union
 
 from pygame import Vector2
@@ -54,21 +55,26 @@ class SolarSystem:
         """Return the (x, y) position of the system in the region."""
         return (self.x, self.y)
 
+    def _random_position_within_radius(self) -> Vector2:
+        """
+        Generate a random position within a circle of radius self.size (AU).
+        Returns a Vector2.
+        """
+        angle = random.uniform(0, 2 * 3.141592653589793)
+        radius = random.uniform(0, self.size)
+        x = radius * math.cos(angle)
+        y = radius * math.sin(angle)
+        return Vector2(round(x, 2), round(y, 2))
+
     def generate_fields(self):
         for _ in range(self.field_quantity):
-            selected_ores = []
-            for _ in range(3):
-                selected_ores.append(select_random_ore())
+            selected_ores = [select_random_ore() for _ in range(3)]
             rnd_quantity = random.randint(2, 10)
             rnd_radius = rnd_float(0.5, 2.0)
 
-            max_attempts = self.field_quantity
+            max_attempts = self.field_quantity * 2
             for attempt in range(max_attempts):
-                rnd_position = rnd_vector(-self.size, self.size)
-
-                # Check distance from center
-                if rnd_position.distance_to(Vector2(0, 0)) < 0.2:
-                    continue
+                rnd_position = self._random_position_within_radius()
 
                 # Check overlap with existing fields
                 overlapping = False
@@ -152,10 +158,19 @@ class SolarSystem:
             return
 
         for i in range(self.station_quantity):
-            position = Vector2(
-                round(random.uniform(-self.size, self.size), 2),
-                round(random.uniform(-self.size, self.size), 2),
-            )
+            for attempt in range(20):
+                position = self._random_position_within_radius()
+                # Avoid overlap with asteroid fields
+                overlapping = False
+                for field in self.asteroid_fields:
+                    if position.distance_to(field.space_object.position) < field.radius:
+                        overlapping = True
+                        break
+                if not overlapping:
+                    break
+            else:
+                print(f"Warning: Could not place station {i} without overlap")
+                continue  # Skip creating this station if no valid position found
             rnd_name = data.generate_random_name(rnd_int(2, 4))
             station = Station(f"Station {rnd_name}", i, position)
             self.stations.append(station)
@@ -170,19 +185,10 @@ class SolarSystem:
             else:
                 raise ValueError(f"Invalid sort type: {sort_type}")
 
-        sorted_stations: list[Station]
         selected_stations: list[Station] = self.stations
         sorted_stations = sorted(
             selected_stations, key=sort_key, reverse=(sort_order in ["des", "d"])
         )
-
-        if position_flag is not None:
-            sorted_stations = sorted(
-                sorted_stations,
-                key=lambda station: station.space_object.position.distance_to(
-                    position_flag
-                ),
-            )
 
         if len(sorted_stations) == 0:
             print("No stations found")
