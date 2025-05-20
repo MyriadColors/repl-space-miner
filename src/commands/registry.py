@@ -93,7 +93,7 @@ class CommandRegistry:
         return self.commands.get(command_name)
 
     @staticmethod
-    def execute(self, command: Command, *args, **kwargs):
+    def execute(command: Command, *args, **kwargs):
         command.function(*args, **kwargs)
 
 
