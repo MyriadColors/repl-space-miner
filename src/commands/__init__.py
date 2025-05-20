@@ -39,7 +39,6 @@ from .character import display_character_sheet
 from .appearance import color_command, reset_command
 from .sound import toggle_sound_command
 from .banking import banking_menu_command
-from .skills import register_skill_commands, skills_command
 
 # Export the global command registry
 commands = command_registry
@@ -77,7 +76,8 @@ __all__ = [
     "market_command",
     "cargo_command",
     "refuel_antimatter_command",
-    "repair_containment_command",    "emergency_ejection_command",
+    "repair_containment_command",    
+    "emergency_ejection_command",
     "ftl_jump_command",
     "list_systems_command",
     "system_jump_command",

@@ -160,8 +160,8 @@ def emergency_ejection_command(game_state: Game) -> None:
         game_state.ui.error_message("Ejection failed. Contact system administrator.")
 
 
-def ftl_jump_command(game_state: Game, destination: str, distance: float) -> None:
-    """Perform an FTL jump to another system."""
+def ftl_jump_command(game_state: Game, destination: str) -> None:
+    """Perform an FTL jump to another system using system name or index."""
     player_ship = game_state.get_player_ship()
 
     # Check if ship is docked
@@ -169,6 +169,44 @@ def ftl_jump_command(game_state: Game, destination: str, distance: float) -> Non
         game_state.ui.error_message("Cannot initiate FTL jump while docked.")
         return
 
+    # Try to parse the destination as an index first
+    systems = game_state.solar_systems
+    current_system_idx = game_state.current_solar_system_index
+    current_system = game_state.get_current_solar_system()
+    region = game_state.get_region()
+    
+    target_system = None
+    target_idx = -1  # Initialize with invalid index
+    
+    # Check if destination is a system index
+    try:
+        idx = int(destination)
+        if 0 <= idx < len(systems):
+            target_system = systems[idx]
+            target_idx = idx
+        else:
+            game_state.ui.error_message(f"Invalid system index: {destination}")
+            return
+    except ValueError:
+        # If not an index, try to find system by name
+        for idx, system in enumerate(systems):
+            if system.name.lower() == destination.lower():
+                target_system = system
+                target_idx = idx
+                break
+        
+        if target_system is None:
+            game_state.ui.error_message(f"System '{destination}' not found.")
+            return
+    
+    # Check if trying to jump to current system
+    if target_idx == current_system_idx:
+        game_state.ui.info_message("You are already in this system.")
+        return
+
+    # Calculate distance
+    distance = region.calculate_distance(current_system.name, target_system.name)
+    
     # Check antimatter levels
     required_antimatter = distance * player_ship.antimatter_consumption
     if player_ship.antimatter < required_antimatter:
@@ -191,7 +229,7 @@ def ftl_jump_command(game_state: Game, destination: str, distance: float) -> Non
 
     # Confirm jump
     game_state.ui.info_message(
-        f"Preparing FTL jump to {destination}, distance: {distance} light-years."
+        f"Preparing FTL jump to {target_system.name}, distance: {distance} light-years."
     )
     game_state.ui.info_message(
         f"This will consume {required_antimatter:.2f}g of antimatter."
@@ -203,13 +241,18 @@ def ftl_jump_command(game_state: Game, destination: str, distance: float) -> Non
         return
 
     # Execute jump
-    success, message = player_ship.ftl_jump(game_state, destination, distance)
+    success, message = player_ship.ftl_jump(game_state, target_system.name, distance)
+
+    game_state.ui.info_message(message)
 
     if success:
-        game_state.ui.success_message(message)
-        game_state.ui.info_message(
-            f"Remaining antimatter: {player_ship.antimatter:.2f}g"
-        )
+        # Update current system index and reset player position
+        game_state.current_solar_system_index = target_idx
+        player_ship.space_object.position = Vector2(0, 0)
+        game_state.ui.success_message(f"Arrived in {target_system.name}. Ship position reset to system center.")
+        current_system_name = game_state.get_current_solar_system().name
+        game_state.ui.info_message(f"Current system: {current_system_name}")
+        game_state.ui.info_message(f"Remaining antimatter: {player_ship.antimatter:.2f}g")
     else:
         game_state.ui.error_message(f"FTL jump failed: {message}")
 
@@ -240,7 +283,7 @@ def list_systems_command(game_state: Game) -> None:
             cost_str = f"{ftl_cost:.2f}g"
             ftl_distance = f"{cost_str} (Distance: {distance_str})"
         game_state.ui.info_message(f"  Index: {idx} | Name: {system.name} {marker} | FTL Cost: {ftl_distance}")
-    game_state.ui.info_message("\nUse 'ftljump <index>' to travel to another system.")
+    game_state.ui.info_message("\nUse 'ftl <index>' or 'ftl <system_name>' to travel to another system.")
 
 def system_jump_command(game_state: Game, system_index_str: str) -> None:
     """Initiates an FTL jump to a solar system by index."""
@@ -349,7 +392,6 @@ register_command(
     ftl_jump_command,
     [
         Argument("destination", str, False),
-        Argument("distance", float, False),
     ],
 )
 
