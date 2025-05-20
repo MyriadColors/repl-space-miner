@@ -174,10 +174,10 @@ def ftl_jump_command(game_state: Game, destination: str) -> None:
     current_system_idx = game_state.current_solar_system_index
     current_system = game_state.get_current_solar_system()
     region = game_state.get_region()
-    
+
     target_system = None
     target_idx = -1  # Initialize with invalid index
-    
+
     # Check if destination is a system index
     try:
         idx = int(destination)
@@ -194,11 +194,11 @@ def ftl_jump_command(game_state: Game, destination: str) -> None:
                 target_system = system
                 target_idx = idx
                 break
-        
+
         if target_system is None:
             game_state.ui.error_message(f"System '{destination}' not found.")
             return
-    
+
     # Check if trying to jump to current system
     if target_idx == current_system_idx:
         game_state.ui.info_message("You are already in this system.")
@@ -206,7 +206,7 @@ def ftl_jump_command(game_state: Game, destination: str) -> None:
 
     # Calculate distance
     distance = region.calculate_distance(current_system.name, target_system.name)
-    
+
     # Check antimatter levels
     required_antimatter = distance * player_ship.antimatter_consumption
     if player_ship.antimatter < required_antimatter:
@@ -249,10 +249,14 @@ def ftl_jump_command(game_state: Game, destination: str) -> None:
         # Update current system index and reset player position
         game_state.current_solar_system_index = target_idx
         player_ship.space_object.position = Vector2(0, 0)
-        game_state.ui.success_message(f"Arrived in {target_system.name}. Ship position reset to system center.")
+        game_state.ui.success_message(
+            f"Arrived in {target_system.name}. Ship position reset to system center."
+        )
         current_system_name = game_state.get_current_solar_system().name
         game_state.ui.info_message(f"Current system: {current_system_name}")
-        game_state.ui.info_message(f"Remaining antimatter: {player_ship.antimatter:.2f}g")
+        game_state.ui.info_message(
+            f"Remaining antimatter: {player_ship.antimatter:.2f}g"
+        )
     else:
         game_state.ui.error_message(f"FTL jump failed: {message}")
 
@@ -282,9 +286,13 @@ def list_systems_command(game_state: Game) -> None:
             distance_str = f"{distance:.2f} LY"
             cost_str = f"{ftl_cost:.2f}g"
             ftl_distance = f"{cost_str} (Distance: {distance_str})"
-        game_state.ui.info_message(f"  Index: {idx} | Name: {system.name} {marker} | FTL Cost: {ftl_distance}")
-    
-    game_state.ui.info_message("\nUse 'ftl <index>' or 'ftl <system_name>' to travel to another system.")
+        game_state.ui.info_message(
+            f"  Index: {idx} | Name: {system.name} {marker} | FTL Cost: {ftl_distance}"
+        )
+
+    game_state.ui.info_message(
+        "\nUse 'ftl <index>' or 'ftl <system_name>' to travel to another system."
+    )
 
 
 # Register commands

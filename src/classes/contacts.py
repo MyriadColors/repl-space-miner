@@ -12,7 +12,7 @@ KELL_VOSS = Contact(
     specialty="Combat contracts, security operations, and intel on dangerous sectors.",
     faction="military",
     age=42,
-    sex="male"
+    sex="male",
 )
 
 NOVA_VALEN = Contact(
@@ -22,7 +22,7 @@ NOVA_VALEN = Contact(
     specialty="Tracking fugitives, gathering intelligence, and off-the-books security work.",
     faction="explorers",
     age=34,
-    sex="female"
+    sex="female",
 )
 
 ZETA_9 = Contact(
@@ -32,7 +32,7 @@ ZETA_9 = Contact(
     specialty="Ship upgrades, rare tech, and engineering solutions.",
     faction="scientists",
     age=35,
-    sex="male"
+    sex="male",
 )
 
 OBSIDIAN = Contact(
@@ -42,7 +42,7 @@ OBSIDIAN = Contact(
     specialty="Information brokering, local gossip, and business connections.",
     faction="traders",
     age=28,
-    sex="female"
+    sex="female",
 )
 
 # Dictionary mapping contact type to contact objects for easy lookup
@@ -50,20 +50,21 @@ TERMINUS_CONTACTS_OBJECTS = {
     "mercenary": KELL_VOSS,
     "bounty_hunter": NOVA_VALEN,
     "engineer": ZETA_9,
-    "bartender": OBSIDIAN
+    "bartender": OBSIDIAN,
 }
+
 
 # Function to get contact by type
 def get_contact(contact_type: str) -> Contact:
     """
     Get a contact object by its type.
-    
+
     Args:
         contact_type (str): The type of contact to retrieve ("mercenary", "bounty_hunter", "engineer", "bartender")
-        
+
     Returns:
         Contact: The contact object
-        
+
     Raises:
         KeyError: If the contact type doesn't exist
     """

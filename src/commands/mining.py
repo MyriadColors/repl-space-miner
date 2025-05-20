@@ -1,5 +1,8 @@
 from src.classes.game import Game
-from src.events.skill_events import process_skill_xp_from_activity, notify_skill_progress
+from src.events.skill_events import (
+    process_skill_xp_from_activity,
+    notify_skill_progress,
+)
 
 from .registry import Argument
 from .base import register_command
@@ -35,19 +38,21 @@ def mine_command(
         time_to_mine,
         mine_until_full,
         ores_selected_list,
-    )    # Check for debt interest after mining (time has passed)
+    )  # Check for debt interest after mining (time has passed)
     if game_state.player_character:
         # Process skill experience from mining
         skill_results = process_skill_xp_from_activity(
-            game_state, 
-            "mining", 
-            difficulty=field.rarity_score * 0.5  # MODIFIED: Use rarity_score
+            game_state,
+            "mining",
+            difficulty=field.rarity_score * 0.5,  # MODIFIED: Use rarity_score
         )
         notify_skill_progress(game_state, skill_results)
-        
+
         # Calculate debt interest
         interest_result = game_state.player_character.calculate_debt_interest(
-            int(game_state.global_time / 3600)  # Convert seconds to hours and cast to int
+            int(
+                game_state.global_time / 3600
+            )  # Convert seconds to hours and cast to int
         )
         if interest_result:
             interest_amount, new_debt = interest_result

@@ -98,7 +98,8 @@ def register_commands(game_state: "Game"):
         ],
     )
     register_command(
-        ["scan", "sc"],        scan_command,
+        ["scan", "sc"],
+        scan_command,
         [Argument("num_objects", str, False, 0, is_valid_int)],
     )
     register_command(["scan_asteroids", "scna"], scan_asteroids_command, [])
@@ -155,10 +156,11 @@ def register_commands(game_state: "Game"):
             Argument("amount", int, False, 0, None),
             Argument("ore_name", str, False, 1, None),
         ],
-    )    # Removed duplicate registration for display_character_sheet
-    
+    )  # Removed duplicate registration for display_character_sheet
+
     # Register skill commands
     from src.commands.skills import register_skill_commands
+
     register_skill_commands()
 
 

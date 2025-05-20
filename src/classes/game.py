@@ -102,7 +102,7 @@ class Character:
         self.age = age
         self.sex = sex
         self.background = background
-        
+
         # Stats - primary attributes that are mostly fixed
         self.perception = 5
         self.resilience = 5
@@ -110,10 +110,10 @@ class Character:
         self.presence = 5
         self.adaptability = 5
         self.technical_aptitude = 5
-        
+
         # Initialize skill system instead of individual skills
         self.skill_system = SkillSystem()
-          # Reputation values
+        # Reputation values
         self.reputation_states = 0
         self.reputation_corporations = 0
         self.reputation_pirates = 0
@@ -127,7 +127,7 @@ class Character:
         # Initialize interest time to 0, allowing calculate_debt_interest to set it properly
         # This way the first interest calculation will happen soon after game start
         self.last_interest_time = 0  # Will be initialized properly on first debt check
-        
+
         # Savings account
         self.savings: float = 0.0
         self.savings_interest_rate: float = 0.02  # 2% weekly interest rate
@@ -136,11 +136,11 @@ class Character:
 
         # Initialize faction standings
         self.initialize_faction_standings()
-        
+
         # Personality traits
         self.positive_trait = ""
         self.negative_trait = ""
-        
+
         # Trait effect modifiers (default to 1.0 = no effect)
         self.damage_resist_mod = 1.0
         self.mining_yield_mod = 1.0
@@ -150,7 +150,7 @@ class Character:
         self.evasion_mod = 1.0
         self.fuel_consumption_mod = 1.0
         self.debt_interest_mod = 1.0
-        
+
     def initialize_faction_standings(self):
         """Initialize the faction standings dictionary with default values."""
         self.faction_standings = {
@@ -161,68 +161,68 @@ class Character:
             "traders": 0,
             "scientists": 0,
             "military": 0,
-            "explorers": 0
+            "explorers": 0,
         }
-        
+
     # Backward compatibility properties for individual skills
     @property
     def piloting(self) -> int:
         """Get piloting skill level from skill system"""
         skill = self.skill_system.get_skill("piloting")
         return skill.level if skill else 0
-        
+
     @piloting.setter
     def piloting(self, value: int) -> None:
         """Set piloting skill level"""
         skill = self.skill_system.get_skill("piloting")
         if skill:
             skill._level = value
-    
+
     @property
     def engineering(self) -> int:
         """Get engineering skill level from skill system"""
         skill = self.skill_system.get_skill("engineering")
         return skill.level if skill else 0
-        
+
     @engineering.setter
     def engineering(self, value: int) -> None:
         """Set engineering skill level"""
         skill = self.skill_system.get_skill("engineering")
         if skill:
             skill._level = value
-    
+
     @property
     def combat(self) -> int:
         """Get combat skill level from skill system"""
         skill = self.skill_system.get_skill("combat")
         return skill.level if skill else 0
-        
+
     @combat.setter
     def combat(self, value: int) -> None:
         """Set combat skill level"""
         skill = self.skill_system.get_skill("combat")
         if skill:
             skill._level = value
-    
+
     @property
     def education(self) -> int:
         """Get education skill level from skill system"""
         skill = self.skill_system.get_skill("education")
         return skill.level if skill else 0
-        
+
     @education.setter
     def education(self, value: int) -> None:
         """Set education skill level"""
         skill = self.skill_system.get_skill("education")
         if skill:
             skill._level = value
-    
+
     @property
     def charisma(self) -> int:
         """Get charisma skill level from skill system"""
         skill = self.skill_system.get_skill("charisma")
         return skill.level if skill else 0
-        
+
     @charisma.setter
     def charisma(self, value: int) -> None:
         """Set charisma skill level"""
@@ -239,13 +239,13 @@ class Character:
         self.apply_presence_effects()
         self.apply_adaptability_effects()
         self.apply_technical_aptitude_effects()
-        
+
     def apply_perception_effects(self):
         """Apply effects from the Perception stat"""
         # Reset modifier to default
         self.critical_hit_chance_mod = 1.0
         self.hidden_discovery_chance_mod = 1.0
-        
+
         # Apply Perception-based bonuses
         # Each point above 5 gives a 5% bonus to critical hits and hidden discovery chances.
         # This reflects the character's heightened awareness and ability to spot opportunities.
@@ -253,144 +253,148 @@ class Character:
             bonus_multiplier = 1 + ((self.perception - 5) * 0.05)
             self.critical_hit_chance_mod = bonus_multiplier
             self.hidden_discovery_chance_mod = bonus_multiplier
-            
+
             # Additionally, perception improves sensor range by 3% per point above 5.
             # This simulates the character's ability to interpret sensor data more effectively.
             self.sensor_range_mod *= 1 + ((self.perception - 5) * 0.03)
-    
+
     def apply_resilience_effects(self):
         """Apply effects from the Resilience stat"""
         # Reset modifier to default
         self.hull_integrity_mod = 1.0
         self.system_recovery_mod = 1.0
-        
+
         # Apply Resilience-based bonuses
         # Each point above 5 gives 4% bonus to hull integrity and recovery speed
         if self.resilience > 5:
             self.hull_integrity_mod = 1 + ((self.resilience - 5) * 0.04)
             self.system_recovery_mod = 1 + ((self.resilience - 5) * 0.04)
             # Also improves damage resistance
-            self.damage_resist_mod *= 1 - ((self.resilience - 5) * 0.02)  # Decrease damage taken
-    
+            self.damage_resist_mod *= 1 - (
+                (self.resilience - 5) * 0.02
+            )  # Decrease damage taken
+
     def apply_intellect_effects(self):
         """Apply effects from the Intellect stat"""
         # Reset modifier to default
         self.research_speed_mod = 1.0
         self.market_analysis_mod = 1.0
-        
+
         # Apply Intellect-based bonuses
         # Each point above 5 gives 5% bonus to research speed and 3% to market analysis
         if self.intellect > 5:
             self.research_speed_mod = 1 + ((self.intellect - 5) * 0.05)
             self.market_analysis_mod = 1 + ((self.intellect - 5) * 0.03)
-    
+
     def apply_presence_effects(self):
         """Apply effects from the Presence stat"""
         # Reset modifier to default
         self.faction_relation_mod = 1.0
-        
+
         # Apply Presence-based bonuses
         # Each point above 5 gives 5% better prices and 3% faster reputation gains
         if self.presence > 5:
             price_bonus = (self.presence - 5) * 0.05
-            self.buy_price_mod *= (1 - price_bonus)  # Lower prices when buying
-            self.sell_price_mod *= (1 + price_bonus)  # Higher prices when selling
-            self.faction_relation_mod = 1 + ((self.presence - 5) * 0.03)  # Faster reputation gains
-    
+            self.buy_price_mod *= 1 - price_bonus  # Lower prices when buying
+            self.sell_price_mod *= 1 + price_bonus  # Higher prices when selling
+            self.faction_relation_mod = 1 + (
+                (self.presence - 5) * 0.03
+            )  # Faster reputation gains
+
     def apply_adaptability_effects(self):
         """Apply effects from the Adaptability stat"""
         # Reset modifier to default
         self.cross_cultural_mod = 1.0
-        
+
         # Apply Adaptability-based bonuses
         # Each point above 5 gives 4% bonus to cross-cultural interactions
         if self.adaptability > 5:
             self.cross_cultural_mod = 1 + ((self.adaptability - 5) * 0.04)
-            
+
             # Small bonus to skill synergy (this would affect skill experience gains)
             # This would be used in future skill improvement mechanics
             skill_synergy_bonus = (self.adaptability - 5) * 0.02
-            
+
             # Small bonus to environmental adaptation (used in future environmental hazards)
             environmental_bonus = (self.adaptability - 5) * 0.03
-    
+
     def apply_technical_aptitude_effects(self):
         """Apply effects from the Technical Aptitude stat"""
         # Reset modifier to default
         self.repair_efficiency_mod = 1.0
         self.salvage_success_mod = 1.0
-        
+
         # Apply Technical Aptitude-based bonuses
         # Each point above 5 gives 5% bonus to repair efficiency and salvaging success
         if self.technical_aptitude > 5:
             self.repair_efficiency_mod = 1 + ((self.technical_aptitude - 5) * 0.05)
             self.salvage_success_mod = 1 + ((self.technical_aptitude - 5) * 0.05)
-            
+
     def get_mining_bonus(self):
         """Calculate mining bonus based on stats and skills"""
         # Base mining yield modifier from traits
         mining_bonus = self.mining_yield_mod
-        
+
         # Add perception bonus for finding better mining spots (2% per point above 5)
         if self.perception > 5:
             mining_bonus *= 1 + ((self.perception - 5) * 0.02)
-        
+
         # Add technical aptitude bonus (1% per point above 5)
         if self.technical_aptitude > 5:
             mining_bonus *= 1 + ((self.technical_aptitude - 5) * 0.01)
-              # Engineering skill bonus is applied separately in the ship's mining method
-        
+            # Engineering skill bonus is applied separately in the ship's mining method
+
         return mining_bonus
-    
+
     def get_trading_bonus(self):
         """Calculate trading bonuses based on stats and skills"""
         # Start with base modifiers from traits
         buy_mod = self.buy_price_mod
         sell_mod = self.sell_price_mod
-        
+
         # Apply presence bonuses (already calculated in apply_presence_effects)
-        
+
         # Apply intellect for better market analysis (1% per point above 5)
         if self.intellect > 5:
             market_bonus = (self.intellect - 5) * 0.01
-            buy_mod *= (1 - market_bonus)  # Lower prices when buying
-            sell_mod *= (1 + market_bonus)  # Higher prices when selling
-            
+            buy_mod *= 1 - market_bonus  # Lower prices when buying
+            sell_mod *= 1 + market_bonus  # Higher prices when selling
+
         # Apply charisma skill bonus (2% per point above 5)
         if self.charisma > 5:
             charisma_bonus = (self.charisma - 5) * 0.02
-            buy_mod *= (1 - charisma_bonus)  # Lower prices when buying
-            sell_mod *= (1 + charisma_bonus)  # Higher prices when selling
-            
+            buy_mod *= 1 - charisma_bonus  # Lower prices when buying
+            sell_mod *= 1 + charisma_bonus  # Higher prices when selling
+
         return (buy_mod, sell_mod)
-        
+
     def round_credits(self, value: float) -> float:
         """
         Round credit values to two decimal places.
         If exact halfway case occurs, it rounds up as per requirement.
         """
         return round(value * 100) / 100
-        
+
     def add_credits(self, amount: float) -> float:
         """Add credits and return the new balance"""
         self.credits = self.round_credits(self.credits + amount)
         return self.credits
-        
+
     def remove_credits(self, amount: float) -> float:
         """Remove credits and return the new balance"""
         self.credits = self.round_credits(self.credits - amount)
         return self.credits
-        
+
     def add_debt(self, amount: float) -> float:
         """Add debt and return the new balance"""
         self.debt = self.round_credits(self.debt + amount)
         return self.debt
-        
+
     def remove_debt(self, amount: float) -> float:
         """Remove debt and return the new balance"""
         self.debt = self.round_credits(self.debt - amount)
         return self.debt
-        
+
     def apply_trait_effects(self):
         """Apply effects from personality traits"""
         # Reset modifiers to default
@@ -433,10 +437,10 @@ class Character:
             pass
         elif self.negative_trait == "Indebted":
             self.debt_interest_mod = 1.1  # 10% higher interest
-            
+
         # Apply stats-based effects after trait effects
         self.apply_stat_effects()
-    
+
     def calculate_debt_interest(self, current_time: int):
         """
         Calculate and apply interest on the debt
@@ -483,12 +487,12 @@ class Character:
             self.last_interest_time += days_passed * PERIOD_LENGTH
             return (self.round_credits(total_interest), self.debt)
         return None
-        
+
     def to_string(self) -> list[str]:
         trait_info = ""
         if self.positive_trait or self.negative_trait:
             trait_info = f"\nPositive Trait: {self.positive_trait}\nNegative Trait: {self.negative_trait}"
-            
+
         stats_info = (
             f"\nSTATS:"
             + f"\nPerception: {self.perception}"
@@ -498,14 +502,14 @@ class Character:
             + f"\nAdaptability: {self.adaptability}"
             + f"\nTechnical Aptitude: {self.technical_aptitude}"
         )
-        
+
         skill_info = (
             f"\nSKILLS:"
             + f"\nPiloting: {self.piloting}\nEngineering: {self.engineering}\nCombat: {self.combat}"
             + f"\nEducation: {self.education}\nCharisma: {self.charisma}"
             + f"\nUnspent Skill Points: {self.skill_system.unspent_skill_points}"
         )
-        
+
         return [
             f"Name: {self.name}"
             + f"\nAge: {self.age}"
@@ -525,7 +529,7 @@ class Character:
             + f"\nReputation Military: {self.reputation_military}"
             + f"\nReputation Explorers: {self.reputation_explorers}"
         ]
-        
+
     def to_dict(self):
         return {
             "name": self.name,
@@ -546,7 +550,9 @@ class Character:
             "education": self.education,
             "charisma": self.charisma,
             # Skill system (new format)
-            "skill_system": self.skill_system.to_dict() if hasattr(self, "skill_system") else None,
+            "skill_system": (
+                self.skill_system.to_dict() if hasattr(self, "skill_system") else None
+            ),
             # Reputation
             "reputation_states": self.reputation_states,
             "reputation_corporations": self.reputation_corporations,
@@ -562,7 +568,7 @@ class Character:
             "positive_trait": self.positive_trait,
             "negative_trait": self.negative_trait,
         }
-        
+
     @classmethod
     def from_dict(cls, data):
         character = cls(
@@ -600,7 +606,7 @@ class Character:
         character.reputation_explorers = data.get("reputation_explorers", 0)
         character.positive_trait = data.get("positive_trait", "")
         character.negative_trait = data.get("negative_trait", "")
-        
+
         # Apply trait effects (which will also apply stat effects)
         character.apply_trait_effects()
 
@@ -609,7 +615,7 @@ class Character:
 
 class Contact(Character):
     """A specialized character class representing NPCs the player can interact with."""
-    
+
     def __init__(
         self,
         name: str,
@@ -627,27 +633,27 @@ class Contact(Character):
             sex=sex,
             background="NPC",  # NPCs don't have traditional backgrounds
             starting_creds=0,  # NPCs don't use the credit system like players
-            starting_debt=0    # NPCs don't have debt
+            starting_debt=0,  # NPCs don't have debt
         )
-        
+
         self.description = description
         self.location = location
         self.specialty = specialty
-        
+
         # Set the contact's primary faction
         self.primary_faction = faction
-        
+
         # NPCs might have special dialogue options or missions
         self.available_missions: List = []
         self.dialogue_options: Dict[str, Union[str, int]] = {}
 
         # Relationship with the player (0-100)
         self.player_standing = 10  # Start with a basic acquaintance level
-        
+
         # Track interactions with player
         self.last_interaction = "Initial meeting"
         self.met_during = "character_creation"
-        
+
     def get_info(self) -> Dict[str, Union[str, int]]:
         """Return basic information about the contact."""
         return {
@@ -657,14 +663,14 @@ class Contact(Character):
             "specialty": self.specialty,
             "faction": self.primary_faction,
             "standing": self.player_standing,
-            "last_interaction": self.last_interaction
+            "last_interaction": self.last_interaction,
         }
-        
+
     def update_standing(self, change: int) -> int:
         """Update the contact's standing with the player."""
         self.player_standing = max(0, min(100, self.player_standing + change))
         return self.player_standing
-        
+
     def record_interaction(self, interaction_type: str) -> None:
         """Record an interaction with this contact."""
         self.last_interaction = interaction_type
@@ -688,7 +694,9 @@ class Game:
         self.current_solar_system_index = 0
         # Get stations from the current solar system
         current_system = self.solar_systems[self.current_solar_system_index]
-        self.rnd_station = random.choice(current_system.stations) if current_system.stations else None
+        self.rnd_station = (
+            random.choice(current_system.stations) if current_system.stations else None
+        )
         self.player_character: Optional[Character] = None
         self.player_ship: Optional[Ship] = None  # MODIFIED: Allow Ship type
         self.debug_flag = debug_flag
@@ -718,7 +726,7 @@ class Game:
             "Please tell me at github if this happens to you."
         )
         return self.player_ship
-        
+
     def get_credits(self) -> float | None:
         if self.player_character is not None:
             return round(self.player_character.credits, 2)
@@ -726,35 +734,35 @@ class Game:
 
     def get_ship(self):
         return self.player_ship
-    
+
     def get_player_character(self) -> Character:
         assert self.player_character is not None, (
             "ERROR: There is no player_character, this should not ever happen so something went very wrong. "
             "Please tell me at the github page if this happens to you."
         )
         return self.player_character
-    
+
     def get_current_solar_system(self) -> SolarSystem:
         """Returns the current solar system the player is in."""
         return self.solar_systems[self.current_solar_system_index]
-    
+
     def add_solar_system(self, solar_system: SolarSystem) -> None:
         """Adds a new solar system to the game."""
         self.solar_systems.append(solar_system)
-        
-    def get_solar_system(self): # Existing method, now returns current system
+
+    def get_solar_system(self):  # Existing method, now returns current system
         return self.get_current_solar_system()
-        
+
     def advance_time(self, time_delta):
         """
         Advance the game time by the specified timedelta
-        
+
         Args:
             time_delta (timedelta): The amount of time to advance
         """
         # Convert timedelta to seconds and add to global_time
         self.global_time += time_delta.total_seconds()
-        
+
         # Additional time-based updates can be added here
         # For example, updating ship systems, applying effects, etc.
 
@@ -768,12 +776,13 @@ class Game:
             "current_solar_system_index": self.current_solar_system_index,
             "player_character": (
                 self.player_character.to_dict() if self.player_character else None
-            ),            "player_ship": self.player_ship.to_dict() if self.player_ship else None,
+            ),
+            "player_ship": self.player_ship.to_dict() if self.player_ship else None,
             "debug_flag": self.debug_flag,
             "mute_flag": self.mute_flag,
             "skip_customization": self.skipc,  # Skip customization flag
         }
-        
+
     @classmethod
     def from_dict(cls, data, ui_instance):
         game = cls(
@@ -784,12 +793,25 @@ class Game:
         game.global_time = data["global_time"]
         # Ensure solar_systems are loaded correctly using the new constructor if applicable
         # The SolarSystem.from_dict should handle the new fields with .get for backward compatibility
-        game.solar_systems = [SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]]
+        game.solar_systems = [
+            SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]
+        ]
         game.current_solar_system_index = data.get("current_solar_system_index", 0)
-        if not game.solar_systems:  # Fallback if a save had no solar systems (unlikely but safe)
-            game.solar_systems = [SolarSystem(name="Default Gen", x=0.0, y=0.0, size=250.0, field_quantity=15, station_quantity=7)]
+        if (
+            not game.solar_systems
+        ):  # Fallback if a save had no solar systems (unlikely but safe)
+            game.solar_systems = [
+                SolarSystem(
+                    name="Default Gen",
+                    x=0.0,
+                    y=0.0,
+                    size=250.0,
+                    field_quantity=15,
+                    station_quantity=7,
+                )
+            ]
             game.current_solar_system_index = 0
-            
+
         if data["player_character"]:
             game.player_character = Character.from_dict(data["player_character"])
         if data["player_ship"]:
@@ -802,7 +824,7 @@ class Game:
     def save_game(self, filename: str = "", human_readable: bool = False):
         """
         Save the current game to a file.
-        
+
         Args:
             filename: Optional file name for the save
             human_readable: If True, save in human-readable JSON format instead of compressed
@@ -817,11 +839,13 @@ class Game:
         game_data = self.to_dict()
 
         # If human_readable flag not provided, ask the user
-        if not hasattr(self, 'save_preference'):
+        if not hasattr(self, "save_preference"):
             while True:
-                choice = input("Save as [c]ompressed or [h]uman-readable format? (c/h): ").lower()
-                if choice in ['c', 'h']:
-                    human_readable = (choice == 'h')
+                choice = input(
+                    "Save as [c]ompressed or [h]uman-readable format? (c/h): "
+                ).lower()
+                if choice in ["c", "h"]:
+                    human_readable = choice == "h"
                     # Remember preference for this session
                     self.save_preference = human_readable
                     break
@@ -836,7 +860,9 @@ class Game:
             try:
                 with open(save_path, "w") as f:
                     json.dump(game_data, f, indent=4)
-                self.ui.success_message(f"Game saved to {save_path} (Human-readable format)")
+                self.ui.success_message(
+                    f"Game saved to {save_path} (Human-readable format)"
+                )
             except IOError as e:
                 self.ui.error_message(f"Error saving game: {e}")
         else:
@@ -844,20 +870,22 @@ class Game:
             try:
                 # Import compression utilities
                 from src.utils.compression import compress_save_data
-                
+
                 # Compress the save data
                 compressed_data = compress_save_data(game_data)
-                
+
                 # Calculate compression rate for user feedback
                 original_size = len(json.dumps(game_data))
                 compressed_size = len(compressed_data)
                 compression_rate = (1 - (compressed_size / original_size)) * 100
-                
+
                 # Write the compressed data to file
                 with open(save_path, "w") as f:
                     f.write(compressed_data)
-                
-                self.ui.success_message(f"Game saved to {save_path} (Compressed {compression_rate:.1f}%)")
+
+                self.ui.success_message(
+                    f"Game saved to {save_path} (Compressed {compression_rate:.1f}%)"
+                )
             except IOError as e:
                 self.ui.error_message(f"Error saving game: {e}")
             except Exception as e:
@@ -917,15 +945,15 @@ class Game:
         if not os.path.exists(load_path):
             ui_instance.error_message(f"Save file {load_path} not found.")
             return None
-            
+
         try:
             # Import decompression utility
             from src.utils.compression import decompress_save_data
-            
+
             # Read the file content
             with open(load_path, "r") as f:
                 file_content = f.read()
-            
+
             try:
                 # Try to decompress first (for compressed saves)
                 if file_content.startswith("RSM_COMPRESSED_V1:"):

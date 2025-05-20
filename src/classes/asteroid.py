@@ -159,7 +159,9 @@ class AsteroidField:
         actual_ores_in_asteroids = {ast.ore for ast in field.asteroids if ast.ore}
         field.ores_available = list(actual_ores_in_asteroids)
 
-        field.rarity_score = field._calculate_field_rarity()  # Recalculate rarity score after loading
+        field.rarity_score = (
+            field._calculate_field_rarity()
+        )  # Recalculate rarity score after loading
 
         field.visited = data.get("visited", False)
         return field

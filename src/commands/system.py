@@ -55,7 +55,7 @@ def display_status(game_state: Game) -> None:
         if game_state.player_character.debt_interest_mod > 1.0:
             game_state.ui.warn_message(
                 f"Your 'Indebted' trait increases interest by {(game_state.player_character.debt_interest_mod - 1.0) * 100:.0f}%"
-            )        # Show daily interest rate
+            )  # Show daily interest rate
         daily_rate = 0.007 * game_state.player_character.debt_interest_mod
         game_state.ui.info_message(f"Daily Interest Rate: {daily_rate:.1%}")
         next_interest = game_state.player_character.last_interest_time + 24
@@ -76,7 +76,7 @@ def display_time_and_status(game_state: Game) -> None:
 def command_exit(game_state: Game) -> bool:
     """
     Handle game exit command.
-    
+
     Returns:
         bool: True if exit confirmed, False otherwise
     """
@@ -205,12 +205,13 @@ def display_help(game_state: Game, command_name: str = "") -> None:
                 for arg in command.arguments:
                     optional = "(optional)" if arg.is_optional else "(required)"
                     game_state.ui.info_message(
-                        f"  {arg.name} ({arg.type.__name__}) {optional}"                    )
+                        f"  {arg.name} ({arg.type.__name__}) {optional}"
+                    )
             return
         else:
             game_state.ui.error_message(f"Unknown command: {command_name}")
             return
-            
+
     # Display general help
     game_state.ui.info_message("\nAVAILABLE COMMANDS:")
     game_state.ui.info_message("==================")
@@ -254,10 +255,10 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         )
         write_command(
             "direct/d <x> <y>", "Direct travel to coordinates", True, "undocked"
-        )        
+        )
         write_command("dock/do", "Dock with nearby station", True, "undocked")
         write_command("undock/ud", "Undock from current station", True, "docked")
-        game_state.ui.info_message("")        # FTL TRAVEL CATEGORY
+        game_state.ui.info_message("")  # FTL TRAVEL CATEGORY
         game_state.ui.info_message(f"{Fore.CYAN}=== FTL TRAVEL ==={Style.RESET_ALL}")
         write_command("listsystems/lsys", "List all available solar systems", True)
         write_command(
@@ -266,7 +267,7 @@ def display_help(game_state: Game, command_name: str = "") -> None:
             True,
             "undocked",
         )
-        game_state.ui.info_message("")        # MINING CATEGORY
+        game_state.ui.info_message("")  # MINING CATEGORY
         game_state.ui.info_message(
             f"{Fore.CYAN}=== MINING & SCANNING ==={Style.RESET_ALL}"
         )
@@ -277,7 +278,9 @@ def display_help(game_state: Game, command_name: str = "") -> None:
             "field",
         )
         write_command("scan/sc", "Scan for objects in the system", True)
-        write_command("scan_asteroids/scna", "Scan current asteroid field for ores", True, "field")
+        write_command(
+            "scan_asteroids/scna", "Scan current asteroid field for ores", True, "field"
+        )
         game_state.ui.info_message("")
 
         # CARGO & RESOURCES CATEGORY
@@ -286,9 +289,7 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         )
         write_command("cargo/inv/inventory", "Display ship cargo and inventory", True)
         write_command("refine [amount]", "Refine ore to higher purity", True, "docked")
-        write_command(
-            "purify [amount]", "Convert ore to minerals", True, "docked"
-        )
+        write_command("purify [amount]", "Convert ore to minerals", True, "docked")
         game_state.ui.info_message("")
 
         # TRADING CATEGORY

@@ -17,6 +17,7 @@ class DualFuelSystem:
     Extension methods for the Ship class to handle the dual fuel system.
     These methods will be added to the Ship class functionality.
     """
+
     # Define class attributes with type annotations
     antimatter: float
     max_antimatter: float
@@ -29,7 +30,7 @@ class DualFuelSystem:
     previous_system: str
     current_system: str
     location: Vector2
-    
+
     # These type annotations are just for mypy and will never be executed directly on this class
     # They will be added to the Ship class
 
@@ -46,8 +47,8 @@ class DualFuelSystem:
         actual_add = min(amount, max_add)
         self.antimatter += actual_add
         return self.antimatter
-    
-    def check_containment_status(self, game_state: 'Game') -> Tuple[bool, float]:
+
+    def check_containment_status(self, game_state: "Game") -> Tuple[bool, float]:
         """Check antimatter containment system status.
 
         This updates containment integrity based on time passed and performs power draws.
@@ -63,17 +64,19 @@ class DualFuelSystem:
         last_check = self.last_containment_check
         current_time = game_state.global_time
         time_delta = max(0, current_time - last_check)
-        
+
         # Update last check time
         self.last_containment_check = current_time
-        
+
         if self.antimatter <= 0 or time_delta <= 0:
             # No antimatter or no time passed, nothing to update
             return True, self.containment_failure_risk
-            
+
         # Power draw based on time passed and containment amount
-        power_draw = (time_delta / 60) * self.containment_power_draw * (self.antimatter / 100)
-          # Apply power draw
+        power_draw = (
+            (time_delta / 60) * self.containment_power_draw * (self.antimatter / 100)
+        )
+        # Apply power draw
         player_ship = game_state.player_ship
         if player_ship is not None and player_ship.power >= power_draw:
             player_ship.power -= power_draw
@@ -89,30 +92,36 @@ class DualFuelSystem:
         # Base decay rate (small chance of integrity loss over time)
         base_decay = 0.001 * (time_delta / 60)
         decay_modifier = (self.antimatter / self.max_antimatter) * 0.05
-        
+
         # Apply decay proportional to antimatter amount
         integrity_loss = base_decay * (1 + decay_modifier)
         self.containment_integrity = max(0, self.containment_integrity - integrity_loss)
-        
+
         # Calculate risk based on integrity
         risk_increase: float = 0
-        
+
         if self.containment_integrity < 50:
             # Below 50% integrity, risk increases faster
             risk_increase = (50 - self.containment_integrity) * 0.02 * (time_delta / 60)
-        
-        self.containment_failure_risk = min(100, self.containment_failure_risk + risk_increase)
-        
+
+        self.containment_failure_risk = min(
+            100, self.containment_failure_risk + risk_increase
+        )
+
         # Random events for integrity loss
         # Chance of antimatter containment failure based on time and current antimatter levels
         # Higher antimatter and longer time increase risk
-        if random.random() < 0.001 * (time_delta / 60) * (self.antimatter / self.max_antimatter):
+        if random.random() < 0.001 * (time_delta / 60) * (
+            self.antimatter / self.max_antimatter
+        ):
             random_loss = round(random.uniform(0.1, 0.5), 2)
             lost_antimatter = self.antimatter * random_loss
             self.antimatter -= lost_antimatter
-        
+
         # Check if containment system is still stable
-        is_stable = self.containment_integrity > 0 and self.containment_failure_risk < 80
+        is_stable = (
+            self.containment_integrity > 0 and self.containment_failure_risk < 80
+        )
         return is_stable, self.containment_failure_risk
 
     def repair_containment(self, repair_amount: float) -> float:
@@ -124,7 +133,9 @@ class DualFuelSystem:
         Returns:
             float: New containment integrity level
         """
-        self.containment_integrity = min(100, self.containment_integrity + repair_amount)
+        self.containment_integrity = min(
+            100, self.containment_integrity + repair_amount
+        )
         self.containment_failure_risk = max(
             0.0, self.containment_failure_risk - (repair_amount / 2)
         )
@@ -141,9 +152,9 @@ class DualFuelSystem:
             self.containment_failure_risk = 0.0
             return True
         return False
-        
+
     def ftl_jump(
-        self, game_state: 'Game', destination_system: str, distance_ly: float
+        self, game_state: "Game", destination_system: str, distance_ly: float
     ) -> Tuple[bool, str]:
         # Check if antimatter is available
         required_antimatter = distance_ly * self.antimatter_consumption
@@ -160,16 +171,18 @@ class DualFuelSystem:
             return (
                 False,
                 f"Antimatter containment system unstable. Current risk: {risk:.1f}%. Repairs needed before FTL jump.",
-            )        # All checks passed, perform FTL jump
-        self.antimatter -= required_antimatter        # Calculate travel time based on the desired speed of 1e-10 LY per day for fastest ships
+            )  # All checks passed, perform FTL jump
+        self.antimatter -= required_antimatter  # Calculate travel time based on the desired speed of 1e-10 LY per day for fastest ships
         # 1e-10 LY per day = 1.16e-15 LY per second
         # For 1 LY, that's approximately 86400 seconds per 1e-10 LY
         # This gives travel time = (1 LY / 1e-10 LY per day) * 86400 seconds per day
         # Adjust based on ship's antimatter consumption (as a proxy for FTL speed capability)
         # Standard consumption rate is 0.05g/LY, we'll use that as reference
-        ftl_speed_modifier = 0.05 / self.antimatter_consumption  # Faster ships have lower consumption
+        ftl_speed_modifier = (
+            0.05 / self.antimatter_consumption
+        )  # Faster ships have lower consumption
         # Calculate days to travel the distance
-        days_to_travel = (distance_ly / (1e-10 * ftl_speed_modifier))
+        days_to_travel = distance_ly / (1e-10 * ftl_speed_modifier)
         # Convert to seconds
         travel_time_seconds = days_to_travel * 86400
 
@@ -183,7 +196,7 @@ class DualFuelSystem:
             }
 
         # Create travel summary
-        # Ensure summary is used in the return statement        
+        # Ensure summary is used in the return statement
         summary = {
             "origin": getattr(game_state.player_ship, "current_system", "Unknown"),
             "destination": destination_system,
@@ -202,9 +215,11 @@ class DualFuelSystem:
             game_state.player_ship.current_system = destination_system  # type: ignore
             game_state.player_ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
         else:
-            raise AttributeError("Game object is missing 'player_ship' attribute or it is None.")
+            raise AttributeError(
+                "Game object is missing 'player_ship' attribute or it is None."
+            )
         # Set new location
-        assert(game_state.player_ship is not None), "Player ship is None"
+        assert game_state.player_ship is not None, "Player ship is None"
         game_state.player_ship.previous_system = game_state.player_ship.current_system  # type: ignore
         game_state.player_ship.current_system = destination_system  # type: ignore
         game_state.player_ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
@@ -216,13 +231,17 @@ class DualFuelSystem:
 
         # TODO: add a hull integrity system to the ship class
         # game_state.get_player_ship().hull_integrity -= jump_stress
-        
-        game_state.ui.info_message(f"The Jump Stress to the Hull Integrity was of {jump_stress:.2f}%.")
+
+        game_state.ui.info_message(
+            f"The Jump Stress to the Hull Integrity was of {jump_stress:.2f}%."
+        )
 
         # Format travel summary
-        event_desc = result["description"] if "description" in result else "Uneventful journey"
+        event_desc = (
+            result["description"] if "description" in result else "Uneventful journey"
+        )
         antimatter_left = self.antimatter
-        
+
         summary_text = (
             f"FTL Jump complete. Arrival in {destination_system} system.\n"
             f"Distance traveled: {distance_ly:.2f} light years\n"

@@ -11,7 +11,9 @@ from src.data import SHIP_TEMPLATES, BACKGROUND_BONUSES
 init(autoreset=True)
 
 
-def character_creation_event(game_state: Game):    # Default initializations for variables that might not be set in all paths
+def character_creation_event(
+    game_state: Game,
+):  # Default initializations for variables that might not be set in all paths
     ship_name: str = "The Void Jumper"  # Default ship name
     ship_appearance: str = "Stock Model"  # Default ship appearance
     positive_trait: str = "Adaptable"  # Default positive trait
@@ -19,7 +21,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
     dialogue_trait_hint: str = ""  # Initialize this as it's used to set positive_trait
     ship_template_id: str = "balanced_cruiser"  # Default ship template ID
     ship_idx: int = 3  # Default to balanced cruiser (index 3)
-    
+
     # Initialize variables for trait selection to avoid "possibly unbound" errors
     trait_idx: int = 1  # Default value for positive trait index
     neg_trait_idx: int = 1  # Default value for negative trait index
@@ -1834,7 +1836,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender watches as you drink. 'I pride myself on reading customers. You strike me as someone who's...'"
-            )            # Offer positive traits
+            )  # Offer positive traits
             game_state.ui.info_message(
                 Fore.YELLOW + "\nHow do you come across to others?"
             )
@@ -1845,7 +1847,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
             }
 
             trait_idx = 1  # Default to first option
-            
+
             for i, option in pos_trait_options.items():
                 # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
@@ -1886,7 +1888,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender tilts their head, optical sensors whirring. 'But everyone's got their flaws. You seem like you might be...'"
-            )            # Offer negative traits
+            )  # Offer negative traits
             game_state.ui.info_message(Fore.YELLOW + "\nWhat's your biggest weakness?")
             neg_trait_options = {
                 1: "Impatient: 'I don't like waiting. Time is credits, and I've got places to be.'",
@@ -1895,7 +1897,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
             }
 
             neg_trait_idx = 1  # Default to first option
-            
+
             for i, option in neg_trait_options.items():
                 # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.RED}{i}. {option}")
@@ -2100,7 +2102,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender's optical sensors scan you methodically. 'I've served drinks to all types. You strike me as...'"
-            )            # Offer positive traits
+            )  # Offer positive traits
             game_state.ui.info_message(
                 Fore.YELLOW + "\nWhat would others say is your greatest strength?"
             )
@@ -2111,7 +2113,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
             }
 
             trait_idx = 1  # Default to first option
-            
+
             for i, option in pos_trait_options.items():
                 # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.GREEN}{i}. {option}")
@@ -2152,7 +2154,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\n'But everyone has their weaknesses,' Obsidian continues. 'Yours seems to be...'"
-            )            # Offer negative traits
+            )  # Offer negative traits
             game_state.ui.info_message(
                 Fore.YELLOW + "\nWhat might get you into trouble?"
             )
@@ -2163,7 +2165,7 @@ def character_creation_event(game_state: Game):    # Default initializations for
             }
 
             neg_trait_idx = 1  # Default to first option
-            
+
             for i, option in neg_trait_options.items():
                 # sleep(0.2)
                 game_state.ui.info_message(f"{Fore.RED}{i}. {option}")

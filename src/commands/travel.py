@@ -1,7 +1,9 @@
 from pygame import Vector2
 
-from src.classes.game import Game # Ensure this is the updated Game class
-from src.classes.solar_system import SolarSystem # Import SolarSystem for type hinting if needed
+from src.classes.game import Game  # Ensure this is the updated Game class
+from src.classes.solar_system import (
+    SolarSystem,
+)  # Import SolarSystem for type hinting if needed
 from src.helpers import (
     get_closest_field,
     get_closest_station,
@@ -58,8 +60,8 @@ def travel_command(game_state: Game, **kwargs) -> float:
     # Check for debt interest after time has passed
     if game_state.player_character:
         interest_result = game_state.player_character.calculate_debt_interest(
-                int(game_state.global_time / 3600)
-            )
+            int(game_state.global_time / 3600)
+        )
         if interest_result:
             interest_amount, new_debt = interest_result
             game_state.ui.warn_message(f"\n⚠️ DEBT ALERT! ⚠️")
@@ -124,7 +126,7 @@ def closest_travel(game_state: Game, object_type: str) -> None:
 def direct_travel_command(game_state: Game, destination_x: str, destination_y: str):
     """Handle direct travel to coordinates command."""
     try:
-        if (game_state.get_player_ship().is_docked):
+        if game_state.get_player_ship().is_docked:
             game_state.ui.error_message("You must undock your ship before traveling.")
             return
         x = float(destination_x)

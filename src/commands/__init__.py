@@ -13,10 +13,10 @@ from .cargo import cargo_command
 from .market import market_command
 from .ftl_commands import (
     refuel_antimatter_command,
-    repair_containment_command, 
+    repair_containment_command,
     emergency_ejection_command,
     ftl_jump_command,
-    list_systems_command
+    list_systems_command,
 )
 
 # Antimatter Commands:
@@ -48,7 +48,8 @@ __all__ = [
     "Argument",
     "register_command",
     "refuel_command",
-    "travel_command",    "direct_travel_command",
+    "travel_command",
+    "direct_travel_command",
     "scan_command",
     "scan_asteroids_command",
     "command_dock",
@@ -74,7 +75,8 @@ __all__ = [
     "market_command",
     "cargo_command",
     "refuel_antimatter_command",
-    "repair_containment_command",      "emergency_ejection_command",
+    "repair_containment_command",
+    "emergency_ejection_command",
     "ftl_jump_command",
     "list_systems_command",
     "refine_command",

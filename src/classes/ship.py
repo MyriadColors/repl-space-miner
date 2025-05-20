@@ -7,7 +7,14 @@ from src.classes.asteroid import Asteroid, AsteroidField
 from src.classes.engine import Engine, EngineType
 from src.classes.station import Station
 from src.classes.space_object import IsSpaceObject, CanMove
-from src.data import OreCargo, MineralCargo, Upgrade, UpgradeTarget, ENGINES, SHIP_TEMPLATES
+from src.data import (
+    OreCargo,
+    MineralCargo,
+    Upgrade,
+    UpgradeTarget,
+    ENGINES,
+    SHIP_TEMPLATES,
+)
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
 
 
@@ -25,7 +32,7 @@ class Ship:
         value: float = 10000.0,  # Default value
         mining_speed: float = 1.0,  # Default mining_speed
         sensor_range: float = 1.0,  # Default sensor_range
-        appearance: str = "Rust Bucket"  # Default appearance, describes the visual style of the ship
+        appearance: str = "Rust Bucket",  # Default appearance, describes the visual style of the ship
     ):
         """
         Initialize a new Ship instance.
@@ -46,7 +53,7 @@ class Ship:
         self.space_object = IsSpaceObject(position, self.ship_id_counter)
         Ship.ship_id_counter += 1
         self.moves = CanMove(speed)  # in AU/s
-        self.last_position: Optional[Vector2] = None # Initialize last_position
+        self.last_position: Optional[Vector2] = None  # Initialize last_position
 
         # Standard fuel (Hydrogen Cells) for sub-FTL travel
         self.fuel = max_fuel  # in m3
@@ -62,16 +69,14 @@ class Ship:
         # Power system for ship operations and containment
         self.power = 100.0  # Current power level (units)
         self.max_power = 100.0  # Maximum power capacity (units)
-        
+
         # Antimatter containment system
         # Ensures safe storage of antimatter; integrity is a percentage (0-100%)
         self.containment_integrity = 100.0  # percentage
         self.containment_power_draw = (
             0.001  # fuel consumed per hour to maintain containment
         )
-        self.containment_failure_risk = (
-            0.0  # Percentage chance of containment failure; increases with damage or time
-        )
+        self.containment_failure_risk = 0.0  # Percentage chance of containment failure; increases with damage or time
         self.last_containment_check = 0  # game time of last integrity check
 
         self.cargohold: list = []
@@ -81,7 +86,9 @@ class Ship:
         self.mineralhold_occupied: float = 0  # Space occupied by minerals
         self.value = value
         self.mining_speed = mining_speed
-        self.appearance = appearance  # Appearance attribute, used to define the ship's visual style
+        self.appearance = (
+            appearance  # Appearance attribute, used to define the ship's visual style
+        )
         self.interaction_radius = 0.001  # Radius in AUs around the player ship where it can interact with other objects
         self.is_docked = False
         self.docked_at: Station | None = None
@@ -90,9 +97,13 @@ class Ship:
         # Track applied upgrades
         self.applied_upgrades: Dict[str, Upgrade] = {}
         self.hull_integrity: float = 100.0  # Base hull integrity (percentage)
-        self.shield_capacity: float = 0.0  # Base shield capacity (percentage)        # Engine-related attributes
+        self.shield_capacity: float = (
+            0.0  # Base shield capacity (percentage)        # Engine-related attributes
+        )
         self.base_speed: float = speed  # Store original base speed
-        self.base_fuel_consumption: float = fuel_consumption  # Store original base fuel consumption
+        self.base_fuel_consumption: float = (
+            fuel_consumption  # Store original base fuel consumption
+        )
         self.sensor_signature: float = 1.0  # Base sensor signature (affects detection)
         if "standard" in ENGINES:
             std_engine_obj = ENGINES["standard"]
@@ -106,7 +117,7 @@ class Ship:
                 sensor_signature_modifier=std_engine_obj.sensor_signature_modifier,
                 description=std_engine_obj.description,
                 maintenance_cost_modifier=std_engine_obj.maintenance_cost_modifier,
-                magneton_resistance=std_engine_obj.magneton_resistance
+                magneton_resistance=std_engine_obj.magneton_resistance,
             )
         else:
             self.engine = Engine(
@@ -119,41 +130,62 @@ class Ship:
                 sensor_signature_modifier=1.0,
                 description="A basic, reliable engine.",
                 maintenance_cost_modifier=1.0,
-                magneton_resistance=0.0            )
-            
+                magneton_resistance=0.0,
+            )
+
     def get_ore_cargo_by_id(self, ore_id: int, purity=None) -> OreCargo | None:
         """
         Get ore cargo by id and optionally by purity level.
-        
+
         Args:
             ore_id: The ID of the ore to find
             purity: Optional purity level to match (from PurityLevel enum)
-            
+
         Returns:
             OreCargo object if found, None otherwise
         """
         if purity:
-            return next((cargo for cargo in self.cargohold 
-                        if cargo.ore.id == ore_id and cargo.ore.purity == purity), None)
+            return next(
+                (
+                    cargo
+                    for cargo in self.cargohold
+                    if cargo.ore.id == ore_id and cargo.ore.purity == purity
+                ),
+                None,
+            )
         else:
-            return next((cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None)
+            return next(
+                (cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None
+            )
 
-    def get_mineral_cargo_by_id(self, mineral_id: str, quality=None) -> Optional[MineralCargo]:
+    def get_mineral_cargo_by_id(
+        self, mineral_id: str, quality=None
+    ) -> Optional[MineralCargo]:
         """
         Get mineral cargo by id and optionally by quality level.
-        
+
         Args:
             mineral_id: The ID of the mineral to find
             quality: Optional quality level to match (from MineralQuality enum)
-            
+
         Returns:
             MineralCargo object if found, None otherwise
         """
         if quality:
-            return next((cargo for cargo in self.mineralhold 
-                        if cargo.mineral.id == mineral_id and cargo.mineral.quality == quality), None)
+            return next(
+                (
+                    cargo
+                    for cargo in self.mineralhold
+                    if cargo.mineral.id == mineral_id
+                    and cargo.mineral.quality == quality
+                ),
+                None,
+            )
         else:
-            return next((cargo for cargo in self.mineralhold if cargo.mineral.id == mineral_id), None)
+            return next(
+                (cargo for cargo in self.mineralhold if cargo.mineral.id == mineral_id),
+                None,
+            )
 
     def set_name(self, new_name):
         self.name = new_name
@@ -238,7 +270,7 @@ class Ship:
         if confirm != "y":
             print("Travel cancelled.")
             return
-            
+
         # Apply Methodical trait message if applicable
         if (
             hasattr(character, "positive_trait")
@@ -249,12 +281,14 @@ class Ship:
                 "Your methodical approach to navigation optimizes the journey, saving fuel."
             )
 
-        self.last_position = self.space_object.position.copy() # Store current position before moving
+        self.last_position = (
+            self.space_object.position.copy()
+        )  # Store current position before moving
         self.consume_fuel(fuel_consumed)
         self.space_object.position = destination
         game_state.global_time += travel_time
-        print(f"The ship has arrived at {vector_to_string(destination)}")    
-        
+        print(f"The ship has arrived at {vector_to_string(destination)}")
+
     def status_to_string(self) -> list[str]:
         ore_units_on_cargohold = sum(cargo.quantity for cargo in self.cargohold)
         mineral_units_on_mineralhold = sum(cargo.quantity for cargo in self.mineralhold)
@@ -266,7 +300,7 @@ class Ship:
             f"Engine: {self.engine.name}",
             f"Speed: {self.moves.speed:.2f} AU/s",
             f"Hydrogen Fuel: {self.fuel:.2f}/{self.max_fuel} m3",
-            f"Fuel Consumption: {self.fuel_consumption:.4f} m3/AU",            
+            f"Fuel Consumption: {self.fuel_consumption:.4f} m3/AU",
             f"Antimatter: {self.antimatter:.2f}/{self.max_antimatter} g",
             f"Power: {self.power:.2f}/{self.max_power}",
             f"Containment Integrity: {self.containment_integrity:.1f}%",
@@ -437,10 +471,12 @@ class Ship:
                     f"You somehow misplaced {lost_ore_count} units of ore during mining. How forgetful!"
                 )
         else:
-            print("No ores were mined.")        # Recalculate cargo occupancy and update global game time        self.calculate_cargo_occupancy()
+            print(
+                "No ores were mined."
+            )  # Recalculate cargo occupancy and update global game time        self.calculate_cargo_occupancy()
         print(f"Time spent mining: {time_spent} seconds.")
         game_state.global_time += time_spent
-        
+
     def calculate_cargo_occupancy(self):
         """Calculate the total cargo space occupied by ores and minerals."""
         self.cargohold_occupied = sum(
@@ -449,14 +485,14 @@ class Ship:
         self.mineralhold_occupied = sum(
             cargo.quantity * cargo.mineral.volume for cargo in self.mineralhold
         )
-    
+
     def is_cargo_full(self) -> bool:
         total_occupied = self.cargohold_occupied + self.mineralhold_occupied
         return total_occupied >= self.cargohold_capacity
-    
+
     def get_remaining_cargo_space(self) -> float:
         """Get the remaining cargo space, accounting for both ores and minerals.
-        
+
         Returns:
             float: Available cargo space in cubic meters
         """
@@ -472,7 +508,9 @@ class Ship:
         return False, None
 
     def scan_field(self, game_state) -> None:
-        fields: list[AsteroidField] = game_state.get_current_solar_system().asteroid_fields  # MODIFIED
+        fields: list[AsteroidField] = (
+            game_state.get_current_solar_system().asteroid_fields
+        )  # MODIFIED
 
         is_inside_field, field = self.check_field_presence(game_state)
 
@@ -490,11 +528,13 @@ class Ship:
                 "x": self.space_object.position.x,
                 "y": self.space_object.position.y,
             },
-            "speed": self.moves.speed,            "max_fuel": self.max_fuel,
+            "speed": self.moves.speed,
+            "max_fuel": self.max_fuel,
             "fuel": self.fuel,
             "fuel_consumption": self.fuel_consumption,
             "power": self.power,
-            "max_power": self.max_power,            "cargo_capacity": self.cargohold_capacity,
+            "max_power": self.max_power,
+            "cargo_capacity": self.cargohold_capacity,
             "cargohold_occupied": self.cargohold_occupied,
             "cargohold": [cargo.to_dict() for cargo in self.cargohold],
             "mineralhold_occupied": self.mineralhold_occupied,
@@ -510,19 +550,23 @@ class Ship:
             },
             "hull_integrity": self.hull_integrity,
             "shield_capacity": self.shield_capacity,
-            "last_position": {"x": self.last_position.x, "y": self.last_position.y} if self.last_position else None,
+            "last_position": (
+                {"x": self.last_position.x, "y": self.last_position.y}
+                if self.last_position
+                else None
+            ),
         }
-        
+
     def cargo_to_string(self):
         """Return a string representation of the cargo contents."""
         result = []
-        
+
         # Add ore information
         if self.cargohold:
             result.append("=== Ores ===")
             for cargo in self.cargohold:
                 result.append(f"{cargo.quantity} units of {cargo.ore.name}")
-        
+
         # Add mineral information
         if self.mineralhold:
             if result:  # Add a blank line if we already have ores listed
@@ -530,11 +574,11 @@ class Ship:
             result.append("=== Minerals ===")
             for cargo in self.mineralhold:
                 result.append(f"{cargo.quantity} units of {cargo.mineral.name}")
-        
+
         # If we have no cargo, return a message
         if not result:
             return "No cargo"
-            
+
         return "\n".join(result)
 
     @classmethod
@@ -546,25 +590,27 @@ class Ship:
             max_fuel=data["max_fuel"],
             fuel_consumption=data["fuel_consumption"],
             cargo_capacity=data["cargo_capacity"],
-            value=data["value"],            mining_speed=data["mining_speed"],
+            value=data["value"],
+            mining_speed=data["mining_speed"],
             sensor_range=data["sensor_range"],
         )
         ship.fuel = data["fuel"]
-        
+
         # Load power attributes if they exist in saved data, otherwise use defaults
         if "power" in data:
             ship.power = data["power"]
         if "max_power" in data:
             ship.max_power = data["max_power"]
-            
+
         ship.cargohold_occupied = data["cargohold_occupied"]
         ship.cargohold = [
             OreCargo.from_dict(cargo_data) for cargo_data in data["cargohold"]
         ]
-        
+
         # Load mineralhold if present
         if "mineralhold" in data:
             from src.data import MineralCargo
+
             ship.mineralhold_occupied = data.get("mineralhold_occupied", 0.0)
             ship.mineralhold = [
                 MineralCargo.from_dict(cargo_data) for cargo_data in data["mineralhold"]
@@ -572,7 +618,7 @@ class Ship:
         else:
             ship.mineralhold = []
             ship.mineralhold_occupied = 0.0
-            
+
         ship.is_docked = data["is_docked"]
 
         # Load applied upgrades if present
@@ -592,7 +638,9 @@ class Ship:
 
         # Load last_position if present
         if "last_position" in data and data["last_position"] is not None:
-            ship.last_position = Vector2(data["last_position"]["x"], data["last_position"]["y"])
+            ship.last_position = Vector2(
+                data["last_position"]["x"], data["last_position"]["y"]
+            )
         else:
             ship.last_position = None
 
@@ -617,11 +665,9 @@ class Ship:
         else:
             ship.docked_at = None
         return ship
-        
+
     @classmethod
-    def from_template(
-        cls, template_id: str, name: Optional[str] = None
-    ) -> "Ship":
+    def from_template(cls, template_id: str, name: Optional[str] = None) -> "Ship":
         """
         Create a ship from a predefined template in SHIP_TEMPLATES
 
@@ -641,29 +687,73 @@ class Ship:
         # Create the ship with properties from the template, safely converting to expected types
         ship = cls(
             name=ship_name,
-            speed=template["speed"] if isinstance(template["speed"], (int, float)) else 1.0,
-            max_fuel=template["max_fuel"] if isinstance(template["max_fuel"], (int, float)) else 100.0,
-            fuel_consumption=template["fuel_consumption"] if isinstance(template["fuel_consumption"], (int, float)) else 1.0,
-            cargo_capacity=template["cargo_capacity"] if isinstance(template["cargo_capacity"], (int, float)) else 100.0,
-            value=template["value"] if isinstance(template["value"], (int, float)) else 10000.0,
-            mining_speed=template["mining_speed"] if isinstance(template["mining_speed"], (int, float)) else 1.0,
-            sensor_range=template["sensor_range"] if isinstance(template["sensor_range"], (int, float)) else 1.0,
+            speed=(
+                template["speed"]
+                if isinstance(template["speed"], (int, float))
+                else 1.0
+            ),
+            max_fuel=(
+                template["max_fuel"]
+                if isinstance(template["max_fuel"], (int, float))
+                else 100.0
+            ),
+            fuel_consumption=(
+                template["fuel_consumption"]
+                if isinstance(template["fuel_consumption"], (int, float))
+                else 1.0
+            ),
+            cargo_capacity=(
+                template["cargo_capacity"]
+                if isinstance(template["cargo_capacity"], (int, float))
+                else 100.0
+            ),
+            value=(
+                template["value"]
+                if isinstance(template["value"], (int, float))
+                else 10000.0
+            ),
+            mining_speed=(
+                template["mining_speed"]
+                if isinstance(template["mining_speed"], (int, float))
+                else 1.0
+            ),
+            sensor_range=(
+                template["sensor_range"]
+                if isinstance(template["sensor_range"], (int, float))
+                else 1.0
+            ),
             appearance=str(template["description"]),
         )
 
         # Set additional properties that aren't part of the __init__ params
-        ship.hull_integrity = template["hull_integrity"] if isinstance(template["hull_integrity"], (int, float)) else 100.0
-        ship.shield_capacity = template["shield_capacity"] if isinstance(template["shield_capacity"], (int, float)) else 0.0
-        
+        ship.hull_integrity = (
+            template["hull_integrity"]
+            if isinstance(template["hull_integrity"], (int, float))
+            else 100.0
+        )
+        ship.shield_capacity = (
+            template["shield_capacity"]
+            if isinstance(template["shield_capacity"], (int, float))
+            else 0.0
+        )
+
         signature = template.get("sensor_signature", 1.0)
-        ship.sensor_signature = signature if isinstance(signature, (int, float)) else 1.0
+        ship.sensor_signature = (
+            signature if isinstance(signature, (int, float)) else 1.0
+        )
         antimatter = template.get("antimatter_capacity", 5.0)
-        ship.max_antimatter = antimatter if isinstance(antimatter, (int, float)) else 5.0
+        ship.max_antimatter = (
+            antimatter if isinstance(antimatter, (int, float)) else 5.0
+        )
         ship.antimatter = ship.max_antimatter  # Start with full antimatter
-        
+
         # Set antimatter consumption rate from template (default 0.05g per LY)
         antimatter_consumption = template.get("antimatter_consumption", 0.05)
-        ship.antimatter_consumption = antimatter_consumption if isinstance(antimatter_consumption, (int, float)) else 0.05
+        ship.antimatter_consumption = (
+            antimatter_consumption
+            if isinstance(antimatter_consumption, (int, float))
+            else 0.05
+        )
 
         # Set the engine if specified
         engine_id = str(template.get("engine_id", "standard"))
@@ -856,123 +946,145 @@ class Ship:
             float: New credit balance
         """
         return float(game_state.get_player_character().remove_credits(amount))
-        
+
     def repair_containment(self, repair_amount: float) -> None:
         """Repair the antimatter containment system by the specified amount
-        
+
         Args:
             repair_amount: The percentage points to repair
         """
-        self.containment_integrity = min(100.0, self.containment_integrity + repair_amount)
-        self.containment_failure_risk = max(0.0, self.containment_failure_risk - (repair_amount / 2.0))
+        self.containment_integrity = min(
+            100.0, self.containment_integrity + repair_amount
+        )
+        self.containment_failure_risk = max(
+            0.0, self.containment_failure_risk - (repair_amount / 2.0)
+        )
         self.last_containment_check = 0  # Reset the check timer
-        
+
     def emergency_antimatter_ejection(self) -> bool:
         """Emergency procedure to eject all antimatter from the ship
-        
+
         Returns:
             bool: True if successful, False if failed
         """
         if self.antimatter <= 0:
             return False
-            
+
         # Reset antimatter to 0
         self.antimatter = 0.0
-        
+
         # Stabilize containment
         self.containment_failure_risk = 0.0
-        
+
         # Apply some wear on the containment system from emergency procedures
         self.containment_integrity = max(70.0, self.containment_integrity - 10.0)
-        
+
         return True
-        
+
     def check_containment_status(self, game_state) -> tuple[bool, float]:
         """Check the status of the antimatter containment system
-        
+
         Args:
             game_state: The game state containing global time
-            
+
         Returns:
             tuple: (is_safe, failure_risk_percentage)
         """
         # Calculate time since last check
         time_since_check = game_state.global_time - self.last_containment_check
-        
+
         # Update last check time
         self.last_containment_check = game_state.global_time
-        
+
         # Calculate risk based on integrity and time passed
         base_risk = 100.0 - self.containment_integrity
         time_factor = time_since_check / 3600.0  # Convert to hours
-        
+
         # Increase risk over time (0.1% per hour at 100% integrity, more at lower integrity)
         added_risk = time_factor * (0.1 + (1.0 - self.containment_integrity / 100.0))
-        
+
         # Update the containment failure risk
         self.containment_failure_risk = min(100.0, base_risk + added_risk)
-        
+
         # Containment is considered safe if the risk is below 10%
         is_safe = self.containment_failure_risk < 10.0
-        
+
         return is_safe, self.containment_failure_risk
-        
-    def ftl_jump(self, game_state, destination: str, distance: float) -> tuple[bool, str]:
+
+    def ftl_jump(
+        self, game_state, destination: str, distance: float
+    ) -> tuple[bool, str]:
         """Perform an FTL jump to another system
-        
+
         Args:
             game_state: The game state
             destination: Name of the destination system
             distance: Distance to the destination in light-years
-            
+
         Returns:
             tuple: (success, message)
         """
         # Check if there's enough antimatter
         required_antimatter = distance * self.antimatter_consumption
         if self.antimatter < required_antimatter:
-            return False, f"Insufficient antimatter. Need {required_antimatter:.2f}g for this jump."
-            
+            return (
+                False,
+                f"Insufficient antimatter. Need {required_antimatter:.2f}g for this jump.",
+            )
+
         # Check containment integrity
         containment_ok, risk = self.check_containment_status(game_state)
         if not containment_ok:
             return False, f"Antimatter containment unstable ({risk:.1f}% failure risk)."
-            
+
         # Calculate risk of jump failure based on containment integrity
         jump_risk = risk * 0.1  # 10% of containment risk affects jump success
-        
+
         # Apply character's piloting skill to reduce risk if applicable
         character = game_state.get_player_character()
         if character and hasattr(character, "piloting"):
             # Reduce risk based on piloting skill (higher is better)
             piloting_factor = max(0.5, 1.0 - (character.piloting * 0.02))
             jump_risk *= piloting_factor
-        
+
         # If random chance exceeds risk, the jump is successful
         import random
+
         if random.random() > (jump_risk / 100.0):
             # Consume antimatter
             self.antimatter -= required_antimatter
-              # Add travel time using the slower FTL speed
+            # Add travel time using the slower FTL speed
             # Standard rate is 1e-10 LY per day for fastest ships
-            ftl_speed_modifier = 0.05 / self.antimatter_consumption  # Adjust based on ship's FTL efficiency
-            days_to_travel = (distance / (1e-10 * ftl_speed_modifier))
+            ftl_speed_modifier = (
+                0.05 / self.antimatter_consumption
+            )  # Adjust based on ship's FTL efficiency
+            days_to_travel = distance / (1e-10 * ftl_speed_modifier)
             ftl_travel_time = days_to_travel * 86400  # Convert days to seconds
             game_state.global_time += ftl_travel_time
-            
+
             # Apply some wear to containment from the jump
-            self.containment_integrity = max(0, self.containment_integrity - (distance * 0.5))
-            
-            return True, f"Successfully jumped to {destination} in {format_seconds(ftl_travel_time)}."
+            self.containment_integrity = max(
+                0, self.containment_integrity - (distance * 0.5)
+            )
+
+            return (
+                True,
+                f"Successfully jumped to {destination} in {format_seconds(ftl_travel_time)}.",
+            )
         else:
             # Failed jump still consumes antimatter but less than a successful one
             self.antimatter -= required_antimatter * 0.5
-            
+
             # Damage containment system due to failure
-            self.containment_integrity = max(0, self.containment_integrity - (distance * 2.0))
+            self.containment_integrity = max(
+                0, self.containment_integrity - (distance * 2.0)
+            )
             self.containment_failure_risk += distance * 1.5
-            
-            return False, "FTL jump failed. Drive malfunction caused partial antimatter loss."
+
+            return (
+                False,
+                "FTL jump failed. Drive malfunction caused partial antimatter loss.",
+            )
 
     def consume_antimatter(self, value: float) -> None:
         """Consume a specified amount of antimatter fuel."""
@@ -987,4 +1099,3 @@ class Ship:
         time_elapsed = current_time - self.last_containment_check
         self.containment_integrity -= time_elapsed * self.containment_power_draw
         self.last_containment_check = current_time
-

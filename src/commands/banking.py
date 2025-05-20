@@ -126,7 +126,9 @@ def display_financial_summary(game_state: Game, character) -> None:
     elif debt > 5000:
         game_state.ui.warn_message(f"Current Debt: {debt:.2f} credits (Moderate)")
     else:
-        game_state.ui.info_message(f"Current Debt: {debt:.2f} credits (Low)")    # Calculate daily interest
+        game_state.ui.info_message(
+            f"Current Debt: {debt:.2f} credits (Low)"
+        )  # Calculate daily interest
     daily_rate = 0.007 * character.debt_interest_mod
     daily_interest = debt * daily_rate
 
@@ -161,7 +163,7 @@ def debt_management_menu(game_state: Game, character) -> None:
         game_state.ui.clear_screen()
         game_state.ui.info_message(f"\n{'=' * 50}")
         game_state.ui.info_message(f"{Fore.CYAN}DEBT MANAGEMENT{Style.RESET_ALL}")
-        game_state.ui.info_message(f"{'=' * 50}")        # Show current debt status
+        game_state.ui.info_message(f"{'=' * 50}")  # Show current debt status
         daily_rate = 0.007 * character.debt_interest_mod
         daily_interest = character.debt * daily_rate
 
@@ -228,7 +230,7 @@ def loan_menu(game_state: Game, character) -> None:
         game_state.ui.info_message(f"{'=' * 50}")
 
         # Show current debt status
-        max_loan = calculate_max_loan(game_state, character)        
+        max_loan = calculate_max_loan(game_state, character)
         daily_rate = 0.007 * character.debt_interest_mod
 
         game_state.ui.info_message(f"\nCurrent Debt: {character.debt:.2f} credits")
@@ -300,8 +302,12 @@ def savings_menu(game_state: Game, character) -> None:
         game_state.ui.info_message(
             f"Interest Rate: {character.savings_interest_rate:.1%}/week"
         )
-        game_state.ui.info_message(f"Available Credits: {character.credits:.2f}")        # Calculate projected interest
-        daily_interest_savings = character.savings * (character.savings_interest_rate / 7) # Assuming weekly rate, convert to daily
+        game_state.ui.info_message(
+            f"Available Credits: {character.credits:.2f}"
+        )  # Calculate projected interest
+        daily_interest_savings = character.savings * (
+            character.savings_interest_rate / 7
+        )  # Assuming weekly rate, convert to daily
         game_state.ui.info_message(
             f"Projected Daily Interest (Savings): +{daily_interest_savings:.2f} credits"
         )

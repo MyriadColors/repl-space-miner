@@ -5,11 +5,13 @@ from src import helpers
 from src.classes.solar_system import SolarSystem
 import random
 
+
 class Region:
     """
     Represents a sector of the galaxy containing multiple solar systems.
     Coordinates are in light years, from (-100, -100) to (100, 100).
     """
+
     def __init__(self, name: str):
         self.name = name
         self.solar_systems: List[SolarSystem] = []
@@ -35,8 +37,9 @@ class Region:
         return float(helpers.euclidean_distance(Vector2(x1, y1), Vector2(x2, y2)))
 
     @staticmethod
-    def generate_random_region(name: str, num_systems: int = 30) -> 'Region':
+    def generate_random_region(name: str, num_systems: int = 30) -> "Region":
         from src.classes.solar_system import SolarSystem
+
         region = Region(name)
         used_coords = set()
         for i in range(num_systems):
@@ -48,6 +51,13 @@ class Region:
                     break
             system_name = f"System_{i+1}"
             # Todo, add templates for system generation so we can have different parameters for generating systems
-            system = SolarSystem(system_name, x, y, round(random.uniform(50, 150), 2), random.randrange(15, 50), random.randrange(1, 10))
+            system = SolarSystem(
+                system_name,
+                x,
+                y,
+                round(random.uniform(50, 150), 2),
+                random.randrange(15, 50),
+                random.randrange(1, 10),
+            )
             region.add_system(system)
         return region

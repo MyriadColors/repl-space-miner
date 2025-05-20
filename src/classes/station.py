@@ -183,7 +183,7 @@ class Station:
         from src.classes.ore import ORES  # Local import
         from src.classes.ship import IsSpaceObject  # Local import
         from pygame import Vector2
-        from src.data import OreCargo # Ensure OreCargo is imported for from_dict
+        from src.data import OreCargo  # Ensure OreCargo is imported for from_dict
 
         station = cls(
             name=data["name"],
@@ -191,19 +191,25 @@ class Station:
             position=Vector2(data["position"]["x"], data["position"]["y"]),
         )
 
-        station.space_object = IsSpaceObject( 
+        station.space_object = IsSpaceObject(
             Vector2(data["position"]["x"], data["position"]["y"]), data["id"]
         )
         station.fuel_tank_capacity = data["fueltank_cap"]
         station.fuel_tank = data["fueltank"]
         station.fuel_price = data["fuel_price"]
-        
+
         station.ore_cargo = [
             OreCargo.from_dict(oc_data) for oc_data in data["ore_cargo"]
         ]
-        station.ores_available = [oc.ore for oc in station.ore_cargo if oc.ore is not None]
-        station.ore_cargo_volume = sum(oc.ore.volume * oc.quantity for oc in station.ore_cargo if oc.ore is not None)
-        
+        station.ores_available = [
+            oc.ore for oc in station.ore_cargo if oc.ore is not None
+        ]
+        station.ore_cargo_volume = sum(
+            oc.ore.volume * oc.quantity
+            for oc in station.ore_cargo
+            if oc.ore is not None
+        )
+
         station.ore_capacity = data["ore_capacity"]
         station.visited = data.get("visited", False)
         return station
@@ -219,10 +225,14 @@ class Station:
             # Create new ore cargo if this ore type isn't in inventory yet
             buy_price = round(item_ore.base_value * rnd_float(0.75, 1.25), 2)
             sell_price = round(buy_price * rnd_float(0.5, 1.0), 2)
-            self.ore_cargo.append(OreCargo(item_ore, item_quantity, buy_price, sell_price))
+            self.ore_cargo.append(
+                OreCargo(item_ore, item_quantity, buy_price, sell_price)
+            )
         # Update ores_available and ore_cargo_volume after adding item
         self.ores_available = [oc.ore for oc in self.ore_cargo if oc.ore is not None]
-        self.ore_cargo_volume = sum(oc.ore.volume * oc.quantity for oc in self.ore_cargo if oc.ore is not None)
+        self.ore_cargo_volume = sum(
+            oc.ore.volume * oc.quantity for oc in self.ore_cargo if oc.ore is not None
+        )
 
     def remove_item(self, item_ore: Ore, item_quantity: int):
         """Remove an item from the station's inventory."""
@@ -235,7 +245,13 @@ class Station:
                 if ore_cargo.quantity <= 0:
                     self.ore_cargo.remove(ore_cargo)
                 # Update ores_available and ore_cargo_volume after removing item
-                self.ores_available = [oc.ore for oc in self.ore_cargo if oc.ore is not None]
-                self.ore_cargo_volume = sum(oc.ore.volume * oc.quantity for oc in self.ore_cargo if oc.ore is not None)
+                self.ores_available = [
+                    oc.ore for oc in self.ore_cargo if oc.ore is not None
+                ]
+                self.ore_cargo_volume = sum(
+                    oc.ore.volume * oc.quantity
+                    for oc in self.ore_cargo
+                    if oc.ore is not None
+                )
                 return True
         return False

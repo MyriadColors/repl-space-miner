@@ -1,4 +1,3 @@
-
 from src.classes.game import Game
 
 # Colorama is still needed for direct colors in specific cases

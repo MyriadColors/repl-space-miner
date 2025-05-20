@@ -18,7 +18,7 @@ from src.classes.game import Game, background_choices
 def quick_start(game_state: "Game"):
     """Quick start option for players who want to skip the detailed character creation."""
     print(Fore.CYAN + "Quick start selected. Creating a default character...")
-    
+
     # Default character settings
     player_name = "Captain"
     age = 35
@@ -26,20 +26,21 @@ def quick_start(game_state: "Game"):
     chosen_background_name = "Ex-Miner"
     chosen_positive = "Resourceful"
     chosen_negative = "Impatient"
-    
+
     # Find the chosen background from the background_choices list
     chosen_background = None
     for bg in background_choices:
         if bg.name == chosen_background_name:
             chosen_background = bg
             break
-    
+
     if not chosen_background:
         # Fallback in case the background isn't found
         print(Fore.RED + "Error: Background not found. Using default settings.")
         return
     # Create the character with default settings
     from src.classes.game import Character
+
     game_state.player_character = Character(
         name=player_name,
         age=age,
@@ -48,24 +49,34 @@ def quick_start(game_state: "Game"):
         starting_creds=5000.0,  # Add default starting credits
         starting_debt=10000.0,  # Add default starting debt
     )
-    
+
     # Apply personality traits
     game_state.player_character.positive_trait = chosen_positive
     game_state.player_character.negative_trait = chosen_negative
-    
+
     print(Fore.GREEN + f"Created character: {player_name}, {age} year old {sex}")
     print(Fore.GREEN + f"Background: {chosen_background.name}")
     print(Fore.GREEN + f"Positive trait: {chosen_positive}")
     print(Fore.GREEN + f"Negative trait: {chosen_negative}")
-      # Create default ship
+    # Create default ship
     from src.classes.ship import Ship
+
     # Use the balanced cruiser template as a default ship
     game_state.player_ship = Ship.from_template("balanced_cruiser", "Rusty Bucket")
     # Position it at the random station
-    if game_state.rnd_station and game_state.player_ship is not None and hasattr(game_state.player_ship, "space_object"):
-        game_state.player_ship.space_object.position = game_state.rnd_station.position.copy()
+    if (
+        game_state.rnd_station
+        and game_state.player_ship is not None
+        and hasattr(game_state.player_ship, "space_object")
+    ):
+        game_state.player_ship.space_object.position = (
+            game_state.rnd_station.position.copy()
+        )
     else:
-        print(Fore.RED + "Error: Random station or player ship not found for quick start. Ship position not set.")
+        print(
+            Fore.RED
+            + "Error: Random station or player ship not found for quick start. Ship position not set."
+        )
         # Optionally, set a default position or handle this case as needed
         # if game_state.player_ship and hasattr(game_state.player_ship, "space_object"):
         #     game_state.player_ship.space_object.position = pg.math.Vector2(0, 0) # Example default
@@ -233,22 +244,32 @@ class AntimatterFluctuation(FTLEvent):
                 # Small chance of further deterioration
                 if self.severity == 3:
                     # Minor chance of a secondary effect
-                    if random.random() < 0.25: # Already a probability, no need to round
+                    if (
+                        random.random() < 0.25
+                    ):  # Already a probability, no need to round
                         further_drop = random.uniform(2.0, 5.0)
                         player_ship.containment_integrity -= further_drop
-                        game_state.ui.info_message(f"Minor cascade failure: Containment integrity decreased by an additional {further_drop:.2f}.")
+                        game_state.ui.info_message(
+                            f"Minor cascade failure: Containment integrity decreased by an additional {further_drop:.2f}."
+                        )
                 elif self.severity == 4:
                     # Moderate chance of a secondary effect
-                    if random.random() < 0.5: # Already a probability, no need to round
+                    if random.random() < 0.5:  # Already a probability, no need to round
                         further_drop = random.uniform(5.0, 10.0)
                         player_ship.containment_integrity -= further_drop
-                        game_state.ui.info_message(f"Warning: Containment integrity dropped by an additional {further_drop:.2f} due to fluctuations.")
+                        game_state.ui.info_message(
+                            f"Warning: Containment integrity dropped by an additional {further_drop:.2f} due to fluctuations."
+                        )
                 else:  # self.severity == 5
                     # High chance of a critical failure
-                    if random.random() < 0.75: # Already a probability, no need to round
+                    if (
+                        random.random() < 0.75
+                    ):  # Already a probability, no need to round
                         further_drop = random.uniform(10.0, 20.0)
                         player_ship.containment_integrity -= further_drop
-                        game_state.ui.info_message(f"CRITICAL FAILURE: Containment integrity plummeted by {further_drop:.2f}!! Immediate action required!")
+                        game_state.ui.info_message(
+                            f"CRITICAL FAILURE: Containment integrity plummeted by {further_drop:.2f}!! Immediate action required!"
+                        )
 
                 # For minor events, just show the message
                 print(message)
@@ -419,7 +440,7 @@ class SpacetimeDisruption(FTLEvent):
                     )
                     print(
                         f"The ordeal adds {time_effect/60:.0f} minutes to your journey."
-                    )                    
+                    )
                     result_choice3_neutral: EventResultDict = {
                         "choice": "ride_out",
                         "outcome": "neutral",

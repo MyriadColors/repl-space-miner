@@ -552,7 +552,8 @@ ENGINES = {
 }
 
 # Ship templates for character creation
-SHIP_TEMPLATES = {    "armored_behemoth": {
+SHIP_TEMPLATES = {
+    "armored_behemoth": {
         "name": "Armored Behemoth",
         "description": "Thick plating, heavy weapon mounts. Built to take a beating and dish one out.",
         "speed": 1e-10,  # Slowest ship (1e-10 AU/s)
@@ -619,7 +620,7 @@ SHIP_TEMPLATES = {    "armored_behemoth": {
         "sensor_signature": 1.1,  # Higher signature due to mining equipment
         "antimatter_capacity": 4.0,  # Lower antimatter capacity
         "antimatter_consumption": 0.065,  # Higher consumption due to bulk (0.065g/LY)
-    },    # Special ships for contacts
+    },  # Special ships for contacts
     "merc_veteran": {
         "name": "Mercenary Veteran",
         "description": "A battle-hardened vessel with custom combat modifications and stealth capabilities.",

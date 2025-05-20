@@ -43,11 +43,11 @@ class SolarSystem:
         self.generate_stations()
 
     def print_all_objects(self):
-        for (i, field) in enumerate(self.asteroid_fields):
+        for i, field in enumerate(self.asteroid_fields):
             print(f"Field {i}: {field.to_string()}")
-        for (i, station) in enumerate(self.stations):
+        for i, station in enumerate(self.stations):
             print(f"Station {i}: {station.to_string()}")
-    
+
     def get_size(self):
         return self.size
 

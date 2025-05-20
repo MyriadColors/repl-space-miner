@@ -1,8 +1,9 @@
 from pygame import Vector2
 
+
 class IsSpaceObject:
     """Base class for all space objects with position and ID"""
-    
+
     def __init__(self, position: Vector2, id: int) -> None:
         self.position: Vector2 = position
         self.id: int = id
@@ -19,7 +20,7 @@ class IsSpaceObject:
 
 class CanMove:
     """Mixin for objects that can move"""
-    
+
     def __init__(self, speed: float):
         self.speed: float = speed
 
