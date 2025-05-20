@@ -160,13 +160,18 @@ class DualFuelSystem:
             return (
                 False,
                 f"Antimatter containment system unstable. Current risk: {risk:.1f}%. Repairs needed before FTL jump.",
-            )
-
-        # All checks passed, perform FTL jump
-        self.antimatter -= required_antimatter
-
-        # Calculate travel time (30 seconds per light year)
-        travel_time_seconds = distance_ly * 30
+            )        # All checks passed, perform FTL jump
+        self.antimatter -= required_antimatter        # Calculate travel time based on the desired speed of 1e-10 LY per day for fastest ships
+        # 1e-10 LY per day = 1.16e-15 LY per second
+        # For 1 LY, that's approximately 86400 seconds per 1e-10 LY
+        # This gives travel time = (1 LY / 1e-10 LY per day) * 86400 seconds per day
+        # Adjust based on ship's antimatter consumption (as a proxy for FTL speed capability)
+        # Standard consumption rate is 0.05g/LY, we'll use that as reference
+        ftl_speed_modifier = 0.05 / self.antimatter_consumption  # Faster ships have lower consumption
+        # Calculate days to travel the distance
+        days_to_travel = (distance_ly / (1e-10 * ftl_speed_modifier))
+        # Convert to seconds
+        travel_time_seconds = days_to_travel * 86400
 
         # Get a random event
         event = get_random_ftl_event()

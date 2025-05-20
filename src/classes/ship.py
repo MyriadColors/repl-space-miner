@@ -953,9 +953,11 @@ class Ship:
         if random.random() > (jump_risk / 100.0):
             # Consume antimatter
             self.antimatter -= required_antimatter
-            
-            # Add travel time (FTL is fast but not instant)
-            ftl_travel_time = distance * 60.0  # 1 light-year takes 60 seconds
+              # Add travel time using the slower FTL speed
+            # Standard rate is 1e-10 LY per day for fastest ships
+            ftl_speed_modifier = 0.05 / self.antimatter_consumption  # Adjust based on ship's FTL efficiency
+            days_to_travel = (distance / (1e-10 * ftl_speed_modifier))
+            ftl_travel_time = days_to_travel * 86400  # Convert days to seconds
             game_state.global_time += ftl_travel_time
             
             # Apply some wear to containment from the jump

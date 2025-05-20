@@ -105,7 +105,8 @@ name_parts = [
     "mor",
     "kur",
     "ker",
-    "ni", "ler",
+    "ni",
+    "ler",
     "der",
     "ber",
     "shar",
@@ -210,18 +211,18 @@ class OreCargo:
             "quantity": self.quantity,
             "buy_price": self.buy_price,
             "sell_price": self.sell_price,
-            "purity": self.ore.purity.name if hasattr(self.ore, 'purity') else "RAW"
+            "purity": self.ore.purity.name if hasattr(self.ore, "purity") else "RAW",
         }
 
     @classmethod
     def from_dict(cls, data):
         from src.classes.ore import ORES, PurityLevel
-        
+
         ore_obj = ORES.get(data["ore_id"])
-        if (ore_obj is None):
+        if ore_obj is None:
             # Handle missing ore, perhaps raise an error or return None
             raise ValueError(f"Ore with ID {data['ore_id']} not found in ORES map.")
-            
+
         # Handle purity if present
         if "purity" in data:
             try:
@@ -231,15 +232,21 @@ class OreCargo:
                     name=ore_obj.name,
                     base_value=ore_obj.base_value,
                     volume=ore_obj.volume,
-                    mineral_yield=ore_obj.mineral_yield.copy() if ore_obj.mineral_yield else [],
+                    mineral_yield=(
+                        ore_obj.mineral_yield.copy() if ore_obj.mineral_yield else []
+                    ),
                     id=ore_obj.id,
                     purity=purity_level,
-                    refining_difficulty=ore_obj.refining_difficulty if hasattr(ore_obj, 'refining_difficulty') else 1.0
+                    refining_difficulty=(
+                        ore_obj.refining_difficulty
+                        if hasattr(ore_obj, "refining_difficulty")
+                        else 1.0
+                    ),
                 )
             except (KeyError, AttributeError):
                 # If there's an error with purity, use the default ore
                 pass
-                
+
         return cls(
             ore=ore_obj,
             quantity=data["quantity"],
@@ -253,6 +260,7 @@ class MineralCargo:
     """
     Represents a quantity of minerals in the player's cargo or a station's inventory.
     """
+
     mineral: Mineral
     quantity: int
     buy_price: float
@@ -264,18 +272,24 @@ class MineralCargo:
             "quantity": self.quantity,
             "buy_price": self.buy_price,
             "sell_price": self.sell_price,
-            "quality": self.mineral.quality.name if hasattr(self.mineral, 'quality') else "STANDARD"
+            "quality": (
+                self.mineral.quality.name
+                if hasattr(self.mineral, "quality")
+                else "STANDARD"
+            ),
         }
 
     @classmethod
     def from_dict(cls, data):
         from src.classes.mineral import MINERALS, MineralQuality
-        
+
         mineral_obj = MINERALS.get(data["mineral_id"])
-        if (mineral_obj is None):
+        if mineral_obj is None:
             # Handle missing mineral, raise an error
-            raise ValueError(f"Mineral with ID {data['mineral_id']} not found in MINERALS map.")
-            
+            raise ValueError(
+                f"Mineral with ID {data['mineral_id']} not found in MINERALS map."
+            )
+
         # Handle quality if present
         if "quality" in data:
             try:
@@ -286,12 +300,12 @@ class MineralCargo:
                     base_value=mineral_obj.base_value,
                     volume=mineral_obj.volume,
                     id=mineral_obj.id,
-                    quality=quality_level
+                    quality=quality_level,
                 )
             except (KeyError, AttributeError):
                 # If there's an error with quality, use the default mineral
                 pass
-                
+
         return cls(
             mineral=mineral_obj,
             quantity=data["quantity"],
@@ -461,7 +475,7 @@ UPGRADES = {
         category=UpgradeCategory.SENSORS,
         target=UpgradeTarget.SENSOR_RANGE,
         multiplier=1.1,
-    ),    # Defense upgrades
+    ),  # Defense upgrades
     "hull_plating": Upgrade(
         id="hull_plating",
         name="Reinforced Hull Plating",
@@ -538,11 +552,10 @@ ENGINES = {
 }
 
 # Ship templates for character creation
-SHIP_TEMPLATES = {    
-    "armored_behemoth": {
+SHIP_TEMPLATES = {    "armored_behemoth": {
         "name": "Armored Behemoth",
         "description": "Thick plating, heavy weapon mounts. Built to take a beating and dish one out.",
-        "speed": 0.8,  # Slower due to heavy armor
+        "speed": 1e-10,  # Slowest ship (1e-10 AU/s)
         "max_fuel": 120.0,  # Higher fuel capacity
         "fuel_consumption": 1.2,  # Higher fuel consumption due to weight
         "cargo_capacity": 120.0,  # Large cargo hold
@@ -555,11 +568,11 @@ SHIP_TEMPLATES = {
         "sensor_signature": 1.2,  # Higher signature due to bulk
         "antimatter_capacity": 5.0,  # Standard antimatter capacity
         "antimatter_consumption": 0.07,  # Higher consumption due to mass (0.07g/LY)
-    },    
+    },
     "agile_interceptor": {
         "name": "Agile Interceptor",
         "description": "Streamlined and fast. Prioritizes speed and maneuverability over raw power.",
-        "speed": 1.4,  # Significantly faster
+        "speed": 1e-04,  # Fastest ship (1e-04 AU/s or 0.0001 AU/s)
         "max_fuel": 80.0,  # Lower fuel capacity
         "fuel_consumption": 0.8,  # More efficient due to streamlining
         "cargo_capacity": 70.0,  # Smaller cargo capacity
@@ -572,11 +585,11 @@ SHIP_TEMPLATES = {
         "sensor_signature": 0.8,  # Lower signature due to smaller profile
         "antimatter_capacity": 6.0,  # Enhanced antimatter capacity
         "antimatter_consumption": 0.04,  # Efficient antimatter use (0.04g/LY)
-    },    
+    },
     "balanced_cruiser": {
         "name": "Balanced Cruiser",
         "description": "A versatile design. Decent armor, speed, and firepower for most situations.",
-        "speed": 1.0,  # Balanced speed
+        "speed": 5e-05,  # Balanced speed (5e-05 AU/s)
         "max_fuel": 100.0,  # Standard fuel capacity
         "fuel_consumption": 1.0,  # Standard fuel consumption
         "cargo_capacity": 100.0,  # Standard cargo
@@ -589,11 +602,11 @@ SHIP_TEMPLATES = {
         "sensor_signature": 1.0,  # Standard signature
         "antimatter_capacity": 5.0,  # Standard antimatter capacity
         "antimatter_consumption": 0.05,  # Standard consumption rate (0.05g/LY)
-    },    
+    },
     "mining_vessel": {
         "name": "Mining Vessel",
         "description": "Specialized for asteroid mining with enhanced ore extraction systems.",
-        "speed": 0.9,  # Slightly slower
+        "speed": 3e-05,  # Slightly slower (3e-05 AU/s)
         "max_fuel": 110.0,  # More fuel for mining operations
         "fuel_consumption": 1.1,  # Higher consumption due to mining equipment
         "cargo_capacity": 140.0,  # Large cargo for ore storage
@@ -606,12 +619,11 @@ SHIP_TEMPLATES = {
         "sensor_signature": 1.1,  # Higher signature due to mining equipment
         "antimatter_capacity": 4.0,  # Lower antimatter capacity
         "antimatter_consumption": 0.065,  # Higher consumption due to bulk (0.065g/LY)
-    },
-    # Special ships for contacts
+    },    # Special ships for contacts
     "merc_veteran": {
         "name": "Mercenary Veteran",
         "description": "A battle-hardened vessel with custom combat modifications and stealth capabilities.",
-        "speed": 1.1,  # Good speed
+        "speed": 7e-05,  # Good speed
         "max_fuel": 100.0,
         "fuel_consumption": 0.9,  # Efficient
         "cargo_capacity": 90.0,
@@ -624,11 +636,11 @@ SHIP_TEMPLATES = {
         "sensor_signature": 0.7,  # Low signature for stealth operations
         "antimatter_capacity": 6.0,  # Enhanced antimatter capacity
         "antimatter_consumption": 0.048,  # Efficient military-grade system (0.048g/LY)
-    },    
+    },
     "hunter_ship": {
         "name": "Bounty Hunter's Pursuit",
         "description": "A sleek, customized vessel with advanced tracking systems and reinforced hull.",
-        "speed": 1.3,  # Very fast
+        "speed": 8e-05,  # Very fast
         "max_fuel": 90.0,
         "fuel_consumption": 1.0,
         "cargo_capacity": 80.0,  # Lower cargo capacity
@@ -645,7 +657,7 @@ SHIP_TEMPLATES = {
     "research_vessel": {
         "name": "Scientific Explorer",
         "description": "A research vessel equipped with advanced sensors and analytical equipment.",
-        "speed": 0.9,
+        "speed": 2e-05,  # Moderate speed
         "max_fuel": 110.0,
         "fuel_consumption": 0.7,  # Fuel efficient
         "cargo_capacity": 80.0,
@@ -661,7 +673,7 @@ SHIP_TEMPLATES = {
     "smuggler_ship": {
         "name": "Smuggler's Edge",
         "description": "A customized freighter with hidden compartments and stealth modifications.",
-        "speed": 1.2,
+        "speed": 6e-05,  # Good speed
         "max_fuel": 95.0,
         "fuel_consumption": 0.8,
         "cargo_capacity": 110.0,  # Good cargo capacity with hidden compartments
