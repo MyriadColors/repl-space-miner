@@ -299,6 +299,12 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         write_command("buy/b <item> <amount>", "Buy items from station", True, "docked")
         write_command("sell/s", "Sell items to station", True, "docked")
         write_command(
+            "market/prices/shop",
+            "View current station market prices and available goods",
+            True,
+            "docked",
+        )
+        write_command(
             "upgrade/up [id]", "View or purchase ship upgrades", True, "docked"
         )
         game_state.ui.info_message("")
