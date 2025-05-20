@@ -67,9 +67,8 @@ class Skill:
             return 100.0
             
         xp_for_current = self.xp_for_previous_level()
-        xp_for_next = self.xp_for_next_level()
-        xp_needed = xp_for_next - xp_for_current
-        current_progress = self._xp - xp_for_current
+        xp_needed = self.xp_for_next_level()
+        current_progress = max(0, self._xp - xp_for_current)  # Ensure progress is never negative
         
         if xp_needed <= 0:  # Avoid division by zero
             return 100.0

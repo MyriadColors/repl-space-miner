@@ -29,18 +29,23 @@ def skills_command(game_state: Game, args=None) -> None:
         display_all_skills(game_state, skill_system)
         return
     
+    # Ensure args is a list and join multiple words for skill names
+    if isinstance(args, str):
+        args = [args]
+    
     # Handle specific commands
     if args[0].lower() == "spend":
         if len(args) < 2:
             game_state.ui.warn_message("Please specify a skill to spend points on.")
             game_state.ui.info_message("Usage: skills spend [skill_name]")
             return
-            
-        skill_name = args[1].lower()
+        
+        # Use all remaining arguments as the skill name (in case it's multiple words)
+        skill_name = " ".join(args[1:]).lower()
         spend_skill_point(game_state, skill_system, skill_name)
     else:
-        # View a specific skill
-        skill_name = args[0].lower()
+        # View a specific skill - join all arguments as the skill name
+        skill_name = " ".join(args).lower()
         display_skill_detail(game_state, skill_system, skill_name)
 
 def display_all_skills(game_state: Game, skill_system) -> None:
@@ -65,9 +70,30 @@ def display_all_skills(game_state: Game, skill_system) -> None:
 
 def display_skill_detail(game_state: Game, skill_system, skill_name: str) -> None:
     """Display detailed information about a specific skill."""
+    # First try exact match
     skill = skill_system.get_skill(skill_name)
+    
+    # If not found, try matching with available skills
+    if not skill:
+        # Check if skill_name is an abbreviation or partial match
+        available_skills = list(skill_system.skills.keys())
+        matches = [s for s in available_skills if s.startswith(skill_name)]
+        
+        if len(matches) == 1:
+            # Single match found, use it
+            skill_name = matches[0]
+            skill = skill_system.get_skill(skill_name)
+        elif len(matches) > 1:
+            # Multiple matches, inform user
+            game_state.ui.error_message(f"Multiple skills match '{skill_name}': {', '.join(matches)}")
+            game_state.ui.info_message("Please be more specific.")
+            return
+    
     if not skill:
         game_state.ui.error_message(f"Skill '{skill_name}' not found.")
+        # Show available skills
+        available_skills = list(skill_system.skills.keys())
+        game_state.ui.info_message(f"Available skills: {', '.join(available_skills)}")
         return
     
     progress = skill.xp_progress_percentage()
@@ -91,10 +117,31 @@ def spend_skill_point(game_state: Game, skill_system, skill_name: str) -> None:
     if skill_system.unspent_skill_points <= 0:
         game_state.ui.error_message("You don't have any skill points to spend.")
         return
-        
+    
+    # First try exact match
     skill = skill_system.get_skill(skill_name)
+    
+    # If not found, try matching with available skills
+    if not skill:
+        # Check if skill_name is an abbreviation or partial match
+        available_skills = list(skill_system.skills.keys())
+        matches = [s for s in available_skills if s.startswith(skill_name)]
+        
+        if len(matches) == 1:
+            # Single match found, use it
+            skill_name = matches[0]
+            skill = skill_system.get_skill(skill_name)
+        elif len(matches) > 1:
+            # Multiple matches, inform user
+            game_state.ui.error_message(f"Multiple skills match '{skill_name}': {', '.join(matches)}")
+            game_state.ui.info_message("Please be more specific.")
+            return
+    
     if not skill:
         game_state.ui.error_message(f"Skill '{skill_name}' not found.")
+        # Show available skills
+        available_skills = list(skill_system.skills.keys())
+        game_state.ui.info_message(f"Available skills: {', '.join(available_skills)}")
         return
     
     # Try to spend the point
@@ -110,6 +157,8 @@ def spend_skill_point(game_state: Game, skill_system, skill_name: str) -> None:
 
 def generate_progress_bar(percentage: float, width: int = 20) -> str:
     """Generate a text-based progress bar."""
+    # Ensure percentage is within valid range
+    percentage = max(0.0, min(100.0, percentage))
     filled_width = int(width * percentage / 100)
     bar = "█" * filled_width + "░" * (width - filled_width)
     return f"[{bar}]"
@@ -119,5 +168,5 @@ def register_skill_commands():
     register_command(
         ["skills", "skill", "sk"],
         skills_command,
-        [Argument("args", list, True)]
+        [Argument("args", str, True)]  # Change from list to str to handle full skill name
     )
