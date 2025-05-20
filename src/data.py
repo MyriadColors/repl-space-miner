@@ -3,7 +3,10 @@ from random import choice
 from enum import Enum, auto
 from typing import Dict, Optional, List
 
-from src.classes.ore import Ore, ORES
+from src.classes.ore import Ore, ORES, PurityLevel
+
+# Import Mineral and MineralQuality at the top level
+from src.classes.mineral import Mineral, MineralQuality
 from src.classes.engine import Engine, EngineType
 
 # This will be used to generate random names
@@ -207,16 +210,90 @@ class OreCargo:
             "quantity": self.quantity,
             "buy_price": self.buy_price,
             "sell_price": self.sell_price,
+            "purity": self.ore.purity.name if hasattr(self.ore, 'purity') else "RAW"
         }
 
     @classmethod
     def from_dict(cls, data):
+        from src.classes.ore import ORES, PurityLevel
+        
         ore_obj = ORES.get(data["ore_id"])
         if (ore_obj is None):
             # Handle missing ore, perhaps raise an error or return None
             raise ValueError(f"Ore with ID {data['ore_id']} not found in ORES map.")
+            
+        # Handle purity if present
+        if "purity" in data:
+            try:
+                purity_level = PurityLevel[data["purity"]]
+                # Create a copy of the ore with the saved purity level
+                ore_obj = Ore(
+                    name=ore_obj.name,
+                    base_value=ore_obj.base_value,
+                    volume=ore_obj.volume,
+                    mineral_yield=ore_obj.mineral_yield.copy() if ore_obj.mineral_yield else [],
+                    id=ore_obj.id,
+                    purity=purity_level,
+                    refining_difficulty=ore_obj.refining_difficulty if hasattr(ore_obj, 'refining_difficulty') else 1.0
+                )
+            except (KeyError, AttributeError):
+                # If there's an error with purity, use the default ore
+                pass
+                
         return cls(
             ore=ore_obj,
+            quantity=data["quantity"],
+            buy_price=data["buy_price"],
+            sell_price=data["sell_price"],
+        )
+
+
+@dataclass
+class MineralCargo:
+    """
+    Represents a quantity of minerals in the player's cargo or a station's inventory.
+    """
+    mineral: Mineral
+    quantity: int
+    buy_price: float
+    sell_price: float
+
+    def to_dict(self):
+        return {
+            "mineral_id": self.mineral.id,
+            "quantity": self.quantity,
+            "buy_price": self.buy_price,
+            "sell_price": self.sell_price,
+            "quality": self.mineral.quality.name if hasattr(self.mineral, 'quality') else "STANDARD"
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        from src.classes.mineral import MINERALS, MineralQuality
+        
+        mineral_obj = MINERALS.get(data["mineral_id"])
+        if (mineral_obj is None):
+            # Handle missing mineral, raise an error
+            raise ValueError(f"Mineral with ID {data['mineral_id']} not found in MINERALS map.")
+            
+        # Handle quality if present
+        if "quality" in data:
+            try:
+                quality_level = MineralQuality[data["quality"]]
+                # Create a copy of the mineral with the saved quality level
+                mineral_obj = Mineral(
+                    name=mineral_obj.name,
+                    base_value=mineral_obj.base_value,
+                    volume=mineral_obj.volume,
+                    id=mineral_obj.id,
+                    quality=quality_level
+                )
+            except (KeyError, AttributeError):
+                # If there's an error with quality, use the default mineral
+                pass
+                
+        return cls(
+            mineral=mineral_obj,
             quantity=data["quantity"],
             buy_price=data["buy_price"],
             sell_price=data["sell_price"],

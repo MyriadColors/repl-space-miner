@@ -7,7 +7,7 @@ from src.classes.asteroid import Asteroid, AsteroidField
 from src.classes.engine import Engine, EngineType
 from src.classes.station import Station
 from src.classes.space_object import IsSpaceObject, CanMove
-from src.data import OreCargo, Upgrade, UpgradeTarget, ENGINES, SHIP_TEMPLATES
+from src.data import OreCargo, MineralCargo, Upgrade, UpgradeTarget, ENGINES, SHIP_TEMPLATES
 from src.helpers import euclidean_distance, vector_to_string, format_seconds
 
 
@@ -77,6 +77,8 @@ class Ship:
         self.cargohold: list = []
         self.cargohold_occupied: float = 0
         self.cargohold_capacity = cargo_capacity
+        self.mineralhold: list = []  # Storage for minerals
+        self.mineralhold_occupied: float = 0  # Space occupied by minerals
         self.value = value
         self.mining_speed = mining_speed
         self.appearance = appearance  # Appearance attribute, used to define the ship's visual style
@@ -117,11 +119,41 @@ class Ship:
                 sensor_signature_modifier=1.0,
                 description="A basic, reliable engine.",
                 maintenance_cost_modifier=1.0,
-                magneton_resistance=0.0
-            )
+                magneton_resistance=0.0            )
+            
+    def get_ore_cargo_by_id(self, ore_id: int, purity=None) -> OreCargo | None:
+        """
+        Get ore cargo by id and optionally by purity level.
+        
+        Args:
+            ore_id: The ID of the ore to find
+            purity: Optional purity level to match (from PurityLevel enum)
+            
+        Returns:
+            OreCargo object if found, None otherwise
+        """
+        if purity:
+            return next((cargo for cargo in self.cargohold 
+                        if cargo.ore.id == ore_id and cargo.ore.purity == purity), None)
+        else:
+            return next((cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None)
 
-    def get_ore_cargo_by_id(self, ore_id: int) -> OreCargo | None:
-        return next((cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None)
+    def get_mineral_cargo_by_id(self, mineral_id: str, quality=None) -> Optional[MineralCargo]:
+        """
+        Get mineral cargo by id and optionally by quality level.
+        
+        Args:
+            mineral_id: The ID of the mineral to find
+            quality: Optional quality level to match (from MineralQuality enum)
+            
+        Returns:
+            MineralCargo object if found, None otherwise
+        """
+        if quality:
+            return next((cargo for cargo in self.mineralhold 
+                        if cargo.mineral.id == mineral_id and cargo.mineral.quality == quality), None)
+        else:
+            return next((cargo for cargo in self.mineralhold if cargo.mineral.id == mineral_id), None)
 
     def set_name(self, new_name):
         self.name = new_name
@@ -221,10 +253,12 @@ class Ship:
         self.consume_fuel(fuel_consumed)
         self.space_object.position = destination
         game_state.global_time += travel_time
-        print(f"The ship has arrived at {vector_to_string(destination)}")
-
+        print(f"The ship has arrived at {vector_to_string(destination)}")    
+        
     def status_to_string(self) -> list[str]:
         ore_units_on_cargohold = sum(cargo.quantity for cargo in self.cargohold)
+        mineral_units_on_mineralhold = sum(cargo.quantity for cargo in self.mineralhold)
+        total_cargo_occupied = self.cargohold_occupied + self.mineralhold_occupied
         docked_at_name = "Not docked" if self.docked_at is None else self.docked_at.name
         return [
             f"Ship Name: {self.name}",
@@ -236,19 +270,15 @@ class Ship:
             f"Antimatter: {self.antimatter:.2f}/{self.max_antimatter} g",
             f"Power: {self.power:.2f}/{self.max_power}",
             f"Containment Integrity: {self.containment_integrity:.1f}%",
-            f"Cargohold: {self.cargohold_occupied:.2f}/{self.cargohold_capacity} m3",
-            f"Amount of Ores: {ore_units_on_cargohold}",
+            f"Cargo Total: {total_cargo_occupied:.2f}/{self.cargohold_capacity} m3",
+            f"Ores: {ore_units_on_cargohold} units ({self.cargohold_occupied:.2f} m3)",
+            f"Minerals: {mineral_units_on_mineralhold} units ({self.mineralhold_occupied:.2f} m3)",
             f"Docked at: {docked_at_name}",
             f"Hull Integrity: {self.hull_integrity:.1f}%",
             f"Shield Capacity: {self.shield_capacity:.1f}%",
             f"Sensor Range: {self.sensor_range:.2f} AU",
             f"Sensor Signature: {self.sensor_signature:.2f}",
         ]
-
-    def cargo_to_string(self):
-        return "\n".join(
-            f"{cargo.quantity} units of {cargo.ore.name}" for cargo in self.cargohold
-        )
 
     def get_docked_station(self) -> Station | None:
         return self.docked_at
@@ -407,20 +437,31 @@ class Ship:
                     f"You somehow misplaced {lost_ore_count} units of ore during mining. How forgetful!"
                 )
         else:
-            print("No ores were mined.")
-
-        # Recalculate cargo occupancy and update global game time
-        self.calculate_cargo_occupancy()
+            print("No ores were mined.")        # Recalculate cargo occupancy and update global game time        self.calculate_cargo_occupancy()
         print(f"Time spent mining: {time_spent} seconds.")
         game_state.global_time += time_spent
-
+        
     def calculate_cargo_occupancy(self):
+        """Calculate the total cargo space occupied by ores and minerals."""
         self.cargohold_occupied = sum(
             cargo.quantity * cargo.ore.volume for cargo in self.cargohold
         )
-
+        self.mineralhold_occupied = sum(
+            cargo.quantity * cargo.mineral.volume for cargo in self.mineralhold
+        )
+    
     def is_cargo_full(self) -> bool:
-        return self.cargohold_occupied == self.cargohold_capacity
+        total_occupied = self.cargohold_occupied + self.mineralhold_occupied
+        return total_occupied >= self.cargohold_capacity
+    
+    def get_remaining_cargo_space(self) -> float:
+        """Get the remaining cargo space, accounting for both ores and minerals.
+        
+        Returns:
+            float: Available cargo space in cubic meters
+        """
+        total_occupied = self.cargohold_occupied + self.mineralhold_occupied
+        return max(0.0, self.cargohold_capacity - total_occupied)
 
     def check_field_presence(self, game_state) -> Tuple[bool, Optional[AsteroidField]]:
         for field in game_state.get_current_solar_system().asteroid_fields:  # MODIFIED
@@ -453,10 +494,11 @@ class Ship:
             "fuel": self.fuel,
             "fuel_consumption": self.fuel_consumption,
             "power": self.power,
-            "max_power": self.max_power,
-            "cargo_capacity": self.cargohold_capacity,
+            "max_power": self.max_power,            "cargo_capacity": self.cargohold_capacity,
             "cargohold_occupied": self.cargohold_occupied,
             "cargohold": [cargo.to_dict() for cargo in self.cargohold],
+            "mineralhold_occupied": self.mineralhold_occupied,
+            "mineralhold": [cargo.to_dict() for cargo in self.mineralhold],
             "value": self.value,
             "mining_speed": self.mining_speed,
             "sensor_range": self.sensor_range,
@@ -470,6 +512,30 @@ class Ship:
             "shield_capacity": self.shield_capacity,
             "last_position": {"x": self.last_position.x, "y": self.last_position.y} if self.last_position else None,
         }
+        
+    def cargo_to_string(self):
+        """Return a string representation of the cargo contents."""
+        result = []
+        
+        # Add ore information
+        if self.cargohold:
+            result.append("=== Ores ===")
+            for cargo in self.cargohold:
+                result.append(f"{cargo.quantity} units of {cargo.ore.name}")
+        
+        # Add mineral information
+        if self.mineralhold:
+            if result:  # Add a blank line if we already have ores listed
+                result.append("")
+            result.append("=== Minerals ===")
+            for cargo in self.mineralhold:
+                result.append(f"{cargo.quantity} units of {cargo.mineral.name}")
+        
+        # If we have no cargo, return a message
+        if not result:
+            return "No cargo"
+            
+        return "\n".join(result)
 
     @classmethod
     def from_dict(cls, data, game_state):  # Added game_state parameter
@@ -495,6 +561,18 @@ class Ship:
         ship.cargohold = [
             OreCargo.from_dict(cargo_data) for cargo_data in data["cargohold"]
         ]
+        
+        # Load mineralhold if present
+        if "mineralhold" in data:
+            from src.data import MineralCargo
+            ship.mineralhold_occupied = data.get("mineralhold_occupied", 0.0)
+            ship.mineralhold = [
+                MineralCargo.from_dict(cargo_data) for cargo_data in data["mineralhold"]
+            ]
+        else:
+            ship.mineralhold = []
+            ship.mineralhold_occupied = 0.0
+            
         ship.is_docked = data["is_docked"]
 
         # Load applied upgrades if present

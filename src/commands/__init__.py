@@ -8,6 +8,7 @@ from .trading import buy_command, sell_command
 from .mining import mine_command
 from .upgrade import upgrade_command
 from .debug import add_creds_debug_command, add_ore_debug_command, debug_mode_command
+from .refine import refine_command, refine_to_minerals_command
 from .ftl_commands import (
     refuel_antimatter_command,
     repair_containment_command, 
@@ -72,9 +73,10 @@ __all__ = [
     "add_ore_debug_command",
     "debug_mode_command",
     "refuel_antimatter_command",
-    "repair_containment_command",
-    "emergency_ejection_command",
+    "repair_containment_command",    "emergency_ejection_command",
     "ftl_jump_command",
     "list_systems_command",
     "system_jump_command",
+    "refine_command",
+    "refine_to_minerals_command",
 ]
