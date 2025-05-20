@@ -95,10 +95,12 @@ def debug_mode_command(game_state: Game) -> None:
     game_state.ui.info_message(f"Debug mode {status}")
 
 
-def save_game_command(game_state: Game, filename: str = "", human_readable: Optional[bool] = None) -> None:
+def save_game_command(
+    game_state: Game, filename: str = "", human_readable: Optional[bool] = None
+) -> None:
     """
     Save the current game state.
-    
+
     Args:
         game_state: The current game state
         filename: Optional file name for the save
@@ -111,8 +113,8 @@ def save_game_command(game_state: Game, filename: str = "", human_readable: Opti
         # Handle None case by using a default value (False) or prompting user
         if human_readable is None:
             prompt = input("Save in human-readable format? (y/n): ")
-            human_readable = prompt.lower() == 'y'
-        
+            human_readable = prompt.lower() == "y"
+
         game_state.save_game(filename, human_readable)
     except Exception as e:
         game_state.ui.error_message(f"Failed to save game: {str(e)}")
@@ -197,16 +199,44 @@ def display_help(game_state: Game, command_name: str = "") -> None:
                 for arg in command.arguments:
                     optional = "(optional)" if arg.is_optional else "(required)"
                     game_state.ui.info_message(
-                        f"  {arg.name} ({arg.type.__name__}) {optional}"
-                    )
+                        f"  {arg.name} ({arg.type.__name__}) {optional}"                    )
+            return
         else:
             game_state.ui.error_message(f"Unknown command: {command_name}")
-    else:
-        # Display general help
-        game_state.ui.info_message("\nAvailable Commands:")
-        game_state.ui.info_message("------------------")
+            return
+            
+    # Display general help
+    game_state.ui.info_message("\nAVAILABLE COMMANDS:")
+    game_state.ui.info_message("==================")
 
-        # Travel commands
+    # Show the player's current context
+    player_ship = game_state.get_player_ship()
+    if player_ship:
+        is_docked = player_ship.is_docked
+        is_in_field, _ = player_ship.check_field_presence(game_state)
+
+        context_message = "Current context: "
+        if is_docked:
+            context_message += f"{Fore.GREEN}DOCKED AT STATION{Style.RESET_ALL}"
+        elif is_in_field:
+            context_message += f"{Fore.GREEN}IN ASTEROID FIELD{Style.RESET_ALL}"
+        else:
+            context_message += f"{Fore.GREEN}IN SPACE{Style.RESET_ALL}"
+
+        game_state.ui.info_message(context_message)
+        game_state.ui.info_message(
+            "Commands are color-coded based on availability in your current context:"
+        )
+        game_state.ui.info_message(
+            f"  {Fore.GREEN}Green{Style.RESET_ALL}: Available now"
+        )
+        game_state.ui.info_message(
+            f"  {Fore.YELLOW}Yellow{Style.RESET_ALL}: Requires different context"
+        )
+        game_state.ui.info_message("")
+
+        # NAVIGATION CATEGORY
+        game_state.ui.info_message(f"{Fore.CYAN}=== NAVIGATION ==={Style.RESET_ALL}")
         write_command(
             "travel/t <x> <y>", "Travel to specific coordinates", True, "undocked"
         )
@@ -218,9 +248,32 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         )
         write_command(
             "direct/d <x> <y>", "Direct travel to coordinates", True, "undocked"
-        )
+        )        
+        write_command("dock/do", "Dock with nearby station", True, "undocked")
+        write_command("undock/ud", "Undock from current station", True, "docked")
+        game_state.ui.info_message("")  
 
-        # Mining commands
+        # FTL TRAVEL CATEGORY
+        game_state.ui.info_message(f"{Fore.CYAN}=== FTL TRAVEL ==={Style.RESET_ALL}")
+        write_command("listsystems/lsys", "List all available solar systems", True)
+        write_command(
+            "system_jump/sjump <index>",
+            "Jump to a solar system by index",
+            True,
+            "undocked",
+        )
+        write_command(
+            "ftl_jump/ftl <destination> <distance>",
+            "Perform FTL jump",
+            True,
+            "undocked",
+        )
+        game_state.ui.info_message("")
+
+        # MINING CATEGORY
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== MINING & SCANNING ==={Style.RESET_ALL}"
+        )
         write_command(
             "mine/m <time> [until_full] [ore]",
             "Mine asteroids for specified time",
@@ -228,51 +281,94 @@ def display_help(game_state: Game, command_name: str = "") -> None:
             "field",
         )
         write_command("scan/s", "Scan current asteroid field", True, "field")
+        game_state.ui.info_message("")
 
-        # Trading commands
+        # CARGO & RESOURCES CATEGORY
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== CARGO & RESOURCES ==={Style.RESET_ALL}"
+        )
+        write_command("cargo/inv/inventory", "Display ship cargo and inventory", True)
+        write_command("refine [amount]", "Refine ore to higher purity", True, "docked")
+        write_command(
+            "refine_to_minerals [amount]", "Convert ore to minerals", True, "docked"
+        )
+        game_state.ui.info_message("")
+
+        # TRADING CATEGORY
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== TRADING & COMMERCE ==={Style.RESET_ALL}"
+        )
         write_command("buy/b <item> <amount>", "Buy items from station", True, "docked")
         write_command("sell/s", "Sell items to station", True, "docked")
-
-        # Banking commands
-        write_command(
-            "bank/repay [amount]",
-            "Access banking services to repay debt",
-            True,
-            "docked",
-        )
-
-        # Docking commands
-        write_command("dock/do", "Dock with nearby station", True, "undocked")
-        write_command("undock/ud", "Undock from current station", True, "docked")
-
-        # Refuel commands
-        write_command("refuel <amount>", "Refuel your ship", True, "docked")
-        
-        # Antimatter commands
-        write_command("refuel_antimatter/refa <amount>", "Refuel with antimatter", True, "docked")
-        write_command("repair_containment/repc", "Repair antimatter containment", True, "docked")
-        write_command("eject_antimatter/eject", "Emergency ejection of antimatter", True)
-        write_command("ftl_jump/ftl <destination> <distance>", "Perform FTL jump", True, "undocked")
-        
-        # System navigation commands 
-        write_command("listsystems/lsys", "List all available solar systems", True)
-        write_command("system_jump/sjump <index>", "Jump to a solar system by index", True, "undocked")
-
-        # Upgrade commands
         write_command(
             "upgrade/up [id]", "View or purchase ship upgrades", True, "docked"
         )
+        game_state.ui.info_message("")
 
-        # System commands
+        # RESOURCES MANAGEMENT CATEGORY
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== SHIP RESOURCES ==={Style.RESET_ALL}"
+        )
+        write_command(
+            "refuel <amount>", "Refuel your ship with standard fuel", True, "docked"
+        )
+        write_command(
+            "refuel_antimatter/refa <amount>", "Refuel with antimatter", True, "docked"
+        )
+        write_command(
+            "repair_containment/repc", "Repair antimatter containment", True, "docked"
+        )
+        write_command(
+            "eject_antimatter/eject", "Emergency ejection of antimatter", True
+        )
+        game_state.ui.info_message("")
+
+        # BANKING & FINANCE
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== BANKING & FINANCE ==={Style.RESET_ALL}"
+        )
+        write_command(
+            "bank/banking",
+            "Access banking services for loans, deposits and repaying debt",
+            True,
+            "docked",
+        )
+        game_state.ui.info_message("")
+
+        # CHARACTER PROGRESSION
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== CHARACTER PROGRESSION ==={Style.RESET_ALL}"
+        )
+        write_command("character/char/c", "Display character sheet", True)
+        write_command("skills/skill/sk [name]", "View or upgrade skills", True)
+        game_state.ui.info_message("")
+
+        # SYSTEM & UI COMMANDS
+        game_state.ui.info_message(f"{Fore.CYAN}=== SYSTEM & UI ==={Style.RESET_ALL}")
         write_command("status", "Display ship and game status", True)
         write_command("time", "Display current game time", True)
-        write_command("character/char/c", "Display character sheet", True)
-        write_command("exit", "Exit the game", True)
         write_command("clear", "Clear the screen", True)
-        write_command("debug", "Toggle debug mode", True)
         write_command("save [filename]", "Save current game state", True)
         write_command("load [filename]", "Load saved game state", True)
+        write_command("exit", "Exit the game", True)
         write_command("help [command]", "Display help information", True)
+        game_state.ui.info_message("")
+
+        # CUSTOMIZATION
+        game_state.ui.info_message(f"{Fore.CYAN}=== CUSTOMIZATION ==={Style.RESET_ALL}")
+        write_command("color <text|background> <color>", "Change terminal colors", True)
+        write_command("reset", "Reset terminal colors to defaults", True)
+        write_command("sound", "Toggle game sound effects", True)
+        game_state.ui.info_message("")
+
+        # DEBUG COMMANDS
+        game_state.ui.info_message(f"{Fore.CYAN}=== DEBUG ==={Style.RESET_ALL}")
+        write_command("debug", "Toggle debug mode", True)
+
+        # Footer with tip
+        game_state.ui.info_message(
+            "\nTip: Use 'help <command>' for detailed information about a specific command."
+        )
 
 
 # Register system commands
