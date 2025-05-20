@@ -214,13 +214,16 @@ def run_game_loop(game_state):
     while True:
         command_input = input("> ").lower()
         if command_input in ["exit", "quit"]:
-            command_exit(game_state)
-            break
+            should_exit = command_exit(game_state)
+            if should_exit:
+                # Perform necessary cleanup operations here
+                print("Performing cleanup operations before exiting the game.")
+                pg.quit()
+                break
+            # If exit was canceled, continue with the loop
+            continue
         try:
             process_command(game_state, command_input)
         except ValueError as e:
             print(f"Invalid command: {e}")
         pg.time.wait(100)  # Add a small delay to reduce CPU usage
-    # Perform necessary cleanup operations here
-    print("Performing cleanup operations before exiting the game.")
-    pg.quit()

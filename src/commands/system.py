@@ -75,12 +75,20 @@ def display_time_and_status(game_state: Game) -> None:
     display_status(game_state)
 
 
-def command_exit(game_state: Game) -> None:
-    """Handle game exit command."""
-    confirm = input("Are you sure you want to exit? (y/n) ")
-    if confirm.lower() == "y":
+def command_exit(game_state: Game) -> bool:
+    """
+    Handle game exit command.
+    
+    Returns:
+        bool: True if exit confirmed, False otherwise
+    """
+    confirm = input("Are you sure you want to exit? (y/n): ")
+    if confirm.lower() in ["y", "yes"]:
         game_state.ui.info_message("Thanks for playing!")
-        exit(0)
+        return True
+    else:
+        game_state.ui.info_message("Exit canceled.")
+        return False
 
 
 def clear(game_state: Game) -> None:
