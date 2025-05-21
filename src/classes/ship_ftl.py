@@ -213,15 +213,8 @@ class DualFuelSystem:
         }
         
         if hasattr(game_state, "advance_time"):
-            # Cap the maximum travel time to prevent integer overflow
-            # Use a maximum of 30 days (in seconds) to avoid overflow
-            max_travel_seconds = 30 * 86400  # 30 days in seconds
-            capped_travel_seconds = min(travel_time_seconds, max_travel_seconds)
-            game_state.advance_time(timedelta(seconds=capped_travel_seconds))
-            
-            # Log if we had to cap the travel time
-            if capped_travel_seconds < travel_time_seconds:
-                game_state.ui.info_message(f"FTL travel time was capped to {capped_travel_seconds/86400:.1f} days for system stability.")
+            # Apply the full travel time without any cap
+            game_state.advance_time(timedelta(seconds=travel_time_seconds))
         else:
             raise AttributeError("Game object is missing 'advance_time' method.")
         if game_state.player_ship is not None:
