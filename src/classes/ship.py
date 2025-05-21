@@ -68,16 +68,14 @@ class Ship:
 
         # Power system for ship operations and containment
         self.power = 100.0  # Current power level (units)
-        self.max_power = 100.0  # Maximum power capacity (units)
-
-        # Antimatter containment system
+        self.max_power = 100.0  # Maximum power capacity (units)        # Antimatter containment system
         # Ensures safe storage of antimatter; integrity is a percentage (0-100%)
         self.containment_integrity = 100.0  # percentage
         self.containment_power_draw = (
             0.001  # fuel consumed per hour to maintain containment
         )
         self.containment_failure_risk = 0.0  # Percentage chance of containment failure; increases with damage or time
-        self.last_containment_check = 0  # game time of last integrity check
+        self.last_containment_check = 0.0  # game time of last integrity check
 
         self.cargohold: list = []
         self.cargohold_occupied: float = 0
@@ -491,7 +489,7 @@ class Ship:
         return total_occupied >= self.cargohold_capacity
 
     def get_remaining_cargo_space(self) -> float:
-        """Get the remaining cargo space, accounting for both ores and minerals.
+        """Get the remaining cargo space, accounting for both ores and minerals
 
         Returns:
             float: Available cargo space in cubic meters
@@ -842,40 +840,86 @@ class Ship:
             "attribute": upgrade.target.name.lower(),
             "before": 0.0,  # Initialize as float
             "after": 0.0,  # Initialize as float
+            "is_positive": True,  # Whether higher values are better
+            "display_precision": 2,  # Default precision for display formatting
+            "unit": "",  # Unit of measurement for the attribute
         }
 
         # Get current value based on target
         if upgrade.target == UpgradeTarget.SPEED:
             result["before"] = float(self.moves.speed)
             result["after"] = float(self.moves.speed * upgrade.multiplier)
+            result["is_positive"] = True
+            result["display_precision"] = (
+                6  # Speed values are very small, use more precision
+            )
+            result["unit"] = "AU/s"
 
         elif upgrade.target == UpgradeTarget.MINING_SPEED:
             result["before"] = float(self.mining_speed)
             result["after"] = float(self.mining_speed * upgrade.multiplier)
+            result["is_positive"] = True
+            result["unit"] = "units/s"
 
         elif upgrade.target == UpgradeTarget.FUEL_CONSUMPTION:
             result["before"] = float(self.fuel_consumption)
             result["after"] = float(self.fuel_consumption * upgrade.multiplier)
+            result["is_positive"] = False  # Lower fuel consumption is better
+            result["display_precision"] = 4  # More precision for fuel consumption
+            result["unit"] = "m³/AU"
 
         elif upgrade.target == UpgradeTarget.FUEL_CAPACITY:
             result["before"] = float(self.max_fuel)
             result["after"] = float(self.max_fuel * upgrade.multiplier)
+            result["is_positive"] = True
+            result["unit"] = "m³"
 
         elif upgrade.target == UpgradeTarget.CARGO_CAPACITY:
             result["before"] = float(self.cargohold_capacity)
             result["after"] = float(self.cargohold_capacity * upgrade.multiplier)
+            result["is_positive"] = True
+            result["unit"] = "m³"
 
         elif upgrade.target == UpgradeTarget.SENSOR_RANGE:
             result["before"] = float(self.sensor_range)
             result["after"] = float(self.sensor_range * upgrade.multiplier)
+            result["is_positive"] = True
+            result["unit"] = "AU"
 
         elif upgrade.target == UpgradeTarget.HULL_INTEGRITY:
             result["before"] = float(self.hull_integrity)
             result["after"] = float(self.hull_integrity * upgrade.multiplier)
+            result["is_positive"] = True
+            result["unit"] = "%"
 
         elif upgrade.target == UpgradeTarget.SHIELD_CAPACITY:
             result["before"] = float(self.shield_capacity)
             result["after"] = float(max(0.1, self.shield_capacity * upgrade.multiplier))
+            result["is_positive"] = True
+            result["unit"] = "%"  # Calculate percentage change
+        try:
+            # Ensure we're working with numerical values by converting to float
+            before = result["before"]
+            after = result["after"]
+            # Convert to float explicitly only if they're not already numeric types
+            if not isinstance(before, (int, float)):
+                before = 0.0
+            if not isinstance(after, (int, float)):
+                after = 0.0
+
+            if float(before) > 0:
+                result["percent_change"] = (
+                    (float(after) - float(before)) / float(before)
+                ) * 100
+            else:
+                if float(after) > 0:
+                    result["percent_change"] = (
+                        100.0  # If starting from 0, it's a 100% increase
+                    )
+                else:
+                    result["percent_change"] = 0.0
+        except (TypeError, ValueError):
+            result["percent_change"] = 0.0
 
         return result
 
@@ -989,12 +1033,13 @@ class Ship:
 
         Returns:
             tuple: (is_safe, failure_risk_percentage)
-        """
-        # Calculate time since last check
-        time_since_check = game_state.global_time - self.last_containment_check
+        """  # Calculate time since last check - ensure we're working with float values
+        global_time_float = float(game_state.global_time)
+        last_check_float = float(self.last_containment_check)
+        time_since_check = global_time_float - last_check_float
 
-        # Update last check time
-        self.last_containment_check = game_state.global_time
+        # Update last check time - explicitly convert to float to maintain consistent type
+        self.last_containment_check = float(global_time_float)
 
         # Calculate risk based on integrity and time passed
         base_risk = 100.0 - self.containment_integrity
@@ -1094,8 +1139,15 @@ class Ship:
         """Refuel the ship's antimatter supply."""
         self.antimatter = min(self.max_antimatter, self.antimatter + value)
 
-    def check_containment_integrity(self, current_time: int) -> None:
+    def check_containment_integrity(self, current_time: float) -> None:
         """Check and update the containment integrity of the antimatter system."""
-        time_elapsed = current_time - self.last_containment_check
+        # Ensure we're working with float values
+        current_time_float = float(current_time)
+        last_check_float = float(self.last_containment_check)
+        time_elapsed = current_time_float - last_check_float
+
+        # Update containment integrity based on elapsed time
         self.containment_integrity -= time_elapsed * self.containment_power_draw
-        self.last_containment_check = current_time
+
+        # Update the last check time
+        self.last_containment_check = current_time_float

@@ -69,31 +69,33 @@ class Station:
 
         self.ore_cargo_volume = 0.0
         max_total_volume = self.ore_capacity / rnd_int(1, 3)  # More generous allocation
-        
+
         # First pass - ensure every ore has at least some quantity
         min_qty_per_ore = 5  # Minimum quantity of each ore type
-        
+
         for ore_cargo in self.ore_cargo:
             # Ensure there's at least some of each ore type (for trade diversity)
             ore_cargo.quantity = min_qty_per_ore
             self.ore_cargo_volume += ore_cargo.ore.volume * min_qty_per_ore
-        
+
         # Second pass - distribute remaining capacity randomly
         remaining_volume = max_total_volume - self.ore_cargo_volume
-        
+
         for ore_cargo in self.ore_cargo:
             # Calculate max additional quantity for this ore based on remaining volume
             if remaining_volume <= 0:
                 break
-                
+
             max_quantity = int(remaining_volume // ore_cargo.ore.volume)
             if max_quantity <= 0:
                 continue
-                
+
             # Generate a random quantity, but avoid using all remaining volume on one ore
-            max_for_this_ore = min(max_quantity, 1000, int(max_quantity * random.random() * 0.8))
+            max_for_this_ore = min(
+                max_quantity, 1000, int(max_quantity * random.random() * 0.8)
+            )
             additional_quantity = random.randint(0, max_for_this_ore)
-              # Update quantity and remaining volume
+            # Update quantity and remaining volume
             ore_cargo.quantity += additional_quantity
             remaining_volume -= ore_cargo.ore.volume * additional_quantity
             self.ore_cargo_volume += ore_cargo.ore.volume * additional_quantity

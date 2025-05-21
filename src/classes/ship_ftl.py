@@ -175,20 +175,20 @@ class DualFuelSystem:
         self.antimatter -= required_antimatter  # Calculate travel time based on the desired speed of 1e-10 LY per day for fastest ships        # Use a more reasonable scale for FTL travel - 1 LY per day as base speed
         # This means a distance of 1 LY would take approximately 1 day to travel
         base_ftl_speed = 1.0  # LY per day
-        
+
         # Adjust based on ship's antimatter consumption (as a proxy for FTL speed capability)
         # Standard consumption rate is 0.05g/LY, we'll use that as reference
         ftl_speed_modifier = (
             0.05 / self.antimatter_consumption
         )  # Faster ships have lower consumption
-        
+
         # Calculate days to travel the distance
         effective_speed = base_ftl_speed * ftl_speed_modifier
         days_to_travel = distance_ly / effective_speed
-        
+
         # Add some randomization (±10%)
         days_to_travel *= random.uniform(0.9, 1.1)
-        
+
         # Convert to seconds
         travel_time_seconds = days_to_travel * 86400
 
@@ -211,7 +211,7 @@ class DualFuelSystem:
             "travel_time": travel_time_seconds,
             "event": result,
         }
-        
+
         if hasattr(game_state, "advance_time"):
             # Apply the full travel time without any cap
             game_state.advance_time(timedelta(seconds=travel_time_seconds))

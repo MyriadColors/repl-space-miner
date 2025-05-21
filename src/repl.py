@@ -156,7 +156,7 @@ def register_commands(game_state: "Game"):
             Argument("amount", int, False, 0, None),
             Argument("ore_name", str, False, 1, None),
         ],
-    )  # Removed duplicate registration for display_character_sheet
+    )
 
     # Register skill commands
     from src.commands.skills import register_skill_commands
@@ -172,7 +172,6 @@ def start_repl():
 
 
 def run_intro_and_setup(game_state):
-    # Use the properly exported intro_event function
     import src.events
 
     src.events.character_creation_event(game_state)
@@ -201,14 +200,11 @@ def run_intro_and_setup(game_state):
     # Ensure the ship is docked even if created during the intro event
     # Check if player_ship exists and is not docked
     elif game_state.player_ship and not game_state.player_ship.is_docked:
-        # Position it at the random station (redundant if intro doesn't set position, but safe)
         game_state.player_ship.space_object.position = (
             game_state.rnd_station.position.copy()
         )
         # Dock the ship at the random station
-        game_state.player_ship.dock_into_station(
-            game_state.rnd_station
-        )  # Add this block
+        game_state.player_ship.dock_into_station(game_state.rnd_station)
 
 
 def run_game_loop(game_state):
@@ -221,7 +217,7 @@ def run_game_loop(game_state):
             process_command(game_state, command_input)
         except ValueError as e:
             print(f"Invalid command: {e}")
-        pg.time.wait(100)  # Add a small delay to reduce CPU usage
+        pg.time.wait(100)
     # Perform necessary cleanup operations here
     print("Performing cleanup operations before exiting the game.")
     pg.quit()

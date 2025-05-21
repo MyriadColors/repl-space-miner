@@ -27,8 +27,8 @@ class SolarSystem:
         x: float,
         y: float,
         size: float = 100.0,
-        field_quantity: int = 0,
-        station_quantity: int = 0,
+        field_quantity: int = 10,
+        station_quantity: int = 1,
     ):
         self.x = x  # X position in region (LY)
         self.y = y  # Y position in region (LY)

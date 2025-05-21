@@ -102,11 +102,11 @@ class Ore:
         """
         # Apply purity modifier to yields
         purity_yield_modifiers = {
-            PurityLevel.RAW: 0.6,  # Lower yield from raw ore
-            PurityLevel.LOW: 0.8,
-            PurityLevel.MEDIUM: 0.9,
-            PurityLevel.HIGH: 0.95,
-            PurityLevel.ULTRA: 1.0,  # Maximum yield
+            PurityLevel.RAW: 0.5,  # Lower yield from raw ore
+            PurityLevel.LOW: 0.60,
+            PurityLevel.MEDIUM: 0.75,
+            PurityLevel.HIGH: 0.85,
+            PurityLevel.ULTRA: 0.95,  # Maximum yield
         }
 
         purity_modifier = purity_yield_modifiers.get(self.purity, 0.6)

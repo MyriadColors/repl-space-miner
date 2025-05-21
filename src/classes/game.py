@@ -689,7 +689,7 @@ class Game:
         skip_customization: bool = False,
     ) -> None:
         self.global_time = 0
-        self.region = Region.generate_random_region("Local Sector", 25)
+        self.region = Region.generate_random_region("Local Sector", 50)
         self.solar_systems = self.region.solar_systems
         self.current_solar_system_index = 0
         # Get stations from the current solar system
@@ -698,7 +698,7 @@ class Game:
             random.choice(current_system.stations) if current_system.stations else None
         )
         self.player_character: Optional[Character] = None
-        self.player_ship: Optional[Ship] = None  # MODIFIED: Allow Ship type
+        self.player_ship: Optional[Ship] = None
         self.debug_flag = debug_flag
         self.mute_flag = mute_flag
         self.skipc = skip_customization
@@ -750,7 +750,7 @@ class Game:
         """Adds a new solar system to the game."""
         self.solar_systems.append(solar_system)
 
-    def get_solar_system(self):  # Existing method, now returns current system
+    def get_solar_system(self):
         return self.get_current_solar_system()
 
     def advance_time(self, time_delta):
@@ -762,9 +762,6 @@ class Game:
         """
         # Convert timedelta to seconds and add to global_time
         self.global_time += time_delta.total_seconds()
-
-        # Additional time-based updates can be added here
-        # For example, updating ship systems, applying effects, etc.
 
     def get_region(self) -> Region:
         return self.region
@@ -780,7 +777,7 @@ class Game:
             "player_ship": self.player_ship.to_dict() if self.player_ship else None,
             "debug_flag": self.debug_flag,
             "mute_flag": self.mute_flag,
-            "skip_customization": self.skipc,  # Skip customization flag
+            "skip_customization": self.skipc,
         }
 
     @classmethod
@@ -797,9 +794,7 @@ class Game:
             SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]
         ]
         game.current_solar_system_index = data.get("current_solar_system_index", 0)
-        if (
-            not game.solar_systems
-        ):  # Fallback if a save had no solar systems (unlikely but safe)
+        if not game.solar_systems:
             game.solar_systems = [
                 SolarSystem(
                     name="Default Gen",
@@ -815,9 +810,7 @@ class Game:
         if data["player_character"]:
             game.player_character = Character.from_dict(data["player_character"])
         if data["player_ship"]:
-            game.player_ship = Ship.from_dict(
-                data["player_ship"], game
-            )  # Pass game instance
+            game.player_ship = Ship.from_dict(data["player_ship"], game)
         game.ui = ui_instance  # Assign the passed UI instance
         return game
 

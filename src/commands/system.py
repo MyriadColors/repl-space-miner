@@ -17,7 +17,9 @@ def display_status(game_state: Game) -> None:
     # --- SHIP SECTION ---
     game_state.ui.info_message("\n===== SHIP STATUS =====")
     game_state.ui.info_message(f"Name: {player_ship.name}")
-    game_state.ui.info_message(f"Position: ({player_ship.space_object.position.x:.3f}, {player_ship.space_object.position.y:.3f})")
+    game_state.ui.info_message(
+        f"Position: ({player_ship.space_object.position.x:.3f}, {player_ship.space_object.position.y:.3f})"
+    )
     game_state.ui.info_message(f"Engine: {player_ship.engine.name}")
     game_state.ui.info_message(f"Speed: {player_ship.moves.speed:.2f} AU/s")
     if player_ship.is_docked and player_ship.docked_at:
@@ -28,19 +30,37 @@ def display_status(game_state: Game) -> None:
 
     # --- FUEL & POWER SECTION ---
     game_state.ui.info_message("FUEL & POWER:")
-    game_state.ui.info_message(f"Hydrogen Fuel: {player_ship.fuel:.2f}/{player_ship.max_fuel} m3")
-    game_state.ui.info_message(f"Fuel Consumption: {player_ship.fuel_consumption:.4f} m3/AU")
-    game_state.ui.info_message(f"Antimatter: {player_ship.antimatter:.2f}/{player_ship.max_antimatter} g")
-    game_state.ui.info_message(f"Antimatter Consumption: {player_ship.antimatter_consumption:.3f} g/FTL jump")
-    game_state.ui.info_message(f"Power: {player_ship.power:.2f}/{player_ship.max_power}")
-    game_state.ui.info_message(f"Containment Integrity: {player_ship.containment_integrity:.1f}%")
+    game_state.ui.info_message(
+        f"Hydrogen Fuel: {player_ship.fuel:.2f}/{player_ship.max_fuel} m3"
+    )
+    game_state.ui.info_message(
+        f"Fuel Consumption: {player_ship.fuel_consumption:.4f} m3/AU"
+    )
+    game_state.ui.info_message(
+        f"Antimatter: {player_ship.antimatter:.2f}/{player_ship.max_antimatter} g"
+    )
+    game_state.ui.info_message(
+        f"Antimatter Consumption: {player_ship.antimatter_consumption:.3f} g/FTL jump"
+    )
+    game_state.ui.info_message(
+        f"Power: {player_ship.power:.2f}/{player_ship.max_power}"
+    )
+    game_state.ui.info_message(
+        f"Containment Integrity: {player_ship.containment_integrity:.1f}%"
+    )
     game_state.ui.info_message("------------------------")
 
     # --- CARGO SECTION ---
     game_state.ui.info_message("CARGO:")
-    game_state.ui.info_message(f"Cargo Total: {player_ship.cargohold_occupied + player_ship.mineralhold_occupied:.2f}/{player_ship.cargohold_capacity:.1f} m3")
-    game_state.ui.info_message(f"Ores: {sum(c.quantity for c in getattr(player_ship, 'cargohold', []))} units ({player_ship.cargohold_occupied:.2f} m3)")
-    game_state.ui.info_message(f"Minerals: {sum(c.quantity for c in getattr(player_ship, 'mineralhold', []))} units ({player_ship.mineralhold_occupied:.2f} m3)")
+    game_state.ui.info_message(
+        f"Cargo Total: {player_ship.cargohold_occupied + player_ship.mineralhold_occupied:.2f}/{player_ship.cargohold_capacity:.1f} m3"
+    )
+    game_state.ui.info_message(
+        f"Ores: {sum(c.quantity for c in getattr(player_ship, 'cargohold', []))} units ({player_ship.cargohold_occupied:.2f} m3)"
+    )
+    game_state.ui.info_message(
+        f"Minerals: {sum(c.quantity for c in getattr(player_ship, 'mineralhold', []))} units ({player_ship.mineralhold_occupied:.2f} m3)"
+    )
     game_state.ui.info_message("------------------------")
 
     # --- DEFENSE SECTION ---
@@ -68,7 +88,9 @@ def display_status(game_state: Game) -> None:
             )
 
         game_state.ui.info_message("FINANCIAL STATUS:")
-        game_state.ui.info_message(f"Credits: {game_state.player_character.credits:.2f}")
+        game_state.ui.info_message(
+            f"Credits: {game_state.player_character.credits:.2f}"
+        )
         debt = game_state.player_character.debt
         if debt > 10000:
             game_state.ui.error_message(f"DEBT: {debt:.2f} credits")
@@ -321,7 +343,7 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         write_command("refine [amount]", "Refine ore to higher purity", True, "docked")
         write_command("purify [amount]", "Convert ore to minerals", True, "docked")
         game_state.ui.info_message("")
-        
+
         # TRADING CATEGORY
         game_state.ui.info_message(
             f"{Fore.CYAN}=== TRADING & COMMERCE ==={Style.RESET_ALL}"
