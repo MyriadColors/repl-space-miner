@@ -1,3 +1,4 @@
+import argparse
 from src.classes.game import Character, Game
 from src.classes.ship import Ship
 from src.classes.ship_integration import (
@@ -164,17 +165,34 @@ def register_commands(game_state: "Game"):
     register_skill_commands()
 
 
-def start_repl():
-    game_state = Game()
+def start_repl(args: argparse.Namespace):
+    # Create game state with command-line flags
+    game_state = Game(
+        debug_flag=args.debug if hasattr(args, 'debug') else False,
+        mute_flag=args.mute if hasattr(args, 'mute') else False,
+        skip_customization=args.skipc if hasattr(args, 'skipc') else False
+    )
+
+    if game_state.sound_enabled:
+        print("Background music is playing.")
+
     register_commands(game_state)
-    run_intro_and_setup(game_state)
+    run_intro_and_setup(game_state, args)
     run_game_loop(game_state)
 
 
-def run_intro_and_setup(game_state):
+def run_intro_and_setup(game_state, args: argparse.Namespace):
     import src.events
+    from src.events.character_creation import quick_start
 
-    src.events.character_creation_event(game_state)
+    # Only run character creation event if not skipping customization
+    if not game_state.skipc:
+        src.events.character_creation_event(game_state)
+    else:
+        # Use the quick_start function if we're skipping customization
+        quick_start(game_state)
+        
+    # If character still doesn't exist (both methods failed, unlikely but just in case)
     if not game_state.player_character:
         game_state.player_character = Character(
             name="Player",

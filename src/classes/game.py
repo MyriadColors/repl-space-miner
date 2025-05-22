@@ -704,7 +704,12 @@ class Game:
         self.skipc = skip_customization
         self.sound_init = True if not mute_flag else False
         self.ui = UI()
-        self.sound_enabled = False
+        self.sound_enabled = not mute_flag
+
+        if self.sound_enabled:
+            pg.mixer.init()
+            pg.mixer.music.load("Decoherence.mp3")
+            pg.mixer.music.play(-1)  # Loop indefinitely
 
     def set_player_character(
         self,

@@ -1,5 +1,7 @@
 # REPL Space Miner: A Universe Document & Design Specification
 
+Introduces detailed design specification covering universe lore, game mechanics, AI systems, economy, and implementation details for REPL Space Miner.
+
 ## Table of Contents
 
 **I. The Big Picture: The Known Bubble & The Antimatter Age**

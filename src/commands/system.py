@@ -430,6 +430,21 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         # DEBUG COMMANDS
         game_state.ui.info_message(f"{Fore.CYAN}=== DEBUG ==={Style.RESET_ALL}")
         write_command("debug", "Toggle debug mode", True)
+        write_command(
+            "add_ore/ao <amount> <ore_name>",
+            "Add ores to your ship (debug/cheat)",
+            True,
+        )
+        write_command(
+            "add_credits/ac <amount>",
+            "Add credits to your account (debug/cheat)",
+            True,
+        )
+        write_command(
+            "add_cargo_space/acs <amount>",
+            "Add cargo space to your ship (debug/cheat)",
+            True,
+        )
 
         # Footer with tip
         game_state.ui.info_message(

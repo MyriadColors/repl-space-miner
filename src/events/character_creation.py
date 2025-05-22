@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Dict, cast
+from typing import Dict, cast, Any
 from colorama import init, Fore
 import pygame as pg
 
@@ -25,15 +25,9 @@ def character_creation_event(
     # Initialize variables for trait selection to avoid "possibly unbound" errors
     trait_idx: int = 1  # Default value for positive trait index
     neg_trait_idx: int = 1  # Default value for negative trait index
-
     app_idx: int = 1  # Default value for all branches
     background: str = "Unknown"  # Default value for all branches
-    # Quick start option
-    quick_start_choice = input(
-        Fore.YELLOW + "Do you wish to quick start the game (yes/no)? "
-    )
-    if quick_start_choice.lower() in ["yes", "y"]:
-        return quick_start(game_state)
+    additional_bonus_details: Dict[str, Any] = {} # Initialize additional_bonus_details
 
     # Introduction text with more atmosphere and player involvement
     intro_text = [
@@ -792,70 +786,67 @@ def character_creation_event(
                 else:
                     game_state.ui.info_message(
                         Fore.RED + "Please enter a number between 1 and 7."
-                    )  # Set background based on choice
+                    )
+
+            # Set background based on choice
             if bg_idx == 1:
                 background = "Ex-Miner"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'From rocks to the hunt,' she says with a smile. 'You've got an eye for value in unlikely places.'"
+                    + "\nShe nods with newfound respect. 'Belters are tough folk. You've got the hands of someone who's seen real work.'"
                 )
             elif bg_idx == 2:
-                background = "Corp Dropout"
+                background = "Discharged Trooper"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\nShe gives you a knowing look. 'I've worked with ex-corporate types. They understand the game from both sides.'"
+                    + "\nA flicker of recognition crosses her face. 'Figures. I can spot military a mile away. What unit?'"
+                )
+                game_state.ui.info_message(
+                    Fore.CYAN + "You give a vague answer that seems to satisfy her."
                 )
             elif bg_idx == 3:
                 background = "Lunar Drifter"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Luna's underworld produces some of the best trackers,' she nods. 'You learn to see what others don't want found.'"
+                    + "\nShe gives a knowing smirk. 'Luna's a good training ground. If you survived there, you might just make it out here.'"
                 )
             elif bg_idx == 4:
                 background = "Void Runner"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Born to the black,' she nods with respect. 'Your kind understand the void better than most. It's in your blood.'"
+                    + "\n'Space-born,' she says with respect. 'You've probably seen more of the system than half the mercs I know.'"
                 )
             elif bg_idx == 5:
+                background = "Corp Dropout"
+                game_state.ui.info_message(
+                    Fore.CYAN
+                    + "\n'Corporate, huh?' She looks skeptical. 'Well, everyone's got a past they're running from. Just don't expect that soft life out here.'"
+                )
+            elif bg_idx == 6:
                 background = "Xeno-Biologist"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'A scientist,' she remarks, genuinely intrigued. 'That's unusual out here. Your knowledge could be... profitable.'"
-                )
-                game_state.ui.info_message(
-                    Fore.CYAN
-                    + "'I've been hired to find certain biological specimens before. Dangerous work, but the pay matches the risk.'"
-                )
-            elif bg_idx == 6:
-                background = "Discharged Trooper"
-                game_state.ui.info_message(
-                    Fore.CYAN
-                    + "\nShe taps her own combat gear. 'Military types. Always can spot one another. You carry yourself differently.'"
-                )
-                game_state.ui.info_message(
-                    Fore.CYAN
-                    + "'There's good money in security work if you've got the training. And not all of it's strictly legal.'"
+                    + "\nShe raises an eyebrow. 'A scientist? Unusual company for me. Though I've protected research teams before - good pay, but strange work.'"
                 )
             else:
                 background = "Shadow Operative"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\nNova gives you a measured look. 'An operative. That explains the confidence. We likely have similar credentials.'"
+                    + "\nNova's demeanor changes subtly. 'Extraction specialist.' Her voice drops. 'Now I'm curious which outfit you ran with. Not many in that line make it to retirement.'"
                 )
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "'Our line of work requires a certain... finesse. Maybe we'll work together sometime if the price is right.'"
+                    + "\n'We should compare notes sometime. There are corners of this sector where someone with your skills could make a small fortune.'"
                 )
                 game_state.ui.info_message(
                     Fore.YELLOW
-                    + "\nYou've chosen the bounty hunter's special background. This will provide unique advantages in stealth situations and intelligence gathering."
+                    + "\nYou've chosen the bounty hunter's special background. This will provide unique advantages in stealth situations and interactions with intelligence networks."
                 )
 
         elif hunter_choice_num == 3:
             game_state.ui.info_message(
                 Fore.CYAN
-                + "\nNova straightens slightly, her demeanor shifting to businesslike. 'Professional. I can work with that.'"
+                + "\nNova's demeanor shifts slightly. 'Professional. I can work with that.'"
             )
             # sleep(1.5)
             game_state.ui.info_message(
@@ -904,60 +895,61 @@ def character_creation_event(
                 else:
                     game_state.ui.info_message(
                         Fore.RED + "Please enter a number between 1 and 7."
-                    )  # Set background based on choice
+                    )
+
+            # Set background based on choice
             if bg_idx == 1:
                 background = "Ex-Miner"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Mining expertise has its uses,' Nova notes approvingly. 'Especially with the current rush for rare minerals.'"
-                )
-                game_state.ui.info_message(
-                    Fore.CYAN
-                    + "'I've taken a few jobs protecting mining operations. Good money in security these days.'"
+                    + "\nHe nods with newfound respect. 'Belters are tough folk. You've got the hands of someone who's seen real work.'"
                 )
             elif bg_idx == 2:
-                background = "Corp Dropout"
+                background = "Discharged Trooper"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Corporate insight,' she says with interest. 'That's valuable information. Knowing how they operate can keep you one step ahead.'"
+                    + "\nA flicker of recognition crosses his face. 'Figures. I can spot military a mile away. What unit?'"
+                )
+                game_state.ui.info_message(
+                    Fore.CYAN + "You give a vague answer that seems to satisfy him."
                 )
             elif bg_idx == 3:
                 background = "Lunar Drifter"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Urban tracking skills,' she acknowledges. 'Those transfer well to the void. People leave different traces, but they always leave something.'"
+                    + "\nHe gives a knowing smirk. 'Luna's a good training ground. If you survived there, you might just make it out here.'"
                 )
             elif bg_idx == 4:
                 background = "Void Runner"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Navigation expertise,' she says with respect. 'Essential in this line of work. Can't collect a bounty if you can't find your way there... and back.'"
+                    + "\n'Space-born,' he says with respect. 'You've probably seen more of the system than half the mercs I know.'"
                 )
             elif bg_idx == 5:
+                background = "Corp Dropout"
+                game_state.ui.info_message(
+                    Fore.CYAN
+                    + "\n'Corporate, huh?' He looks skeptical. 'Well, everyone's got a past they're running from. Just don't expect that soft life out here.'"
+                )
+            elif bg_idx == 6:
                 background = "Xeno-Biologist"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Scientific analysis,' she says thoughtfully. 'That's uncommon but valuable. Understanding behavior patterns helps predict where targets will go.'"
-                )
-            elif bg_idx == 6:
-                background = "Discharged Trooper"
-                game_state.ui.info_message(
-                    Fore.CYAN
-                    + "\nShe gives you a knowing look. 'Military experience. Useful. I work with ex-military types often - they understand discipline.'"
+                    + "\nHe raises an eyebrow. 'A scientist? Unusual company for me. Though I've protected research teams before - good pay, but strange work.'"
                 )
             else:
                 background = "Shadow Operative"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\nNova's posture changes slightly. 'Asset extraction...' she considers you more carefully. 'We're in similar lines of work.'"
+                    + "\nNova's demeanor changes subtly. 'Extraction specialist.' Her voice drops. 'Now I'm curious which outfit you ran with. Not many in that line make it to retirement.'"
                 )
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "'I might have some contracts that would benefit from your particular skills. We should discuss terms sometime.'"
+                    + "\n'We should compare notes sometime. There are corners of this sector where someone with your skills could make a small fortune.'"
                 )
                 game_state.ui.info_message(
                     Fore.YELLOW
-                    + "\nYou've chosen the bounty hunter's special background. This will provide unique advantages in high-risk extractions and security operations."
+                    + "\nYou've chosen the bounty hunter's special background. This will provide unique advantages in stealth situations and interactions with intelligence networks."
                 )
 
         # Store the background selected through dialogue
@@ -1058,7 +1050,7 @@ def character_creation_event(
         elif ship_idx == 3:  # Swift Pursuit
             game_state.ui.info_message(
                 Fore.CYAN
-                + "\n'Speed over armor,' she notes. 'My preference too. Can't hit what they can't catch.'"
+                + "\n'Speed over armor,' she notes. 'My preference too. Can't hit what you can't catch.'"
             )
             game_state.ui.info_message(
                 Fore.YELLOW + "Ship Specs: Speed +40%, Hull -20%, Cargo -30%"
@@ -1369,7 +1361,10 @@ def character_creation_event(
             app_idx = 1  # Default value and type annotation
             while not valid_appearance_choice:
                 appearance_choice = input(Fore.WHITE + "\nYour description (1-3): ")
-                if is_valid_int(appearance_choice) and 1 <= int(appearance_choice) <= 3:
+                if (
+                    is_valid_int(appearance_choice)
+                    and 1 <= int(appearance_choice) <= 3
+                ):
                     valid_appearance_choice = True
                     app_idx = int(appearance_choice)
                 else:
@@ -1455,13 +1450,13 @@ def character_creation_event(
                 background = "Corp Dropout"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'I understand that choice,' Zeta-9 replies. 'Freedom has its own value, even if the pay isn't as regular.'"
+                    + "\nZeta-9 gives you a knowing look. 'Corporate experience has its uses. You understand systems thinking.'"
                 )
             else:
-                background = "Ex-Miner"
+                background = "Xeno-Biologist"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Mining teaches valuable lessons,' Zeta-9 acknowledges. 'Patience, persistence, and knowing when to cut your losses.'"
+                    + "\n'Scientific mind,' Zeta-9 nods. 'That explains your grasp of the modulator principles.'"
                 )
 
         elif eng_choice_num == 3:
@@ -1598,6 +1593,7 @@ def character_creation_event(
             elif bg_idx == 3:
                 background = "Void Runner"
                 game_state.ui.info_message(
+                   
                     Fore.CYAN
                     + "\n'Deep space is in your DNA then,' Zeta-9 observes. 'That's becoming increasingly rare and valuable.'"
                 )
@@ -1822,7 +1818,7 @@ def character_creation_event(
                     ship_appearance = "Stealth Profile"
                     game_state.ui.info_message(
                         Fore.CYAN
-                        + "\nThe bartender nods slightly. 'Subtle. Smart in these parts. Too many curious eyes watching docking logs.'"
+                        + "\n'Subtle. Smart in these parts. Too many curious eyes watching docking logs.'"
                     )
                 else:
                     ship_appearance = "Colorful Maverick"
@@ -2101,18 +2097,16 @@ def character_creation_event(
             # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
-                + "\nThe bartender's optical sensors scan you methodically. 'I've served drinks to all types. You strike me as...'"
+                + "\nThe bartender swirls the amber liquid in their glass thoughtfully. 'In my line of work, you learn to read people quickly. You strike me as...'"
             )  # Offer positive traits
             game_state.ui.info_message(
-                Fore.YELLOW + "\nWhat would others say is your greatest strength?"
+                Fore.YELLOW + "\nHow would you describe your greatest strength?"
             )
             pos_trait_options = {
-                1: f"Methodical: 'I plan thoroughly. Waste nothing, maximize efficiency.' ({dialogue_trait_hint} - Suggested)",
-                2: "Quick: 'Fast reflexes. I react while others are still processing.'",
-                3: "Resourceful: 'I can make something from nothing. Adaptability is survival.'",
+                1: f"Charismatic: 'I know how to talk to people, make connections. It opens doors.' ({dialogue_trait_hint} - Suggested)",
+                2: "Resourceful: 'I'm adaptable. Can make something from nothing when needed.'",
+                3: "Resilient: 'I bounce back from setbacks. Nothing keeps me down for long.'",
             }
-
-            trait_idx = 1  # Default to first option
 
             for i, option in pos_trait_options.items():
                 # sleep(0.2)
@@ -2131,40 +2125,38 @@ def character_creation_event(
 
             # Set positive trait based on choice
             if trait_idx == 1:
-                positive_trait = "Methodical"
+                positive_trait = "Charismatic"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Efficiency is undervalued,' the bartender approves. 'The careful planner often outlives the lucky fool.'"
+                    + "\n'A valuable talent,' the bartender agrees. 'The right words at the right time can be more powerful than any weapon.'"
                 )
             elif trait_idx == 2:
-                positive_trait = "Quick"
-                game_state.ui.info_message(
-                    Fore.CYAN
-                    + "\n'Fast reflexes save lives,' Obsidian acknowledges. 'Especially when seconds matter in a vacuum.'"
-                )
-            else:
                 positive_trait = "Resourceful"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Resourcefulness is essential out here,' the bartender notes. 'Help isn't always coming when things go wrong.'"
+                    + "\n'Adaptability is survival,' Obsidian approves. 'The void is unforgiving to those who can't improvise.'"
+                )
+            else:
+                positive_trait = "Resilient"
+                game_state.ui.info_message(
+                    Fore.CYAN
+                    + "\n'Resilience matters,' the bartender acknowledges. 'Everyone falls. The successful ones get back up.'"
                 )
 
             # Add negative trait selection
             # sleep(2)
             game_state.ui.info_message(
                 Fore.CYAN
-                + "\n'But everyone has their weaknesses,' Obsidian continues. 'Yours seems to be...'"
-            )  # Offer negative traits
-            game_state.ui.info_message(
-                Fore.YELLOW + "\nWhat might get you into trouble?"
+                + "\nThe bartender's expression shifts subtly. 'Of course, we all have our... challenges. Yours seems to be...'"
             )
-            neg_trait_options = {
-                1: "Paranoid: 'I see threats everywhere. Better safe than sorry, but it costs me opportunities.'",
-                2: "Forgetful: 'Details slip my mind sometimes. I focus on the big picture.'",
-                3: "Indebted: 'I'm not great with finances. Always chasing the next payday.'",
-            }
 
-            neg_trait_idx = 1  # Default to first option
+            # Offer negative traits
+            game_state.ui.info_message(Fore.YELLOW + "\nWhat might get you into trouble?")
+            neg_trait_options = {
+                1: "Superstitious: 'I trust my hunches and omens. Logic isn't everything.'",
+                2: "Reckless: 'I take chances. Sometimes too many.'",
+                3: "Forgetful: 'Details slip by me. I see the big picture, miss the fine game_state.ui.info_message.'",
+            }
 
             for i, option in neg_trait_options.items():
                 # sleep(0.2)
@@ -2183,22 +2175,22 @@ def character_creation_event(
 
             # Set negative trait based on choice
             if neg_trait_idx == 1:
-                negative_trait = "Paranoid"
+                negative_trait = "Superstitious"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'Caution has its place,' Obsidian observes. 'But seeing enemies everywhere can be as dangerous as seeing none at all.'"
+                    + "\nObsidian nods slowly. 'The void has its mysteries. Some of the oldest spacers have their rituals... though they don't always admit it.'"
                 )
             elif neg_trait_idx == 2:
+                negative_trait = "Reckless"
+                game_state.ui.info_message(
+                    Fore.CYAN
+                    + "\n'Bold moves can pay off,' the bartender concedes. 'They can also end with your ship scattered across an asteroid field.'"
+                )
+            else:
                 negative_trait = "Forgetful"
                 game_state.ui.info_message(
                     Fore.CYAN
-                    + "\n'The devil's in the details,' the bartender warns. 'A forgotten maintenance check or overlooked contract clause can be fatal.'"
-                )
-            else:
-                negative_trait = "Indebted"
-                game_state.ui.info_message(
-                    Fore.CYAN
-                    + "\nThe bartender makes a metallic sound that might be a sigh. 'Credits come and go. Just don't let the wrong people own your debts.'"
+                    + "\n'A common failing,' Obsidian comments. 'But in space, overlooking a small detail can have... outsized consequences.'"
                 )
 
         elif bar_choice_num == 3:
@@ -2264,7 +2256,7 @@ def character_creation_event(
                     background = "Void Runner"
                     game_state.ui.info_message(
                         Fore.CYAN
-                        + "\n'Deep space is in your blood then,' the bartender acknowledges. 'You're comfortable where others feel lost.'"
+                        + "\n'Deep space is in your blood then,' Obsidian observes. 'You're comfortable where others feel lost.'"
                     )
                 else:
                     background = "Xeno-Biologist"
@@ -2342,9 +2334,7 @@ def character_creation_event(
             game_state.ui.info_message(
                 Fore.CYAN
                 + "\nThe bartender swirls the amber liquid in their glass thoughtfully. 'In my line of work, you learn to read people quickly. You strike me as...'"
-            )
-
-            # Offer positive traits
+            )  # Offer positive traits
             game_state.ui.info_message(
                 Fore.YELLOW + "\nHow would you describe your greatest strength?"
             )
@@ -2397,7 +2387,7 @@ def character_creation_event(
             )
 
             # Offer negative traits
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat's your biggest flaw?")
+            game_state.ui.info_message(Fore.YELLOW + "\nWhat might get you into trouble?")
             neg_trait_options = {
                 1: "Superstitious: 'I trust my hunches and omens. Logic isn't everything.'",
                 2: "Reckless: 'I take chances. Sometimes too many.'",
@@ -2439,136 +2429,99 @@ def character_creation_event(
                     + "\n'A common failing,' Obsidian comments. 'But in space, overlooking a small detail can have... outsized consequences.'"
                 )
 
+        # Display character summary
         game_state.ui.info_message(
-            Fore.YELLOW
-            + f"\nYour conversation with Obsidian has revealed much about you - your {positive_trait} nature and your tendency to be {negative_trait}."
+            Fore.YELLOW + "\nREPL SPACE MINER - CHARACTER SUMMARY\n"
         )
-        # sleep(1.5)
-        if "background" in locals():
+        # sleep(0.5)
+
+        game_state.ui.info_message(Fore.CYAN + f"Name: {name}")
+        game_state.ui.info_message(Fore.CYAN + f"Age: {age}")
+        game_state.ui.info_message(Fore.CYAN + f"Background: {background}")
+        game_state.ui.info_message(Fore.CYAN + f"Positive Trait: {positive_trait}")
+        game_state.ui.info_message(Fore.CYAN + f"Negative Trait: {negative_trait}")
+        game_state.ui.info_message(Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})")
+
+        # sleep(2)  # Background information for the selected background
+        bg_descriptions = {
+            "Ex-Miner": "You've spent years breaking rocks in the belt. Your technical skills are superior, and you know how to survive in harsh environments. You have connections with the Belters Union.",
+            "Corp Dropout": "Former middle management at a mega-corp. You understand business and have education, but corporations might not view you favorably after your 'strategic exit'.",
+            "Lunar Drifter": "You've lived in the shadows of lunar cities, making deals and sometimes working outside the law. Your street smarts are unmatched.",
+            "Void Runner": "Born on long-haul freighters, you've spent more time in space than planetside. Your piloting skills are exceptional.",
+            "Xeno-Biologist": "You've studied life across the solar system. Your scientific knowledge is valuable, particularly to research organizations.",
+            "Discharged Trooper": "Former military with combat experience. Your tactical skills are sharp, but your discharge wasn't entirely honorable.",
+        }
+
+        game_state.ui.info_message(f"{Fore.CYAN}{bg_descriptions[background]}")
+        # sleep(1)
+
+        # Set background specialization based on background choices made during dialogue
+        additional_bonus_details = {}
+
+        # Add specializations based on background for more depth
+        if background == "Ex-Miner":
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nYour mining experience has given you a particular edge..."
+            )
+            # sleep(1.5)
+            additional_bonus_details = {"type": "skill", "name": "engineering", "value": 1}
             game_state.ui.info_message(
                 Fore.CYAN
-                + f"Your background as a {background} has shaped your approach to survival in this harsh sector."
+                + "Your knack for keeping aging mining equipment running was legendary. (+1 Engineering)"
             )
-        else:
-            # Set a default background if somehow missed (shouldn't happen with current logic)
-            background = "Void Runner"
+        elif background == "Corp Dropout":
+            game_state.ui.info_message(
+                Fore.YELLOW
+                + "\nYour corporate training provided you with valuable business insights..."
+            )
+            # sleep(1.5)
+            additional_bonus_details = {"type": "stat", "name": "intellect", "value": 1}
             game_state.ui.info_message(
                 Fore.CYAN
-                + f"You reflect on your past as a {background} and how it prepared you for this moment."
+                + "You developed a sharp analytical mind during your time in the corporate sector. (+1 Intellect)"
             )
-
-        if "ship_name" in locals():
+        elif background == "Lunar Drifter":
             game_state.ui.info_message(
                 Fore.YELLOW
-                + f"\nYou think about your ship, the {ship_name}, waiting in the dock. Its {ship_appearance} design stands out in its own way."
+                + "\nYour time navigating lunar politics gave you a particular advantage..."
             )
-        else:
-            # Set default ship values if somehow missed
-            ship_name = "Star Chaser"
-            ship_appearance = "Retrofitted Classic"
+            # sleep(1.5)
+            additional_bonus_details = {"type": "stat", "name": "perception", "value": 1}
+            game_state.ui.info_message(
+                Fore.CYAN
+                + "You learned to spot trouble before it finds you. (+1 Perception)"
+            )
+        elif background == "Void Runner":
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nBeing born in space has given you a natural affinity..."
+            )
+            # sleep(1.5)
+            additional_bonus_details = {"type": "skill", "name": "piloting", "value": 1}
+            game_state.ui.info_message(
+                Fore.CYAN
+                + "You have an intuitive understanding of spacecraft handling. (+1 Piloting)"
+            )
+        elif background == "Xeno-Biologist":
             game_state.ui.info_message(
                 Fore.YELLOW
-                + f"\nYou think about your ship, the {ship_name}, waiting in the dock. Its {ship_appearance} design stands out in its own way."
+                + "\nYour scientific training has given you specialized knowledge..."
             )
-    # sleep(2.5)  # Slightly increased pause after interaction
-    game_state.ui.info_message(
-        "\n"
-        + Fore.YELLOW
-        + "You've made an impression. This connection might prove useful in your journey."
-    )
-    game_state.ui.info_message("\n")
-
-    # Character information and background were collected through dialogue
-    game_state.ui.info_message(Fore.YELLOW + "REPL SPACE MINER - CHARACTER SUMMARY\n")
-    # sleep(0.5)
-
-    game_state.ui.info_message(Fore.CYAN + f"Name: {name}")
-    game_state.ui.info_message(Fore.CYAN + f"Age: {age}")
-    game_state.ui.info_message(Fore.CYAN + f"Background: {background}")
-    game_state.ui.info_message(Fore.CYAN + f"Positive Trait: {positive_trait}")
-    game_state.ui.info_message(Fore.CYAN + f"Negative Trait: {negative_trait}")
-    game_state.ui.info_message(Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})")
-
-    # sleep(2)  # Background information for the selected background
-    bg_descriptions = {
-        "Ex-Miner": "You've spent years breaking rocks in the belt. Your technical skills are superior, and you know how to survive in harsh environments. You have connections with the Belters Union.",
-        "Corp Dropout": "Former middle management at a mega-corp. You understand business and have education, but corporations might not view you favorably after your 'strategic exit'.",
-        "Lunar Drifter": "You've lived in the shadows of lunar cities, making deals and sometimes working outside the law. Your street smarts are unmatched.",
-        "Void Runner": "Born on long-haul freighters, you've spent more time in space than planetside. Your piloting skills are exceptional.",
-        "Xeno-Biologist": "You've studied life across the solar system. Your scientific knowledge is valuable, particularly to research organizations.",
-        "Discharged Trooper": "Former military with combat experience. Your tactical skills are sharp, but your discharge wasn't entirely honorable.",
-    }
-
-    game_state.ui.info_message(f"{Fore.CYAN}{bg_descriptions[background]}")
-    # sleep(1)
-
-    # Set background specialization based on background choices made during dialogue
-    additional_bonus_details = {}
-
-    # Add specializations based on background for more depth
-    if background == "Ex-Miner":
-        game_state.ui.info_message(
-            Fore.YELLOW + "\nYour mining experience has given you a particular edge..."
-        )
-        # sleep(1.5)
-        additional_bonus_details = {"type": "skill", "name": "engineering", "value": 1}
-        game_state.ui.info_message(
-            Fore.CYAN
-            + "Your knack for keeping aging mining equipment running was legendary. (+1 Engineering)"
-        )
-    elif background == "Corp Dropout":
-        game_state.ui.info_message(
-            Fore.YELLOW
-            + "\nYour corporate training provided you with valuable business insights..."
-        )
-        # sleep(1.5)
-        additional_bonus_details = {"type": "stat", "name": "intellect", "value": 1}
-        game_state.ui.info_message(
-            Fore.CYAN
-            + "You developed a sharp analytical mind during your time in the corporate sector. (+1 Intellect)"
-        )
-    elif background == "Lunar Drifter":
-        game_state.ui.info_message(
-            Fore.YELLOW
-            + "\nYour time navigating lunar politics gave you a particular advantage..."
-        )
-        # sleep(1.5)
-        additional_bonus_details = {"type": "stat", "name": "perception", "value": 1}
-        game_state.ui.info_message(
-            Fore.CYAN
-            + "You learned to spot trouble before it finds you. (+1 Perception)"
-        )
-    elif background == "Void Runner":
-        game_state.ui.info_message(
-            Fore.YELLOW + "\nBeing born in space has given you a natural affinity..."
-        )
-        # sleep(1.5)
-        additional_bonus_details = {"type": "skill", "name": "piloting", "value": 1}
-        game_state.ui.info_message(
-            Fore.CYAN
-            + "You have an intuitive understanding of spacecraft handling. (+1 Piloting)"
-        )
-    elif background == "Xeno-Biologist":
-        game_state.ui.info_message(
-            Fore.YELLOW
-            + "\nYour scientific training has given you specialized knowledge..."
-        )
-        # sleep(1.5)
-        additional_bonus_details = {"type": "skill", "name": "education", "value": 1}
-        game_state.ui.info_message(
-            Fore.CYAN
-            + "Your research background has prepared you to analyze new situations methodically. (+1 Education)"
-        )
-    elif background == "Discharged Trooper":
-        game_state.ui.info_message(
-            Fore.YELLOW + "\nYour military background has honed your combat reflexes..."
-        )
-        # sleep(1.5)
-        additional_bonus_details = {"type": "skill", "name": "combat", "value": 1}
-        game_state.ui.info_message(
-            Fore.CYAN
-            + "Your training allows you to react quickly in dangerous situations. (+1 Combat)"
-        )
+            # sleep(1.5)
+            additional_bonus_details = {"type": "skill", "name": "education", "value": 1}
+            game_state.ui.info_message(
+                Fore.CYAN
+                + "Your research background has prepared you to analyze new situations methodically. (+1 Education)"
+            )
+        elif background == "Discharged Trooper":
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nYour military background has honed your combat reflexes..."
+            )
+            # sleep(1.5)
+            additional_bonus_details = {"type": "skill", "name": "combat", "value": 1}
+            game_state.ui.info_message(
+                Fore.CYAN
+                + "Your training allows you to react quickly in dangerous situations. (+1 Combat)"
+            )
 
     # sleep(1.5)  # Sound effects question - integrate into narrative
     game_state.ui.info_message(
@@ -2794,6 +2747,10 @@ def quick_start(game_state: "Game"):
 
     game_state.ui.info_message(
         Fore.CYAN
+        + "\nQuick Start mode activated via command line flag. Skipping customization..."
+    )
+    game_state.ui.info_message(
+        Fore.CYAN
         + "\nThe station's customs terminal flashes with a quick entry protocol..."
     )
     # sleep(1)
@@ -2883,12 +2840,15 @@ def quick_start(game_state: "Game"):
     )
     game_state.ui.info_message(
         f"{Fore.RED}Your starting debt: {CHARACTER_STARTING_DEBT}"
-    )
+    )    
     game_state.ui.info_message(
         f"{Fore.CYAN}You've established a connection with {bartender.name}, the bartender at Terminus Bar."
     )
     game_state.ui.info_message(
         f"{Fore.RED}However, being {negative_trait} might present some challenges."
+    )
+    game_state.ui.info_message(
+        f"{Fore.CYAN}Note: You used the --skipc flag to skip customization. Next time, launch without this flag for full character creation."
     )
     # sleep(1)
 

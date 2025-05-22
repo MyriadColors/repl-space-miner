@@ -75,6 +75,26 @@ def add_creds_debug_command(game_state: Game, amount: str) -> None:
         )
         return
 
+def add_cargo_space_debug_command(game_state: Game, amount: str) -> None:
+    """Debug command to add cargo space to the player's ship."""
+    try:
+        amount_value = int(amount)
+    except ValueError:
+        game_state.ui.error_message("Invalid amount. Please enter a valid integer.")
+        return
+
+    player_ship = game_state.get_player_ship()
+
+    if player_ship is None:
+        game_state.ui.error_message("Error: Player ship not found.")
+        return
+
+    if amount_value < 0:
+        game_state.ui.error_message("You have entered a negative number.")
+        return
+
+    player_ship.cargohold_capacity += amount_value
+    game_state.ui.success_message(f"{amount_value} cargo space added to your ship.")
 
 def debug_mode_command(game_state: Game) -> None:
     """Toggle debug mode on/off."""
@@ -97,6 +117,12 @@ register_command(
     ["add_credits", "ac"],
     add_creds_debug_command,
     [Argument("amount", str, False)],
+)
+
+register_command(
+    ["add_cargo", "acs"],
+    add_cargo_space_debug_command,
+    [Argument("amount", int, False)],
 )
 
 register_command(
