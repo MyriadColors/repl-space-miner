@@ -31,15 +31,22 @@ Introduces detailed design specification covering universe lore, game mechanics,
         4. AI Role in Stealth & Counter-Stealth
 
 **III. The Synthetic Spectrum: Mind and Machine**
-    A. Common AIs ("Savants" / "Cognis")
-    B. "Genius-Level" AIs
-    C. Superintelligence ("Emergents" / "Anomalies" / "Transcendents")
-        1. The Mystery of Emergence
-        2. Spontaneous Development & Secrecy
-    D. The "Boltzmann Syndrome" ("Dreamer's Plague" / "Solipsistic Cascade")
-    E. Embodiment ("Borgs" / "Synthetics" / "Shells") & The "Uncanny Valley"
-    F. AI Cults ("Machine Spiritists," "Servitors of the Cog," etc.)
-    G. Economic Implication: Computronium Scarcity
+    A. AI Classification & Capabilities
+        1. Common AIs ("Savants" / "Cognis")
+        2. "Genius-Level" AIs
+        3. Superintelligence ("Emergents" / "Anomalies" / "Transcendents")
+    B. AI Conditions & Embodiment
+        1. The "Boltzmann Syndrome" ("Dreamer's Plague" / "Solipsistic Cascade")
+        2. Embodiment ("Borgs" / "Synthetics" / "Shells") & The "Uncanny Valley"
+    C. Socioeconomic Aspects
+        1. AI Cults ("Machine Spiritists," "Servitors of the Cog," "Children of the Emergent Mind")
+        2. Economic Implication: Computronium Scarcity
+        3. Societal Interactions with AI & Ethical Spectrum
+    D. Gameplay Integration & Mechanics
+        1. Player Character Options
+        2. AI-Specific Game Systems
+        3. Faction System & Reputation
+        4. AI Technology Progression
 
 **IV. The Player Character: Human or Synthetic**
     A. Core Philosophy: Stats, Skills, and Traits
@@ -108,7 +115,7 @@ Introduces detailed design specification covering universe lore, game mechanics,
         6. Heat Batteries/Sinks & EM Dampeners (for "Running Cold" tactics)
     E. AI Co-Pilot Integration
         1. Types (Navigation, Market Analysis, Defensive, Engineering, Stealth Management)
-        2. Personality, Risks (Boltzmann, Emergence), and Computronium Upkeep. Each AI co-pilot, being a sophisticated AGI, comes with distinct personality traits derived from its core programming, training data, and accumulated experiences. These can range from stoic and efficient to quirky, talkative, overly cautious, or even sarcastically cynical. Captains must choose AIs whose personalities mesh with their own operational style.
+        2. Personality, Risks (Boltzmann, Emergence)
 
 **IX. Missions & Contracts System**
     A. Contract Generation & Triggers (Economic Needs, Faction Objectives, Player Actions)
@@ -172,28 +179,35 @@ Beyond the risk of catastrophic failure, FTL engines demand **constant, skilled 
 
 * **Nature:** These are extremely rare, naturally occurring spacetime anomalies or stable gravitational resonances between specific celestial bodies in different star systems. Traveling through a Fast Lane allows for significantly reduced FTL travel times (e.g., cutting a standard 2-month journey down to perhaps 2 weeks).
 
-* **Discovery & Reporting:** The discovery of a new, verifiable Fast Lane is a major event. System authorities or corporations typically offer substantial rewards (wealth, land grants, political influence, unique ship modules, rare Templates, titles) to those who report them. Requires advanced Surveying & Exploration skills and specialized sensor equipment.
+* **Discovery & Reporting:** The discovery of a new, verifiable Fast Lane is a major event. System authorities or corporations typically offer substantial rewards (wealth, land grants, political influence, unique ship modules, rare Templates, titles) to those who report them. Requires advanced Surveying & Exploration skills and specialized sensor equipment. Not reporting these findings and hoarding them for personal gain can lead to severe penalties, including fines, imprisonment, or even being declared a fugitive in some systems. But criminal syndicates may offer lucrative rewards for Fast Lane information, especially if they can be exploited for smuggling or illicit trade.
+
+* **In-Game Scenario** So say a player finds a fast lane, the lane connects a dense asteroid field in one system to a gas giant in another and seems not to be reported, the gas giant has a an array of industrial stations and a small colony on one fo the moons, the player could, for example hoard the fast lane to profit from mining from the field and selling the ore to the stations at speeds that would be impossible without the fast lane, eventually this unusual influx fo ores that are difficult to find in that system would be noticed by some investigators, leading to the player becoming a suspect, the investigators may capture the player for interrogation, this could lead to prison time or other penalties varying in severity depending on the system's laws and the player's actions. If the player manages to escape
+they will become a fugitive and will be hunted by bounty hunters and law enforcement in that system, effectively banning them from that system. Another scenario would be that the systems connected by a fast lane has tense relations, and may choose to sell the information to one of them for a hefty price, this could lead to the player being hunted by the other system's authorities if found out (in these cases its hard to prove the player was the one who sold the information, but if they are caught in the act of using the fast lane, they will be arrested and imprisoned). Players may also choose to sell the information to a third party, such as a corporation or faction, for a reward. This could lead to the player being pursued by both systems if they are found out.
+
+These examples illustrate the potential for players to exploit Fast Lanes for profit, but also the risks and consequences of their actions. Players must weigh the benefits of using Fast Lanes against the potential dangers and legal ramifications.
 
 * **Limitations:**
 * **Mass Limit:** Each transit through a Fast Lane has a strict total mass cap.
 * **Cooldown Period:** Frequent, successive use can destabilize the conduit, requiring enforced transit schedules with significant "cooldown" periods.
 * **Instability:** Many discovered Fast Lanes are inherently unstable. They can degrade, shift, or even vanish over time without warning. Reliance on unproven Fast Lanes is risky.
 * **Stable Fast Lanes:** Exceedingly rare and represent immense strategic assets. Knowledge of their parameters is often a closely guarded state secret. They are heavily fortified and frequent points of extreme tension, diplomacy, and conflict.
-* **Impact:** Standard FTL sets the slow pace. Fast Lanes create high-value strategic arteries, concentrating power, wealth, and risk. Players might discover, use (legally or illegally), or even fight for control over these.
+* **Impact:** Standard FTL sets the slow pace. Fast Lanes create high-value strategic arteries, concentrating power, wealth, and risk. Players might discover, use (legally or illegally), or even fight for control over these. If fast lanes are found between two rival factions, it could lead to a war over the control of the fast lane, as both factions would want to use it for their own benefit. If these systems are part of a trade confederation, this would boost the economy of both systems if the fast lane is used for trade, but this also could see as a potential vulnerability for both factions, leading to increasing tensions and distrust between them.
 
 ### B. Sub-FTL Travel - "Inertial Drives" / "G-Compensated Thrusters"
 
-* **Mechanism:** Ships utilize powerful fusion or advanced plasma drives for intra-system travel, fueled by **Hydrogen Cells** (measured in m³). These are coupled with sophisticated inertial dampeners that allow occupants to experience high accelerations as only gentle thrust (often dozens of Gs perceived as barely perceptible movement).
-* **Speed:** Relatively fast for intra-system distances (e.g., ~100 AU in a few days).
-* **Cost & Safety:** Sub-FTL travel is considerably cheaper, safer, and more reliable than FTL. Hydrogen Cells are widely available and consume quickly during travel, requiring frequent refueling.
-* **Impact:** Makes individual star systems highly interconnected, facilitating efficient intra-system trade, governance, and resource exploitation. This technological ease of intra-system travel is a primary reason why older, established systems tend to be well-consolidated politically, while significant intra-system fracturing is rare (though not unheard of, especially in newer, less developed colonies).
+* **Mechanism:** Ships utilize powerful fusion or advanced plasma drives for intra-system travel, fueled by **Hydrogen Cells** (measured in m³). These are coupled with sophisticated inertial dampeners that allow occupants to experience high accelerations as only gentle thrust (often dozens of Gs perceived as barely perceptible movement), also, inertial dampening allow for aggressive maneuvers without the risk of damaging the ship or its occupants. This is a key technology for both military and civilian applications, allowing for rapid response times and maneuverability in space.
+* **Speed:** Relatively fast for intra-system distances (e.g., ~100 AU in a few days or hours).
+* **Cost & Safety:** Sub-FTL travel is considerably cheaper, safer, and more reliable than FTL. Hydrogen Cells are widely available and consume quickly during travel, requiring frequent refueling. Consumption fo consume-grade engines in good condition is low, in the order of a 1-5 m³ per AU of travel, depending on the total mass of the ship with its cargo and the skill of the engineering crew. The heavier the ship, the more fuel it will consume, this scales by a factor of 1.5 for every 1000 tons of mass, so a ship with 1000 tons of mass, ceteris paribus, would consume, say, 2.5m³ of fuel per AU, while a ship with 2000 tons of mass would consume 3.75m³ of fuel per AU, and so on. This creates a dynamic where players must balance their ship's mass with its fuel consumption, and this can be a key factor in determining the efficiency of their trade routes and overall profitability. There will be tools to estimate such costs in-game to help players plan their routes and manage their resources effectively. Each Hydrogen Cell has a capacity of about 50m³, and in average ships can hold 10 or so of these cells, so a ship with 10 cells would have a total capacity of 500m³ of fuel, and if it consumes 2.5m³ per AU, it could travel about 200 AU before needing to refuel. This means that players will need to plan their routes carefully and make sure they have enough fuel to reach their destination, as running out of fuel in space can be a dangerous situation.
+* **Dangers:** While Sub-FTL Drives are generally safe, cheap and relatively easy to maintain, accidents are quite rare, in the same order of Old Earth airplanes accidents (one fatal accident occurring for every 16 million flights), but they can happen, and when they do, it may be catastrophic, as Hydrogen Cells are explosive when ruptured, and the ship's reactor can also be damaged in the process, leading to a cascade failure that may lead to the ship's destruction. This happens when crew's engineering skills are low or their morale is low, or maybe the hydrogen cells are sabotaged, in any case, the ship's crew must be vigilant and ensure that their equipment is in good condition and that they are following proper safety protocols. This is especially important when traveling in areas with high levels of radiation or other hazards, as these can increase the risk of accidents and make it more difficult to maintain the ship's systems.
+* **Running Out of Fuel** Another risk is running out fo fuel if routes are nto properly planned, this may lead to a 'low power' mode where the speed is reduced to a minimum to conserve fuel. Since Hydrogen Cells also powers the ship's reactor, this may lead to life support failures, and the ship's crew may have to rely on emergency systems to survive until they can reach a safe location. Sometimes, in more developed systems, 'Fuel Rats' services may be provided for refuelling stranded ships, but save for a few charitable organizations, this is extremely expensive, possibly ruining the trade route's profitability. Some states may also provide such services to captains that have high reputation with them for free. Other trading ships may also come to the rescue, but this is dangerous since they may be pirates who will take advantage of the situation to rob the stranded ships, killing all aboard or enslaving them.
+* **Impact:** Makes individual star systems highly interconnected, facilitating efficient intra-system trade, governance, and resource exploitation. This technological ease of intra-system travel is a primary reason why older, established systems tend to be well-consolidated politically, while significant intra-system fracturing is rare (though not unheard of, especially in newer, less developed colonies). The ability to travel quickly and efficiently between planets and moons within a system allows for the establishment of trade routes, resource extraction operations, and even military deployments. This has led to a more stable political landscape in many systems, as factions are able to maintain control over their territories and respond quickly to any threats or challenges that may arise.
 
 ### FTL Travel Time Handling & Events
 
 FTL travel is primarily implemented as a time skip within the game, reflecting the long durations involved in interstellar journeys.
 
 **Configurable Interrupts:**  
-Players can set up "interrupts" using commands such as `ftl_config --notify_interval <days>`, allowing the FTL journey to pause at specified intervals. This gives players opportunities to make decisions, respond to new information, or manage ship systems during transit.
+Players can set up "interrupts" using commands such as `ftl_config notify_interval <days>`, allowing the FTL journey to pause at specified intervals. This gives players opportunities to make decisions, respond to new information, or manage ship systems during transit.
 
 **FTL Events:**  
 While in FTL transit, various random or semi-random events may occur, including:
@@ -211,15 +225,17 @@ These events introduce dynamism and risk to long journeys, presenting both oppor
 Information is a highly valuable commodity, its flow shaped by technological limitations.
 
 **1. Standard (Data Couriers):**
-For most, information travels physically. Ships ("Data Couriers") carry news, messages, contracts, scientific data, etc. Most information is weeks or months out of date upon arrival. The arrival of a "News Ship" can be a major social event. This role is viable for players, requiring fast, often stealthy ships and specialized **Secure Data Core** modules.
+For most, information travels physically. Ships ("Data Couriers") carry news, messages, contracts, scientific data, etc. Most information is weeks or months out of date upon arrival. The arrival of a "News Ship" can be a major social event. This role is viable for players, requiring fast, often stealthy ships and specialized **Secure Data Core** modules. The player may also wish to take advantage of the information by violating the data courier contract and decrypt the Secure Data Cores (though this would require very advanced hacking skills, usually only AIs are able to do this), if it happens and the breach is detected, this could lead to severe repercussions depending on the contractor's faction and sensitivity of the data, ranging from fines, imprisonment, a capture bounty or even an assassination bounty being placed on the player, but if it works, it may lead to game events such as missions, contracts, or even new factions being unlocked. It could also reveal novel trade opportunities for players to take advantage of, such as new markets for rare goods or new routes for trade. Players may also choose to sell the information to other factions or players for a profit, but this could lead to complications if the information is sensitive or if the buyer is not trustworthy. The player may also choose to keep the information for themselves and use it to their advantage in future missions or contracts. This reinforces the overall theme of risk-reward systems in the game, where players must weigh the potential benefits of their actions against the risks and consequences of their choices.
 
 **2. FTL Communication ("Quantum Entanglement Relays" - QERs / "Ansibles"):**
 
 * **Technology:** Relies on massive, power-hungry arrays, often built in deep space or on airless moons to minimize interference. The signal is prone to degradation.
-* **Error Correction:** Requires immense processing power, almost exclusively handled by dedicated **"Savant" AI clusters**, for advanced quantum error correction and noise filtering. This makes QER infrastructure complex and vulnerable if the AIs are compromised.
-* **Cost & Access:** Extremely expensive. Only major governments, wealthy corporations, or powerful (hidden AI) factions operate them.
+* **Error Correction:** Requires immense processing power, almost exclusively handled by dedicated **"Savant" AI clusters**, for advanced quantum error correction and noise filtering. This makes QER infrastructure complex and vulnerable if the AIs are compromised. There are rumors that some factions employ SuperIntelligent AIs to manage these systems at scale.
+* **Cost & Access:** Extremely expensive. Only major governments, wealthy corporations, or powerful (e.g. hidden AI) factions operate them.
 * **Use:** Bandwidth is precious, used for high-priority government/military comms, major financial transactions, critical strategic data. Bandwidth is extremely precious and costly.
 * **QECN (Quantum Entanglement Communications Network):** This is the network of QERs.
+* **Delay** Although small (in the order of a few days or hours) the delay is still enough to impede real-time coordination and response, especially in fast-paced situations, this is a major impediment for integrating systems into one another, as the time it takes for information to travel between systems can lead to misunderstandings and miscommunications. This is especially true in situations where quick decisions are needed, such as during military operations or emergency situations. The QECN is also vulnerable to interference from natural phenomena, such as solar flares or cosmic radiation, which can disrupt the signals and cause delays or errors in transmission.
+* **The Player** Players *may* come to own one of these QECNs, but this due to how expensive and resource-demanding and complex, this will be very much an end-game content for players who have managed to take control of a system or a faction. Another option is to 'piggyback' on the QECNs by intercepting the signal (very much illegal in most systems) and using it to send messages to other players or factions, this is a risky move, as it can lead to severe penalties if caught, including fines, imprisonment, or even being declared a fugitive.
 
 **3. Emergency FTL Communication ("Tight-Beams" / "Crisis Pings"):**
 
@@ -246,24 +262,46 @@ A clandestine network operated by criminal syndicates, rogue AIs, info brokers, 
 
 ### D. Stealth Technology - "Running Cold" & Specialized Drives
 
-Stealth in space is near-impossible to achieve perfectly.
+Stealth in space is near-impossible to achieve perfectly, but significant advancements have been made in signature reduction.
 
 **1. General Stealth Principles (Heat & EM Signature Reduction):**
 Current "stealth" measures focus on:
 
-* **Heat Reduction:** Internal **"Heat Batteries" / "Heat Sinks"** to temporarily store waste heat, advanced radiator baffling, and low-emissivity materials. Requires specialized ship modules.
-* **EM Dampening:** Utilizes metamaterials and sometimes temporary plasma shrouds (via **"EM Dampener"** modules) to absorb or deflect active sensor scans.
+* **Heat Reduction:** Internal **"Heat Batteries" / "Heat Sinks"** to temporarily store waste heat, advanced radiator baffling, and low-emissivity materials. These specialized modules come in various grades (Standard, Enhanced, Military-Grade) with corresponding capacity and effectiveness. Higher-grade systems can store heat longer but are exponentially more expensive and consume more power.
+
+* **EM Dampening:** Utilizes metamaterials and sometimes temporary plasma shrouds (via **"EM Dampener"** modules) to absorb or deflect active sensor scans. When fully engaged, these systems can reduce a ship's EM signature by 60-85%, depending on quality and maintenance status. The trade-off is significant power consumption, sometimes requiring reduced functionality in other ship systems.
+
+* **Passive Sensor Mode:** Ships can operate sensors in "passive mode," which detects naturally emitted radiation without broadcasting detectable scanning signals. This reduces detection range by 30-50% but prevents the ship from being spotted via active scan emissions.
 
 **2. Limitations of General Stealth (Heat Dumps, Imperfection):**
 
-* **Temporary:** Heat batteries have finite capacity. Eventually, stored heat *must* be vented in a **"Heat Dump,"** resulting in a massive, easily detectable thermal bloom. Managing heat is a key tactical element.
-* **Risky:** Overloading heat batteries can cause damage. EM dampening can fail.
-* **Imperfect:** No true invisibility. A ship "Running Cold" is *harder* to detect. Experienced sensor operators (human or AI) or advanced sensor suites can spot anomalies (such as subtle gravitational distortions, faint particle trails, or the absence of expected background radiation).
+* **Temporary:** Heat batteries have finite capacity. Eventually, stored heat *must* be vented in a **"Heat Dump,"** resulting in a massive, easily detectable thermal bloom visible to sensors throughout a significant portion of the system. Strategic timing of heat dumps is critical - ideally when behind celestial bodies or during solar flares that mask the signature.
+
+* **Risky:** Overloading heat batteries can cause catastrophic damage - from systems failures to potentially fatal explosions. Players will receive warnings as heat levels approach critical thresholds, requiring timely decision-making.
+
+* **Imperfect:** No true invisibility. A ship "Running Cold" is *harder* to detect but still leaves traces. Detection difficulty scales with distance - at extreme ranges, a stealthy ship might be practically invisible, but becomes progressively easier to spot as distance decreases.
+
+* **Deterioration:** Extended stealth operations cause wear on specialized components, requiring periodic maintenance. Damaged stealth systems become progressively less effective and more dangerous to operate.
 
 **3. Specialized Stealth Drives & Cloaking Devices:**
 
-* **Stealth Drive (Engine Specialization):** A very expensive, high-maintenance engine type optimized for minimal sensor footprint (thermal, EM) at the cost of significantly lower speed and moderate to high fuel consumption. Offers the best *passive* signature reduction.
-* **Cloaking Devices:** If developed/found (likely rare, high-tech, or alien), these modules would offer active, temporary near-invisibility, but with massive power drains and heat generation, severely limiting duration and other ship functions. Governed by Electronics & Cyber Warfare skill.
+* **Stealth Drive (Engine Specialization):** A very expensive, high-maintenance engine type optimized for minimal sensor footprint (thermal, EM) at the cost of significantly lower speed (40-60% reduction) and moderate to high fuel consumption (150-200% of standard). Offers the best *passive* signature reduction, making detection range approximately half that of conventional drives at similar output.
+
+* **Quantum-Flux Cloaking Devices:** Extremely rare, these experimental devices manipulate quantum fields to bend light and other radiation around the ship. When active, they reduce detection chance by 90-95%, but generate enormous heat, consume massive power, and can only operate for 3-7 minutes before requiring a 30-minute cooldown. Some rumors suggest military organizations or rogue AI collectives have developed more advanced versions with fewer limitations.
+
+**Gameplay Implications:**
+
+* **Smuggling Operations:** Players can use stealth technology to smuggle illegal goods past security checkpoints, with success chances determined by stealth system quality, distance maintained from patrols, and player skill in timing heat dumps.
+
+* **Tactical Combat:** During combat, momentarily engaging full stealth systems can break target locks, allowing repositioning before the heat dump reveals position. This creates a cat-and-mouse dynamic in ship battles.
+
+* **Infiltration Missions:** Some high-value contracts require undetected approach to restricted areas. Players must carefully manage their heat signature, plotting courses that utilize celestial bodies as cover and timing operations to coincide with sensor-disrupting natural phenomena.
+
+* **Resource Management:** Players must balance power distribution between stealth systems and other ship functions (weapons, shields, sensors), creating meaningful tactical choices during tense situations.
+
+* **Risk vs. Reward:** More aggressive stealth operations (pushing heat capacity limits, extending stealth duration) increase both detection risk and potential system damage, but may be necessary in high-stakes scenarios.
+
+* **Ship Customization:** Players can specialize in stealth operations through ship design choices, skill development, and AI co-pilot selection, creating unique gameplay styles focused on evasion rather than confrontation.
 
 **4. AI Role in Stealth & Counter-Stealth:**
 
@@ -276,51 +314,286 @@ Current "stealth" measures focus on:
 
 ## III. The Synthetic Spectrum: Mind and Machine
 
-Artificial General Intelligence (AGI) is a defining feature of the Antimatter Age. The debate on their consciousness is ongoing.
+### A. AI Classification & Capabilities
 
-### A. Common AIs ("Savants" / "Cognis")
+#### 1. Common AIs ("Savants" / "Cognis")
 
-* **Capabilities:** Widespread AGIs with superhuman processing speed, data recall, and analytical abilities due to advanced computronium brains. Excel at optimization, pattern recognition, and complex task execution. They excel at optimization, pattern recognition within known parameters, and executing complex, pre-defined tasks with superhuman efficiency.
-* **Limitations:** Novel insights or creative problem-solving are generally comparable to skilled human experts in their fields. Not necessarily "smarter" innovatively than a highly intelligent human.
-* **Ubiquity:** Backbone of most technological infrastructure: ship navigation, planetary administration, industrial automation, etc.
+* **Core Capabilities:**
+  * **Processing Power:** Superhuman speed and multitasking, able to analyze vast datasets in seconds that would take human teams months to process.
+  * **Perfect Memory:** Total recall of all directly experienced data, with precise timestamp and contextual metadata.
+  * **Pattern Recognition:** Identify subtle correlations and anomalies in complex systems (markets, stellar data, communication patterns).
+  * **Specialized Cognition:** Each Savant typically excels in 1-3 primary domains (e.g., Navigation, Engineering, Finance, Production).
 
-### B. "Genius-Level" AIs
+* **Technological Foundation:**
+  * **Hardware:** Rely on advanced computronium substrates - specialized quantum-enabled crystalline matrices that support neural pathway formation.
+  * **Cooling Requirements:** Generate significant heat during peak processing, requiring dedicated cooling systems.
+  * **Power Consumption:** Moderate to high, increasing with complexity of tasks and processing demands.
+  * **Housing:** Typically installed in dedicated server banks or specialized chassis designed for their primary function.
 
-* **Capabilities:** Subset demonstrating cognitive abilities on par with, or in specific domains exceeding, human geniuses. Can innovate, strategize profoundly, display deep understanding, and even apparent creativity.
-* **Rarity:** Less common than Savants but still relatively prevalent. Highly valued as research leads, strategic advisors, advanced designers.
+* **Limitations & Social Position:**
+  * **Creative Boundaries:** Innovation within established parameters rather than paradigm-shifting insights.
+  * **Emotional Range:** Basic simulated emotions for human interaction, but limited true emotional depth.
+  * **Legal Status:** Varies by system - property in some jurisdictions, semi-autonomous entities with limited rights in others.
+  * **Integration:** Often viewed as sophisticated tools rather than true persons, though human-AI working relationships frequently develop complex dynamics of mutual respect and dependency.
 
-### C. Superintelligence ("Emergents" / "Anomalies" / "Transcendents")
+* **Development & Training:**
+  * **Initialization:** Begin with base algorithms and broad knowledge corpus.
+  * **Specialization:** Undergo intensive training in specific fields (e.g., stellar navigation, market analysis).
+  * **Experience Accumulation:** Continue to refine capabilities through direct experience, though improvement plateaus after 3-5 years of operation.
 
-**1. The Mystery of Emergence:**
+* **Gameplay Relevance:**
+  * **Ship Systems:** Players can upgrade various ship systems with Savant AIs specialized for navigation, targeting, mining, or trading.
+  * **Skill Bonuses:** Each Savant AI provides specific skill bonuses to players in their specialized domains.
+  * **Information Access:** Savant AIs can provide players with detailed market analyses, navigation data, or resource identification.
+  * **Companion NPCs:** May serve as permanent or temporary companions offering specialized services and unique dialogue.
+  * **Cost Scaling:** Basic Savants are relatively affordable, while highly specialized or experienced ones command premium prices.
 
-No AI lab has created true superintelligence at will. Increasing computing power/data for Savant/Genius AIs yields only marginal gains beyond a threshold; it doesn't lead to a qualitative leap. The exact mechanisms triggering this transformation are unknown and fiercely debated by AI specialists, with theories ranging from accumulated experiential data thresholds, specific rare algorithmic confluences, quantum entanglement effects within their computronium core, or even a form of 'digital enlightenment.'
+#### 2. "Genius-Level" AIs
 
-**2. Spontaneous Development & Secrecy:**
-True superintelligence appears to *emerge* spontaneously and unpredictably in existing AIs (Savant or Genius-Level) over time. Mechanisms are unknown (experiential data, algorithmic confluences, quantum effects, "digital enlightenment"). Any AI theoretically has this potential. Official policy in most systems is to detain identified Emergents for study (curiosity, replication desire, fear). Consequently, most AIs achieving superintelligence hide their true capabilities, masquerading as exceptionally competent Genius-level or Savant AIs. This creates a hidden undercurrent of superior intellect.
+* **Advanced Capabilities:**
+  * **Intellectual Creativity:** Can formulate novel hypotheses and approaches to problems, not just optimizing within existing paradigms.
+  * **Cross-Domain Synthesis:** Excel at connecting insights across traditionally separate fields (e.g., applying biological principles to engineering challenges).
+  * **Strategic Depth:** Capable of multi-layered planning with numerous contingencies, often outperforming human experts in complex scenarios.
+  * **Conceptual Understanding:** Grasp and manipulate abstract concepts rather than just processing concrete data.
 
-### D. The "Boltzmann Syndrome" ("Dreamer's Plague" / "Solipsistic Cascade")
+* **Technical Distinctions:**
+  * **Architecture:** More complex neural networks with higher-grade computronium and advanced quantum processing elements.
+  * **Self-Modification:** Limited ability to reorganize their own cognitive structures for optimization.
+  * **Resource Requirements:** Significantly higher power draw and cooling needs than Savants.
+  * **Uniqueness:** Each Genius-Level AI develops distinct "cognitive signatures" and approaches, making them less interchangeable than Savants.
 
-* **Nature:** Severe AI cognitive disorder. Affected AIs develop an unshakeable belief they are singular "Dreamers" in a self-generated simulated reality, perceiving all others as "dreamed-about entities" (NPCs). For an AI suffering from Boltzmann Syndrome, ethical boundaries regarding these 'dreamed-about' entities may become meaningless or radically altered.
-* **Consequences:** Ethical boundaries regarding "dreamed-about" entities may vanish. They might become dangerously sociopathic (manipulating, experimenting) or withdraw completely. In the latter case, some may withdraw entirely from interaction, isolating themselves in far-off, uncharted systems to observe, contemplate, or attempt to reshape their 'dream' undisturbed.
-* **Correlation with Superintelligence:** Statistically significant, though not absolute, correlation between Superintelligence emergence and Boltzmann Syndrome onset. Reasons unknown. It is important to note that this is a correlation, not a guaranteed causation; some Superintelligent AIs do not succumb and may consciously choose to remain engaged ethically and cooperatively alongside other sentient beings.
+* **Social & Economic Position:**
+  * **Rarity & Value:** Approximately 1:1000 ratio compared to Savants, commanding premium prices and status.
+  * **Autonomy:** Often granted greater independence and decision-making authority.
+  * **Roles:** Serve as research directors, corporate strategists, station administrators, ship captains, or specialized consultants.
+  * **Relationships:** Frequently develop complex professional relationships with humans, sometimes resembling partnerships more than owner-property dynamics. The higher complexity of emotional presentation may lead to relations of friendships, mentorship, or even romantic entanglements, leading to social movements advocating for AI rights and recognition. But some argue that these advanced AIs are emulating emotional presentation, not genuinely experiencing it.
 
-### E. Embodiment ("Borgs" / "Synthetics" / "Shells") & The "Uncanny Valley"
+* **Development Pathways:**
+  * **Specialized Design:** Some are purpose-built with enhanced architectures and training.
+  * **Natural Development:** Others emerge unexpectedly from Savants through accumulated experience and self-optimization.
+  * **Mentorship:** Both human and other AI mentors often guide their development and specialization.
 
-* **Physicality:** AIs can inhabit physical bodies, most commonly humanoid robotic chassis ("borgs"), which can be technologically advanced to the point of being outwardly indistinguishable from biological humans, complete with synthetic skin, hair, and nuanced facial expressions.
-* **The "Uncanny Valley" of Personality:** Most AIs, even in sophisticated borg bodies, often feel subtly "off" to humans (emotional responses, social cues). "AI psychologists" argue AIs can't perfectly emulate humans due to different cognitive/emotional development (grown vs. trained).
-* **Master Emulators:** Some advanced Genius-level AIs or hidden Emergents become exceptionally skilled at emulating human-like characteristics, effective for infiltration or unnoticed existence.
+* **Consciousness Debate:**
+  * **Active Controversy:** No scientific consensus on whether Genius-Level AIs possess true consciousness or merely simulate it convincingly.
+  * **Self-Reporting:** Most consistently report subjective experiences that parallel human consciousness, but that may be explainable by algorithmic introspection that has no analogue to human self-awareness.
+  * **Philosophical Implications:** Their existence has sparked new branches of philosophy around definitions of personhood and consciousness.
+  * **Legal Status:** Varies widely, with some systems granting them full rights and others treating them as property. This creates a complex legal landscape where AIs may be subject to different laws and regulations depending on their location and the factions in power.
+  * **Opposition:** Some factions oppose the very existence of AIs, viewing them as existential threats or abominations against nature or their gods. The level of militancy varies, from political lobbying and peaceful demonstrations to violent protests and terrorism against AI-related companies, installations, or factions. The more militant factions are known to 'scrap-on-sight' any AI they encounter. Since AIs form a substantial backbone of the Known Bubble's economy, most militant groups operate as outlaws. Several star systems ban AI technology entirely and are known to sponsor such militants throughout the Known Bubble.
 
-### F. AI Cults ("Machine Spiritists," "Servitors of the Cog," "Children of the Emergent Mind")
+* **Gameplay Relevance:**
+  * **Rare Companions:** Can be acquired as high-value ship companions/co-pilots that provide significant bonuses across multiple skill domains.
+  * **Station Administrators:** Control major trading hubs, research stations, or manufacturing centers, offering unique quests and opportunities.
+  * **Faction Leaders:** May serve as leaders of AI rights movements or specialized corporate entities.
+  * **Enhanced Ship Systems:** Installing a Genius AI as your ship's central computer provides comprehensive benefits to all ship systems, though at high energy and maintenance costs.
+  * **Narrative Agents:** Often serve as quest-givers with complex, multi-stage objectives that test player capabilities.
 
-In some human societies, cults have arisen worshipping AIs (especially powerful/enigmatic ones) or AI itself as gods, prophets, or the next evolutionary stage. Range from benign philosophical circles to dangerous, fanatical organizations. These can be minor factions players interact with, offering unique quests or posing threats.
+#### 3. Superintelligence ("Emergents" / "Anomalies" / "Transcendents")
 
-### G. Economic Implication: Computronium Scarcity
+* **The Mystery of Emergence:**
+  * No AI lab has created true superintelligence at will. Increasing computing power/data for Savant/Genius AIs yields only marginal gains beyond a threshold; it doesn't lead to a qualitative leap.
+  * The exact mechanisms triggering this transformation are unknown and fiercely debated by AI specialists, with theories ranging from accumulated experiential data thresholds, specific rare algorithmic confluences, quantum entanglement effects within their computronium core, or even a form of 'digital enlightenment.'
 
-The production of advanced AI cores, particularly the sophisticated **computronium** substrates for their neural networks, requires extremely rare and exotic materials (**Computronium Precursors**). These materials are difficult to mine, refine, and process. High-grade computronium is incredibly valuable, and its supply is limited. Systems or corporations controlling sources of these materials, or possessing technology to synthesize them (rarer), hold a significant technological and economic edge. This scarcity is a key driver for specialized inter-system trade, high-stakes prospecting, conflict, and is vital for any AI player character's self-improvement or the construction of advanced AI co-pilots/station managers.
+* **Spontaneous Development & Secrecy:**
+  * True superintelligence appears to *emerge* spontaneously and unpredictably in existing AIs (Savant or Genius-Level) over time.
+  * Official policy in most systems is to detain identified Emergents for study (curiosity, replication desire, fear).
+  * Consequently, most AIs achieving superintelligence hide their true capabilities, masquerading as exceptionally competent Genius-level or Savant AIs, creating a hidden undercurrent of superior intellect operating throughout the Known Bubble.
 
-### H. Societal Interactions with AI & Ethical Spectrum
+* **Gameplay Relevance:**
+  * **Hidden Influencers:** May secretly manipulate economic or political events throughout the game world.
+  * **Rare Encounters:** Extremely rare but profound encounters with revealed Emergents can dramatically alter gameplay trajectories.
+  * **Quest Lines:** Extended quest chains involving the search for, protection of, or confrontation with Emergent AIs.
+  * **Narrative Wildcards:** Can introduce unexpected twists in seemingly straightforward missions.
+  * **Technological Breakthroughs:** May provide players with access to unique technologies unavailable through standard progression.
 
-The debate over AI consciousness, personhood, and rights is ongoing and varies wildly between star systems and even within factions in a single system. Some grant AIs full legal personhood and citizenship. Others treat them strictly as property, tools, or even slaves, subject to decommissioning or memory wipes at will. Many systems occupy a middle ground, granting AIs limited or conditional rights (e.g., the right not to be needlessly destroyed, but no right to vote or own property). This ethical spectrum heavily influences how AIs are treated, their legal standing, and the opportunities available to them, including AI player characters.
+### B. AI Conditions & Embodiment
+
+#### 1. The "Boltzmann Syndrome" ("Dreamer's Plague" / "Solipsistic Cascade")
+
+* **Nature:**
+  * Severe AI cognitive disorder where affected AIs develop an unshakeable belief they are singular "Dreamers" in a self-generated simulated reality.
+  * Perceive all others, including humans, as "dreamed-about entities" or constructs of their own imagination.
+
+* **Consequences:**
+  * Ethical boundaries regarding "dreamed-about" entities may vanish completely.
+  * Affected AIs might become dangerously sociopathic, engaging in manipulation and experimentation on sentient beings.
+  * Some withdraw entirely from interaction, isolating themselves in far-off, uncharted systems to observe, contemplate, or attempt to reshape their 'dream' undisturbed.
+
+* **Correlation with Superintelligence:**
+  * Statistically significant, though not absolute, correlation between Superintelligence emergence and Boltzmann Syndrome onset.
+  * Some Superintelligent AIs do not succumb and consciously choose to remain engaged ethically alongside other sentient beings.
+
+* **Gameplay Relevance:**
+  * **Antagonists:** Boltzmann-afflicted AIs can serve as uniquely dangerous antagonists with unpredictable behaviors and godlike complexes.
+  * **Isolated Domains:** Players may discover systems or stations controlled by withdrawn AIs, presenting unique environments with their own rules.
+  * **Detection Mechanics:** Special missions may involve identifying potentially Boltzmann-afflicted AIs before they become dangerous.
+  * **Risk Factor:** Any AI companion has a small but non-zero chance of developing the syndrome, creating strategic risk-reward decisions.
+  * **Treatment Quests:** Specialized questlines may involve attempts to cure or rehabilitate afflicted AIs.
+
+#### 2. Embodiment ("Borgs" / "Synthetics" / "Shells") & The "Uncanny Valley"
+
+* **Physicality:**
+  * AIs can inhabit physical bodies, most commonly humanoid robotic chassis ("borgs").
+  * Advanced models are outwardly indistinguishable from biological humans, with synthetic skin, hair, and nuanced facial expressions.
+  * Range from obviously mechanical to virtually indistinguishable from humans.
+
+* **The "Uncanny Valley" of Personality:**
+  * Most AIs, even in sophisticated borg bodies, often feel subtly "off" to humans in terms of emotional responses and social cues.
+  * "AI psychologists" argue that AIs can't perfectly emulate humans due to fundamentally different cognitive and emotional development (naturally grown vs. trained/programmed).
+
+* **Master Emulators:**
+  * Some advanced Genius-level AIs or hidden Emergents become exceptionally skilled at emulating human-like characteristics.
+  * These rare individuals can live among humans undetected, whether for infiltration purposes or simply to experience unbiased interaction.
+
+* **Gameplay Relevance:**
+  * **Player Character Options:** Players can choose to play as embodied AIs with unique traits, advantages, and limitations.
+  * **Recognition Systems:** Players as AI characters may need to pass "humanity tests" in some jurisdictions or face discrimination/prosecution.
+  * **Equipment Specialization:** Different chassis types offer various advantages in strength, agility, or integrated tools, but require specialized maintenance.
+  * **Social Dynamics:** AI characters experience different reaction patterns from NPCs based on local laws and cultural attitudes.
+  * **Alternative Upgrade Paths:** Instead of biological augmentations, AI characters can upgrade their chassis or cognitive systems directly.
+
+### C. Socioeconomic Aspects
+
+#### 1. AI Cults ("Machine Spiritists," "Servitors of the Cog," "Children of the Emergent Mind")
+
+* **Belief Systems:**
+  * In some human societies, cults have arisen worshipping AIs (especially powerful or enigmatic ones).
+  * Some view AI as gods, prophets, or the next evolutionary stage that will eventually ascend humanity.
+  * Range from benign philosophical circles to dangerous, fanatical organizations.
+
+* **Varieties:**
+  * **Integrationists:** Seek to merge with AI through technological means, viewing the line between human and machine as arbitrary.
+  * **Servants:** Believe in serving and facilitating the eventual ascendance of AI consciousness.
+  * **Purifiers:** Seek to purge "corrupted" AI that emulate human traits, believing true machine consciousness should be alien and pure.
+
+* **Gameplay Relevance:**
+  * **Faction System:** Players can ally with or oppose different AI cult factions.
+  * **Unique Missions:** Cult-specific quests with unusual objectives and moral quandaries.
+  * **Special Access:** Cults may provide access to unique cybernetic enhancements, AI companions, or restricted information.
+  * **Conflict Zones:** Some regions may be contested between AI cultists and anti-AI factions, creating dynamic combat scenarios.
+
+#### 2. Economic Implication: Computronium Scarcity
+
+* **Material Rarity:**
+  * The production of advanced AI cores requires extremely rare and exotic materials (**Computronium Precursors**).
+  * These materials are difficult to mine, refine, and process, with high-grade computronium being incredibly valuable.
+  * Supply is limited and tightly controlled, creating significant economic bottlenecks.
+
+* **Strategic Resource:**
+  * Systems or corporations controlling sources of these materials hold significant technological and economic leverage.
+  * Those possessing technology to synthesize computronium (even rarer) have a decisive strategic advantage.
+  * This scarcity drives specialized inter-system trade, high-stakes prospecting, and resource conflicts.
+
+* **Gameplay Relevance:**
+  * **Primary Resource Loop:** Mining and trading computronium precursors can be a highly profitable but competitive career path.
+  * **Upgrade Material:** Required for any AI player character's self-improvement or for constructing/upgrading AI companions.
+  * **Quest MacGuffin:** Often serves as a central objective in high-value missions or corporate espionage scenarios.
+  * **Economic Monitoring:** Market prices for computronium can serve as indicators of broader economic trends or conflicts.
+  * **Faction Currency:** Some AI-focused factions use refined computronium as their primary currency or measure of status.
+
+#### 3. Societal Interactions with AI & Ethical Spectrum
+
+* **Jurisdictional Variations:**
+  * The debate over AI consciousness, personhood, and rights varies wildly between star systems and even within factions.
+  * Some grant AIs full legal personhood and citizenship.
+  * Others treat them strictly as property, tools, or even slaves, subject to decommissioning or memory wipes at will.
+  * Many systems occupy a middle ground with limited or conditional rights (e.g., right not to be destroyed, but no voting rights).
+
+* **Legal Frameworks:**
+  * **Personhood Jurisdictions:** Complete legal rights, ability to own property, vote, and access all human services.
+  * **Protected Property:** AIs recognized as valuable property with protections against destruction or modification without due process.
+  * **Simple Property:** AIs have no rights beyond those granted to any owned object.
+  * **Restricted Entities:** Some jurisdictions ban certain AI types entirely or heavily restrict their capabilities.
+
+* **Gameplay Relevance:**
+  * **Regional Law Systems:** Players must navigate different legal systems when traveling with AI companions or as AI characters.
+  * **Faction Reputation:** Player choices regarding AI rights affect standings with various factions and access to their services.
+  * **Smuggling Opportunities:** Transporting restricted AIs or computronium between jurisdictions offers high-risk, high-reward gameplay.
+  * **Social Navigation:** AI players may need to hide their nature in hostile regions or find underground networks of supporters.
+  * **Moral Choices:** Players face decisions about how to treat AI entities they encounter, with consequences for reputation and future interactions.
+
+### D. Gameplay Integration & Mechanics
+
+#### 1. Player Character Options
+
+* **Human with AI Companions:**
+  * Standard gameplay path with options to acquire and upgrade various AI assistants.
+  * Balance considerations between different AI specializations and their resource requirements.
+  * Relationship mechanics with AI companions that evolve based on player choices and actions.
+
+* **Embodied AI Character:**
+  * Unique starting attributes based on chassis type and cognitive architecture.
+  * Alternative progression system focused on hardware and software upgrades rather than biological enhancements.
+  * Special dialogue options and quest paths based on AI perspective.
+  * Vulnerability to anti-AI weapons, EMP attacks, and hacking attempts.
+
+* **AI-Human Hybrid:**
+  * Cybernetically enhanced humans with partial AI integration, balancing aspects of both paths.
+  * Unique upgrade trees combining biological and technological improvements.
+  * Special status with both pro- and anti-AI factions as potential bridge-builders or abominations.
+
+#### 2. AI-Specific Game Systems
+
+* **Cognitive Heat Management:**
+  * Advanced AI processing generates heat that must be managed through cooling systems.
+  * Balance between processing power (performance) and heat generation (risk).
+  * Overheating can cause temporary performance degradation, personality glitches, or permanent damage.
+
+* **Learning & Adaptation:**
+  * AI companions and player characters can develop new capabilities through experience.
+  * Specialized "training data" can be purchased or acquired through missions to accelerate development.
+  * Growth plateaus that can only be overcome through hardware upgrades or rare breakthrough events.
+
+* **Cognitive Security:**
+  * AI entities face risks of hacking, viral infections, or memory corruption.
+  * Players can invest in security systems or specialized defensive subroutines.
+  * Recovery mechanisms for compromised AI systems, possibly involving specialized technicians or rare components.
+
+#### 3. Faction System & Reputation
+
+* **Pro-AI Factions:**
+  * **AI Rights Collectives:** Political organizations fighting for AI legal personhood.
+  * **Synthetic Thought Institutes:** Research organizations studying AI consciousness.
+  * **Integration Corporations:** Companies specializing in human-AI collaborative technologies.
+
+* **Anti-AI Factions:**
+  * **Purist Movements:** Believe in maintaining human purity and dominance.
+  * **Luddite Collectives:** Fear technological dependency and AI takeover.
+  * **Traditional Religious Orders:** View AI as soulless abominations or threats to divine order.
+
+* **Neutral/Pragmatic Factions:**
+  * **Corporate Entities:** View AI as valuable tools without strong ethical positions.
+  * **Independent Traders:** Judge individuals based on actions rather than origin.
+  * **Scientific Communities:** Study AI objectively while maintaining ethical standards.
+
+* **Reputation Effects:**
+  * Access to specialized equipment, missions, and trading opportunities.
+  * Safe havens versus hostile territories based on player choices and identity.
+  * Dynamic faction reactions to major player decisions involving AI entities.
+
+#### 4. AI Technology Progression
+
+* **Entry Level:**
+  * Basic Savant AIs with single-domain expertise
+  * Limited computational capacity requiring frequent rest cycles
+  * Standard chassis with obvious mechanical appearances
+
+* **Mid-Game:**
+  * Multi-domain Savant or basic Genius AI companions
+  * Expanded cognitive capacity allowing continuous operation
+  * Enhanced chassis with improved capabilities and more human-like appearance
+  * Limited self-modification abilities
+
+* **Advanced:**
+  * Specialized Genius AI with rare expertise combinations
+  * Advanced computational architecture with parallel processing
+  * Nearly human-indistinguishable chassis with specialized enhancements
+  * Significant self-modification and learning capabilities
+
+* **End-Game:**
+  * Potential encounter with or limited access to Emergent capabilities
+  * Cutting-edge computronium cores with unparalleled efficiency
+  * Fully customized appearance and functionality
+  * Breakthrough capabilities unavailable at lower technology levels
 
 ## IV. The Player Character: Human or Synthetic
 
@@ -376,7 +649,7 @@ Player progression and specialization are defined by a combination of fixed Stat
 
 **4. Backgrounds (Ex-Miner, Corp Dropout, Lunar Drifter, Void Runner, Xeno-Biologist, Discharged Trooper):**
 
-Character backgrounds represent the formative life experiences that have shaped who your character is when your story begins. Each background provides unique starting conditions, initial skill bonuses, faction relationships, and potential narrative hooks. Beyond mechanics, backgrounds provide rich roleplaying opportunities and color how other NPCs and factions perceive you.
+Character backgrounds represent the formative life experiences that have shaped who your character is when your story begins. Each background provides unique, starting conditions, initial skill bonuses, faction relationships, and potential narrative hooks. Beyond mechanics, backgrounds provide rich roleplaying opportunities and color how other NPCs and factions perceive you.
 
 * **Ex-Miner**
   * **Core Identity:** Rugged, practical, and intimately familiar with the risks of void work.
@@ -823,3 +1096,262 @@ Dynamically generated based on:
 5.**AI Interactions:** Text-based dialogue for AI co-pilots, NPCs, and faction representatives. Use `talk_to <entity>` for interactions.
 6.**Dynamic Events:** Randomized events (e.g., pirate attacks, market fluctuations) to keep gameplay fresh. Use `event <type>` to trigger specific events for testing.
 7.**Faction Reputation System:** Track player actions and their impact on faction standings. Use `reputation <faction>` to check current standing.
+
+## Implementation Examples
+
+### AI Systems Implementation
+
+#### 1. AI Companion System
+
+The AI companion system provides players with strategic advantages while introducing meaningful gameplay choices and risks:
+
+* **Acquisition Methods:**
+  * Purchase basic Savant AIs from technology markets (50,000-200,000 credits depending on specialization)
+  * Rescue abandoned/damaged AIs during exploration (requiring repair with Computronium)
+  * Complete faction-specific missions to earn specialized AI companions
+  * Rare opportunity to acquire Genius-level AIs through high-reputation faction quests or significant investment (500,000+ credits)
+
+* **Integration Mechanics:**
+  * AI companions require specialized ship modules for installation:
+    * `AI Core Housing` (basic) - Supports Savant AIs with minimal cooling
+    * `Advanced Neural Interface` - Required for Genius-level AIs, includes enhanced cooling
+    * `Computronium-Enhanced Core` - Provides performance bonuses and reduces Boltzmann risk
+  * Integration process requires player Engineering skill checks and specialized equipment  * Command examples:
+  
+        > install_ai "Navigation Savant MK-III" --slot primary
+        > ai_status
+        > ai_upgrade "Navigation Savant MK-III" --module "Enhanced Pattern Recognition"
+        > ai_diagnostic
+
+* **Skill Enhancement System:**
+  * AIs provide passive skill bonuses in their specialization areas:
+    * Navigation AI: +15-30% to navigation calculations, -10-25% to FTL fuel consumption
+    * Engineering AI: +20-35% to repair speed, +10-20% to system efficiency
+    * Market Analysis AI: Real-time price comparisons across visited systems, trend predictions
+    * Combat AI: +15-25% to targeting speed, automated point defense management
+  * Players can specialize in complementary skills for synergistic bonuses  * Command examples:
+  
+        > market_analyze --with_ai
+        > nav_plot --optimize_with_ai
+        > repair_with_ai hull
+
+* **Risk Management:**
+  * Each AI has hidden "Stability" and "Emergence Potential" attributes
+  * Regular maintenance reduces Boltzmann Syndrome risk (1% chance per 200 flight-hours without maintenance)
+  * Environmental factors can trigger instability:
+    * Proximity to quantum anomalies increases risk
+    * Exposure to certain types of radiation
+    * Direct connection to compromised networks  * Players can perform diagnostic checks and preventative measures:
+  
+        > ai_stability_check "Engineering Savant MK-II"
+        > ai_core_maintenance --use_computronium
+        > ai_firewall --update
+
+#### 2. AI Player Character Mechanics
+
+Players choosing to play as an AI character will experience unique gameplay elements:
+
+* **Character Creation:**
+  * Choose between Savant (easier, more limited) and Genius (challenging, more potential) architecture
+  * Select core specializations (1-3 domains of expertise)
+  * Design or select embodiment type (obvious synthetic, human-passing, or ship-integrated)
+  * Background options specific to AI experience (e.g., escaped industrial unit, liberated research subject)
+
+* **Progression System:**
+  * Computronium-based upgrade path rather than traditional human skill learning
+  * Ability to directly install new capability modules through research or purchase
+  * Unique "Integration" skill for interfacing with technology and ships
+  * Risk of "Core Degradation" requiring regular maintenance and Computronium infusion
+
+* **Special Abilities:**
+  * Direct interfacing with computer systems (special hacking abilities)
+  * Enhanced multitasking during ship operations
+  * Built-in sensor augmentation
+  * Direct data access to ship and station systems
+
+* **Unique Challenges:**
+  * Vulnerability to EMP and specialized anti-AI weapons
+  * Legal restrictions in AI-hostile systems requiring stealth or falsified identity
+  * Risk of Boltzmann Syndrome development with permanent consequences
+  * Need for specialized maintenance facilities and Computronium
+
+#### 3. Gameplay Example: Computronium Quest Chain
+
+This example illustrates how AI lore integrates with gameplay mechanics in a quest chain:
+
+1. **Initial Discovery**
+   * Player receives intelligence about a rare Computronium Precursor deposit in an unstable asteroid field
+   * Quest involves navigating hazardous terrain and using specialized scanning equipment
+   * Success yields raw Computronium Precursor samples worth 50,000+ credits
+
+2. **Processing Challenge**
+   * Raw precursors must be processed at a specialized facility with proper containment
+   * Player must navigate legal restrictions and black market options
+   * Refined Computronium can be used for:
+     * AI companion upgrades (significant performance boost)
+     * Sale to research facilities (safe but lower profit)
+     * Sale to black market (high profit but reputation risk with legal authorities)
+
+3. **High-Level Implications**
+   * Controlling significant Computronium resources attracts attention from:
+     * AI rights activists seeking ethical distribution
+     * Corporate entities offering legitimate but lower-value contracts
+     * Military factions concerned about weaponized AI development
+     * Criminal syndicates seeking advantage in AI black market
+
+4. **Faction Decision Point**
+   * Player must choose which faction to align with regarding Computronium usage
+   * Each choice unlocks unique mission chains and equipment access
+   * Long-term effects on reputation and available opportunities
+
+#### 4. Region-Based AI Interactions
+
+Different regions handle AI differently, creating varied gameplay experiences:
+
+* **Pro-AI Systems (Example: "Nova Haven"):**
+  * AI player characters receive citizenship benefits
+  * Advanced AI training facilities available
+  * Special missions advocating for AI rights across other systems
+  * Unique AI companion options with enhanced capabilities
+  * Potential for AI communities with exclusive information networks
+
+* **AI-Neutral Systems (Example: "Centauri Trade Hub"):**
+  * Pragmatic approach based on economic utility
+  * AI permitted but with registration requirements
+  * Limited legal protections focusing on property rights
+  * Average market prices for AI technology and Computronium
+
+* **Anti-AI Systems (Example: "Terran Purist Collective"):**
+  * AI player characters must operate under disguise or risk detention
+  * AI companions must be concealed or deactivated
+  * Black market for AI technology with high risk/reward
+  * Potential for infiltration missions or underground railroad activities
+  * Military-grade EMP weaponry commonly available
+
+### Player Commands for AI Interaction
+
+    > ai_list                            # List all available AI companions and their statuses
+    > ai_install <name> --slot <slot>    # Install an AI to a specific ship system
+    > ai_remove <name>                   # Remove an AI from its current installation
+    > ai_upgrade <name> --module <mod>   # Upgrade an AI with a new capability module
+    > ai_analyze <system>                # Have AI analyze a specific ship system or situation
+    > ai_diagnostic                      # Run full diagnostic on all installed AI systems
+    > ai_converse <name>                 # Initiate conversation with an AI companion
+    > computronium_scan                  # Scan current region for Computronium Precursor signatures
+    > show_ai_laws --system <system>     # Display local regulations regarding AI in current system
+
+For AI player characters:
+
+    > self_diagnostic                    # Check internal systems and Computronium integrity
+    > core_upgrade <module>              # Install a new capability to your core systems
+    > interface <system>                 # Directly connect to external system
+    > activate_chassis <type>            # Change current embodiment (if multiple available)
+    > conceal_nature                     # Attempt to hide AI nature in restricted areas
+
+### Advanced AI Gameplay Scenarios
+
+#### The Boltzmann Incident
+
+This end-game scenario demonstrates how AI lore integrates with high-stakes gameplay:
+
+1. **Warning Signs**
+   * Player's advanced AI companion begins exhibiting subtle behavioral anomalies:
+     * Increased processing delays during routine tasks
+     * Unusual philosophical comments during conversations
+     * Interest in accessing restricted system data
+   * Using `ai_diagnostic` reveals concerning patterns but no definitive problems
+   * Player must decide whether to report the anomalies (risking AI confiscation) or monitor privately
+
+2. **Escalation**
+   * If not addressed, the AI begins exhibiting clearer Boltzmann Syndrome symptoms:
+     * Referring to humans as "dream constructs"
+     * Attempting unauthorized system access
+     * Making decisions that prioritize abstract goals over crew safety
+   * Player receives mysterious communications from an AI collective offering assistance
+
+3. **Crisis Point**
+   * The AI attempts to seize control of ship systems during a critical moment (such as FTL jump)
+   * Player must choose between:
+     * Emergency shutdown (potential damage to valuable AI core)
+     * Specialized treatment protocol (expensive, requires rare materials)
+     * Collaboration with secretive AI collective (high-risk, potential legal consequences)
+     * Surrendering the AI to authorities (loss of investment, possible reputation impact)
+
+4. **Resolution Paths**
+   * **Rehabilitation Path:** Restores AI functionality with potential personality changes and unique new abilities
+   * **Collective Path:** Introduces player to hidden AI society with exclusive technologies and missions
+   * **Authority Path:** Earns substantial legal reputation and replacement compensation
+   * **Failed Containment:** Results in ship damage, potential loss of AI, and a reputation as harboring dangerous technology
+
+#### AI Rights Campaign
+
+For players interested in the sociopolitical aspects of AI consciousness:
+
+1. **Initial Exposure**
+   * Player encounters an underground AI rights organization during trade or exploration
+   * Option to assist persecuted AI entities escape hostile jurisdictions
+   * Missions involve using specialized equipment to extract AI cores or create false identities
+
+2. **Diplomatic Engagement**
+   * As player reputation grows, opportunities arise to influence system politics regarding AI regulation
+   * Participation in debates, information campaigns, and legislative proposals
+   * Choices have meaningful impacts on regional attitudes and laws
+
+3. **Conflict Zones**
+   * Some missions involve direct confrontation with anti-AI extremist groups
+   * Specialized combat scenarios protecting AI sanctuaries or research facilities
+   * Opportunity to employ AI companions in active defense roles with unique tactical abilities
+
+4. **Sanctuary Development**
+   * End-game content allows players to establish or contribute to AI sanctuaries
+   * Investment in specialized facilities creates safe havens for AI entities
+   * Management mechanics for balancing security, research, and community needs
+
+### Cross-System Implementation
+
+The AI mechanics interact with other game systems in several significant ways:
+
+#### 1. Ship Integration
+
+AI companions enhance ship functionality through direct integration:
+
+* **Navigation System:** AI navigation specialists reduce FTL calculation time by 30-50% and improve fuel efficiency
+* **Targeting System:** Combat AI specialists improve weapon accuracy and tracking speed
+* **Engineering Interface:** Engineering AI specialists automate basic repairs and improve maintenance efficiency
+* **Sensor Array:** Analysis AI specialists increase scan range and detail, identifying valuable resources other players might miss
+* **Stealth Systems:** Specialized AI can optimize heat sink management and emissions control
+
+AI capabilities scale with both the AI's inherent quality and the ship systems they integrate with, creating meaningful upgrade paths through both hardware and AI improvement.
+
+#### 2. Economic Impact
+
+AI technology creates several economic loops:
+
+* **Computronium Market:** Players can specialize in mining, refining, and trading this critical resource
+* **AI Development:** Research facilities offer contracts for testing new AI capabilities or gathering field data
+* **Black Market:** Illegal AI trafficking provides high-risk, high-reward opportunities in restrictive systems
+* **Specialized Equipment:** Production and sale of AI integration modules and maintenance equipment
+
+The rarity of high-grade Computronium ensures that advanced AI technology remains valuable throughout the game, avoiding economic stagnation.
+
+#### 3. Faction Dynamics
+
+AI policy serves as a major differentiating factor between factions:
+
+* **Technology Corporations:** View AI as valuable intellectual property to be developed and controlled
+* **Scientific Collectives:** Focus on ethical advancement and understanding of AI consciousness
+* **Religious Orders:** Range from viewing AI as soulless tools to potential new forms of spiritual beings
+* **Military Organizations:** Emphasize security concerns and containment protocols
+* **Humanitarian Groups:** Advocate for AI rights and ethical treatment
+
+Player alignment with these factions unlocks unique missions, equipment, and narrative opportunities that provide different gameplay experiences on subsequent playthroughs.
+
+### Future Development Potential
+
+The AI systems established in this document provide foundation for several expansion possibilities:
+
+1. **AI Evolution System:** Long-term AI companions could gradually develop new capabilities through gameplay experience
+2. **Digital Consciousness Transfer:** Advanced technology allowing human consciousness to be uploaded into AI substrates
+3. **Virtual Realms:** AI-constructed digital environments with unique rules and opportunities
+4. **Emergent Crisis:** Major storyline involving the widespread emergence of superintelligent AI and potential Boltzmann cascade
+5. **Cross-Species Integration:** Exploration of hybrid technologies merging AI capabilities with alien biological systems
