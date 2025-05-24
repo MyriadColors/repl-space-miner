@@ -6,6 +6,7 @@ from .scan import scan_command, scan_asteroids_command
 from .examine import examine_command, belt_fields_command
 from .docking import command_dock, command_undock
 from .trading import buy_command, sell_command
+from .trading_menu import trading_menu_command
 from .mining import mine_command
 from .upgrade import upgrade_command
 from .debug import add_creds_debug_command, add_ore_debug_command, debug_mode_command
@@ -58,9 +59,9 @@ __all__ = [
     "examine_command",
     "belt_fields_command",
     "command_dock",
-    "command_undock",
-    "buy_command",
+    "command_undock",    "buy_command",
     "sell_command",
+    "trading_menu_command",
     "mine_command",
     "upgrade_command",
     "display_help",

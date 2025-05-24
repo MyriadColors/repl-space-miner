@@ -65,7 +65,8 @@ def execute_valid_command(game_state: Game, command_name: str, args: list[str]):
         raise ValueError(f"Command not found: {command_name}")
 
     # Check if we have enough arguments
-    required_args_count = len([arg for arg in command.arguments if not arg.is_optional])
+    required_args_count = len(
+        [arg for arg in command.arguments if not arg.is_optional])
     if len(args) < required_args_count:
         game_state.ui.error_message(
             f"Missing required arguments for command '{command_name}'."
