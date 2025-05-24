@@ -43,13 +43,15 @@ def color_command(game_state, target: str, color_name: str):
             current_fg = COLOR_MAP[color_name]
             print(current_fg + f"Foreground color set to {color_name}.")
         else:
-            game_state.ui.error_message(f"Unknown foreground color: {color_name}")
+            game_state.ui.error_message(
+                f"Unknown foreground color: {color_name}")
     elif target == "bg":
         if color_name in BG_COLOR_MAP:
             current_bg = BG_COLOR_MAP[color_name]
             print(current_bg + f"Background color set to {color_name}.")
         else:
-            game_state.ui.error_message(f"Unknown background color: {color_name}")
+            game_state.ui.error_message(
+                f"Unknown background color: {color_name}")
 
 
 def reset_command(game_state, what: str):

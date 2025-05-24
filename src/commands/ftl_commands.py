@@ -41,7 +41,8 @@ def refuel_antimatter_command(game_state: Game, amount: float) -> None:
         return
 
     if player_character.credits < total_cost:
-        game_state.ui.error_message(f"Not enough credits. Cost: {total_cost} credits")
+        game_state.ui.error_message(
+            f"Not enough credits. Cost: {total_cost} credits")
         return
 
     # Confirm purchase
@@ -60,11 +61,13 @@ def refuel_antimatter_command(game_state: Game, amount: float) -> None:
     player_character.remove_credits(total_cost)
     player_ship.antimatter += amount
 
-    game_state.ui.success_message(f"Successfully loaded {amount} g of antimatter.")
+    game_state.ui.success_message(
+        f"Successfully loaded {amount} g of antimatter.")
     game_state.ui.info_message(
         f"New antimatter level: {player_ship.antimatter}/{player_ship.max_antimatter} g"
     )
-    game_state.ui.info_message(f"Remaining credits: {player_character.credits}")
+    game_state.ui.info_message(
+        f"Remaining credits: {player_character.credits}")
 
 
 def repair_containment_command(game_state: Game) -> None:
@@ -120,8 +123,10 @@ def repair_containment_command(game_state: Game) -> None:
     player_character.remove_credits(repair_cost)
     player_ship.repair_containment(100.0 - player_ship.containment_integrity)
 
-    game_state.ui.success_message("Containment system repaired to 100% integrity.")
-    game_state.ui.info_message(f"Remaining credits: {player_character.credits}")
+    game_state.ui.success_message(
+        "Containment system repaired to 100% integrity.")
+    game_state.ui.info_message(
+        f"Remaining credits: {player_character.credits}")
 
 
 def emergency_ejection_command(game_state: Game) -> None:
@@ -154,10 +159,12 @@ def emergency_ejection_command(game_state: Game) -> None:
 
     # Process ejection
     if player_ship.emergency_antimatter_ejection():
-        game_state.ui.success_message("Emergency antimatter ejection successful.")
+        game_state.ui.success_message(
+            "Emergency antimatter ejection successful.")
         game_state.ui.success_message("Containment systems stabilized.")
     else:
-        game_state.ui.error_message("Ejection failed. Contact system administrator.")
+        game_state.ui.error_message(
+            "Ejection failed. Contact system administrator.")
 
 
 def ftl_jump_command(game_state: Game, destination: str) -> None:
@@ -205,7 +212,8 @@ def ftl_jump_command(game_state: Game, destination: str) -> None:
         return
 
     # Calculate distance
-    distance = region.calculate_distance(current_system.name, target_system.name)
+    distance = region.calculate_distance(
+        current_system.name, target_system.name)
 
     # Check antimatter levels
     required_antimatter = distance * player_ship.antimatter_consumption
@@ -241,7 +249,8 @@ def ftl_jump_command(game_state: Game, destination: str) -> None:
         return
 
     # Execute jump
-    success, message = player_ship.ftl_jump(game_state, target_system.name, distance)
+    success, message = player_ship.ftl_jump(
+        game_state, target_system.name, distance)
 
     game_state.ui.info_message(message)
 
@@ -281,7 +290,8 @@ def list_systems_command(game_state: Game) -> None:
             distance_str = "-"
             cost_str = "-"
         else:
-            distance = region.calculate_distance(current_system.name, system.name)
+            distance = region.calculate_distance(
+                current_system.name, system.name)
             ftl_cost = distance * player_ship.antimatter_consumption
             distance_str = f"{distance:.2f} LY"
             cost_str = f"{ftl_cost:.2f}g"

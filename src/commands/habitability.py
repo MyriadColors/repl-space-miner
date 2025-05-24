@@ -28,11 +28,13 @@ def _perform_habitability_analysis(game_state: Game, celestial_body) -> None:
         game_state.ui.info_message(details)
 
         # Award experience for scanning
-        skill_results = process_skill_xp_from_activity(game_state, "scan", 25.0)
+        skill_results = process_skill_xp_from_activity(
+            game_state, "scan", 25.0)
         notify_skill_progress(game_state, skill_results)
 
     except Exception as e:
-        game_state.ui.error_message(f"Error performing habitability analysis: {str(e)}")
+        game_state.ui.error_message(
+            f"Error performing habitability analysis: {str(e)}")
 
 
 def _analyze_closest_habitable_body(game_state: Game) -> None:
@@ -51,14 +53,16 @@ def _analyze_closest_habitable_body(game_state: Game) -> None:
             habitable_bodies.append((obj, distance))
 
     if not habitable_bodies:
-        game_state.ui.error_message("No planets or moons found in the current system")
+        game_state.ui.error_message(
+            "No planets or moons found in the current system")
         return
 
     # Sort by distance and pick the closest
     habitable_bodies.sort(key=lambda x: x[1])
     closest_body = habitable_bodies[0][0]
 
-    game_state.ui.info_message(f"Analyzing closest habitable body: {closest_body.name}")
+    game_state.ui.info_message(
+        f"Analyzing closest habitable body: {closest_body.name}")
     _perform_habitability_analysis(game_state, closest_body)
 
 
@@ -85,7 +89,8 @@ def habitability_command(game_state: Game, object_id_str: Optional[str] = None) 
     try:
         object_id = int(object_id_str)
     except ValueError:
-        game_state.ui.error_message("Invalid ID. Please provide a valid numeric ID.")
+        game_state.ui.error_message(
+            "Invalid ID. Please provide a valid numeric ID.")
         return
 
     # Find the object by ID
@@ -98,7 +103,8 @@ def habitability_command(game_state: Game, object_id_str: Optional[str] = None) 
             break
 
     if found_object is None:
-        game_state.ui.error_message(f"No celestial body found with ID {object_id}")
+        game_state.ui.error_message(
+            f"No celestial body found with ID {object_id}")
         return
     # Check if it's a habitable body type
     if not isinstance(found_object, (Planet, Moon)):
@@ -130,7 +136,8 @@ def habitability_survey_command(game_state: Game) -> None:
             habitable_bodies.append(obj)
 
     if not habitable_bodies:
-        game_state.ui.error_message("No planets or moons found in the current system")
+        game_state.ui.error_message(
+            "No planets or moons found in the current system")
         return
 
     # Sort by habitability score (highest first)
@@ -157,7 +164,8 @@ def habitability_survey_command(game_state: Game) -> None:
                 f"{i}. {body.name} ({body_type}) - UHS: {score:.1f}, Distance: {distance:.3f} AU, ID: {body.space_object.id}"
             )
         except Exception as e:
-            game_state.ui.error_message(f"Error analyzing {body.name}: {str(e)}")
+            game_state.ui.error_message(
+                f"Error analyzing {body.name}: {str(e)}")
 
     # Award experience for comprehensive survey
     xp_amount = len(habitable_bodies) * 15

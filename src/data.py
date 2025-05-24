@@ -35,8 +35,10 @@ class PlanetType(Enum):
 # Constants for celestial body generation
 # Min/max number of planets to generate
 PLANET_MIN_MAX_NUM: Tuple[int, int] = (3, 8)
-ASTEROID_BELT_MIN_MAX_NUM: Tuple[int, int] = (1, 3)  # Min/max number of asteroid belts
-ASTEROID_BELT_WIDTH_MIN_MAX: Tuple[float, float] = (0.5, 2.0)  # Belt width in AU
+ASTEROID_BELT_MIN_MAX_NUM: Tuple[int, int] = (
+    1, 3)  # Min/max number of asteroid belts
+ASTEROID_BELT_WIDTH_MIN_MAX: Tuple[float, float] = (
+    0.5, 2.0)  # Belt width in AU
 ASTEROID_BELT_FIELDS_MIN_MAX: Tuple[int, int] = (3, 8)  # Fields per belt
 
 # This will be used to generate random names
@@ -250,7 +252,8 @@ class OreCargo:
         ore_obj = ORES.get(data["ore_id"])
         if ore_obj is None:
             # Handle missing ore, perhaps raise an error or return None
-            raise ValueError(f"Ore with ID {data['ore_id']} not found in ORES map.")
+            raise ValueError(
+                f"Ore with ID {data['ore_id']} not found in ORES map.")
 
         # Handle purity if present
         if "purity" in data:

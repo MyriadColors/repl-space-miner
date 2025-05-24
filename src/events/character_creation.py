@@ -73,9 +73,11 @@ def character_creation_event(
             if 18 <= age <= 90:
                 valid_age = True
             else:
-                game_state.ui.info_message(Fore.RED + "Age must be between 18 and 90.")
+                game_state.ui.info_message(
+                    Fore.RED + "Age must be between 18 and 90.")
         else:
-            game_state.ui.info_message(Fore.RED + "Please enter a valid number.")
+            game_state.ui.info_message(
+                Fore.RED + "Please enter a valid number.")
 
     valid_sex = False
     sex = ""
@@ -84,7 +86,8 @@ def character_creation_event(
         if sex in ["male", "female"]:
             valid_sex = True
         else:
-            game_state.ui.info_message(Fore.RED + "Please enter 'male' or 'female'.")
+            game_state.ui.info_message(
+                Fore.RED + "Please enter 'male' or 'female'.")
 
     # sleep(1.5)
     game_state.ui.info_message(
@@ -120,7 +123,8 @@ def character_creation_event(
                     Fore.RED + "Please enter a number between 1 and 4."
                 )
         else:
-            game_state.ui.info_message(Fore.RED + "Please enter a valid number.")
+            game_state.ui.info_message(
+                Fore.RED + "Please enter a valid number.")
 
     # sleep(1.5)  # Slightly increased delay
 
@@ -1106,7 +1110,8 @@ def character_creation_event(
             )
 
         game_state.ui.info_message(
-            Fore.YELLOW + f"\nYou've told Nova about your ship, the {ship_name}..."
+            Fore.YELLOW +
+            f"\nYou've told Nova about your ship, the {ship_name}..."
         )
         # sleep(1)
         game_state.ui.info_message(
@@ -1214,7 +1219,8 @@ def character_creation_event(
             valid_appearance_choice = False
             app_idx = 1  # Default value and type annotation
             while not valid_appearance_choice:
-                appearance_choice = input(Fore.WHITE + "\nYour response (1-3): ")
+                appearance_choice = input(
+                    Fore.WHITE + "\nYour response (1-3): ")
                 if is_valid_int(appearance_choice) and 1 <= int(appearance_choice) <= 3:
                     valid_appearance_choice = True
                     app_idx = int(appearance_choice)
@@ -1366,7 +1372,8 @@ def character_creation_event(
             valid_appearance_choice = False
             app_idx = 1  # Default value and type annotation
             while not valid_appearance_choice:
-                appearance_choice = input(Fore.WHITE + "\nYour description (1-3): ")
+                appearance_choice = input(
+                    Fore.WHITE + "\nYour description (1-3): ")
                 if is_valid_int(appearance_choice) and 1 <= int(appearance_choice) <= 3:
                     valid_appearance_choice = True
                     app_idx = int(appearance_choice)
@@ -1487,9 +1494,11 @@ def character_creation_event(
             # First ask for ship name
             ship_name = ""
             while not ship_name:
-                ship_name = input(Fore.WHITE + "What do you call your vessel? ")
+                ship_name = input(
+                    Fore.WHITE + "What do you call your vessel? ")
                 if not ship_name:
-                    game_state.ui.info_message(Fore.RED + "Your ship needs a name.")
+                    game_state.ui.info_message(
+                        Fore.RED + "Your ship needs a name.")
 
             game_state.ui.info_message(
                 Fore.CYAN
@@ -1546,7 +1555,8 @@ def character_creation_event(
 
             # Store the ship appearance for later reference
             # Explicitly cast dict access for mypy
-            ship_appearance = cast(str, SHIP_TEMPLATES[ship_template_id]["name"])
+            ship_appearance = cast(
+                str, SHIP_TEMPLATES[ship_template_id]["name"])
             # Removed redundant if app_idx block that was overriding ship_appearance and causing lint issues.
 
             # Ask about background in a natural way
@@ -1555,7 +1565,8 @@ def character_creation_event(
                 Fore.CYAN
                 + "\nZeta-9 gives you an appraising look. 'You're patient. Thoughtful. What brought you into space? Education?'"
             )
-            game_state.ui.info_message(Fore.YELLOW + "\nHow do you explain your path?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nHow do you explain your path?")
             background_options = {
                 1: "Xeno-Biologist: 'Scientific curiosity. Started with research expeditions, then found I preferred the independence.'",
                 2: "Lunar Drifter: 'Grew up in Luna's domes. Learned to survive by reading people and situations.'",
@@ -1778,7 +1789,8 @@ def character_creation_event(
                 while not ship_name:
                     ship_name = input(Fore.WHITE + "Your ship's name: ")
                     if not ship_name:
-                        game_state.ui.info_message(Fore.RED + "Your ship needs a name.")
+                        game_state.ui.info_message(
+                            Fore.RED + "Your ship needs a name.")
 
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -1798,7 +1810,8 @@ def character_creation_event(
                 valid_appearance_choice = False
                 app_idx = 1  # Default value and type annotation
                 while not valid_appearance_choice:
-                    appearance_choice = input(Fore.WHITE + "\nYour description (1-3): ")
+                    appearance_choice = input(
+                        Fore.WHITE + "\nYour description (1-3): ")
                     if (
                         is_valid_int(appearance_choice)
                         and 1 <= int(appearance_choice) <= 3
@@ -1888,7 +1901,8 @@ def character_creation_event(
                 Fore.CYAN
                 + "\nThe bartender tilts their head, optical sensors whirring. 'But everyone's got their flaws. You seem like you might be...'"
             )  # Offer negative traits
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat's your biggest weakness?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nWhat's your biggest weakness?")
             neg_trait_options = {
                 1: "Impatient: 'I don't like waiting. Time is credits, and I've got places to be.'",
                 2: "Reckless: 'I take chances. Playing it safe never made anyone rich or famous.'",
@@ -1903,7 +1917,8 @@ def character_creation_event(
 
             valid_neg_trait_choice = False
             while not valid_neg_trait_choice:
-                neg_trait_choice = input(Fore.WHITE + "\nYour response (1-3): ")
+                neg_trait_choice = input(
+                    Fore.WHITE + "\nYour response (1-3): ")
                 if is_valid_int(neg_trait_choice) and 1 <= int(neg_trait_choice) <= 3:
                     valid_neg_trait_choice = True
                     neg_trait_idx = int(neg_trait_choice)
@@ -1958,7 +1973,8 @@ def character_creation_event(
                     Fore.CYAN
                     + "\n'You seem to know what questions to ask,' the bartender observes. 'What's your background?'"
                 )
-                game_state.ui.info_message(Fore.YELLOW + "\nHow do you respond?")
+                game_state.ui.info_message(
+                    Fore.YELLOW + "\nHow do you respond?")
                 background_options = {
                     1: "Corp Dropout: 'Corporate sector. Decided the pay wasn't worth the soul-crushing monotony.'",
                     2: "Discharged Trooper: 'Military. Let's say my discharge wasn't ceremonial.'",
@@ -2045,7 +2061,8 @@ def character_creation_event(
                 while not ship_name:
                     ship_name = input(Fore.WHITE + "Your ship's designation: ")
                     if not ship_name:
-                        game_state.ui.info_message(Fore.RED + "Your ship needs a name.")
+                        game_state.ui.info_message(
+                            Fore.RED + "Your ship needs a name.")
 
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -2065,7 +2082,8 @@ def character_creation_event(
                 valid_appearance_choice = False
                 app_idx = 1  # Default value and type annotation
                 while not valid_appearance_choice:
-                    appearance_choice = input(Fore.WHITE + "\nYour description (1-3): ")
+                    appearance_choice = input(
+                        Fore.WHITE + "\nYour description (1-3): ")
                     if (
                         is_valid_int(appearance_choice)
                         and 1 <= int(appearance_choice) <= 3
@@ -2170,7 +2188,8 @@ def character_creation_event(
 
             valid_neg_trait_choice = False
             while not valid_neg_trait_choice:
-                neg_trait_choice = input(Fore.WHITE + "\nYour response (1-3): ")
+                neg_trait_choice = input(
+                    Fore.WHITE + "\nYour response (1-3): ")
                 if is_valid_int(neg_trait_choice) and 1 <= int(neg_trait_choice) <= 3:
                     valid_neg_trait_choice = True
                     neg_trait_idx = int(neg_trait_choice)
@@ -2283,7 +2302,8 @@ def character_creation_event(
                 while not ship_name:
                     ship_name = input(Fore.WHITE + "What's your ship called? ")
                     if not ship_name:
-                        game_state.ui.info_message(Fore.RED + "Your ship needs a name.")
+                        game_state.ui.info_message(
+                            Fore.RED + "Your ship needs a name.")
 
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -2303,7 +2323,8 @@ def character_creation_event(
                 valid_appearance_choice = False
                 app_idx = 1  # Default value and type annotation
                 while not valid_appearance_choice:
-                    appearance_choice = input(Fore.WHITE + "\nYour description (1-3): ")
+                    appearance_choice = input(
+                        Fore.WHITE + "\nYour description (1-3): ")
                     if (
                         is_valid_int(appearance_choice)
                         and 1 <= int(appearance_choice) <= 3
@@ -2408,7 +2429,8 @@ def character_creation_event(
 
             valid_neg_trait_choice = False
             while not valid_neg_trait_choice:
-                neg_trait_choice = input(Fore.WHITE + "\nYour response (1-3): ")
+                neg_trait_choice = input(
+                    Fore.WHITE + "\nYour response (1-3): ")
                 if is_valid_int(neg_trait_choice) and 1 <= int(neg_trait_choice) <= 3:
                     valid_neg_trait_choice = True
                     neg_trait_idx = int(neg_trait_choice)
@@ -2446,8 +2468,10 @@ def character_creation_event(
         game_state.ui.info_message(Fore.CYAN + f"Name: {name}")
         game_state.ui.info_message(Fore.CYAN + f"Age: {age}")
         game_state.ui.info_message(Fore.CYAN + f"Background: {background}")
-        game_state.ui.info_message(Fore.CYAN + f"Positive Trait: {positive_trait}")
-        game_state.ui.info_message(Fore.CYAN + f"Negative Trait: {negative_trait}")
+        game_state.ui.info_message(
+            Fore.CYAN + f"Positive Trait: {positive_trait}")
+        game_state.ui.info_message(
+            Fore.CYAN + f"Negative Trait: {negative_trait}")
         game_state.ui.info_message(
             Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})"
         )
@@ -2490,7 +2514,8 @@ def character_creation_event(
                 + "\nYour corporate training provided you with valuable business insights..."
             )
             # sleep(1.5)
-            additional_bonus_details = {"type": "stat", "name": "intellect", "value": 1}
+            additional_bonus_details = {
+                "type": "stat", "name": "intellect", "value": 1}
             game_state.ui.info_message(
                 Fore.CYAN
                 + "You developed a sharp analytical mind during your time in the corporate sector. (+1 Intellect)"
@@ -2516,7 +2541,8 @@ def character_creation_event(
                 + "\nBeing born in space has given you a natural affinity..."
             )
             # sleep(1.5)
-            additional_bonus_details = {"type": "skill", "name": "piloting", "value": 1}
+            additional_bonus_details = {
+                "type": "skill", "name": "piloting", "value": 1}
             game_state.ui.info_message(
                 Fore.CYAN
                 + "You have an intuitive understanding of spacecraft handling. (+1 Piloting)"
@@ -2542,7 +2568,8 @@ def character_creation_event(
                 + "\nYour military background has honed your combat reflexes..."
             )
             # sleep(1.5)
-            additional_bonus_details = {"type": "skill", "name": "combat", "value": 1}
+            additional_bonus_details = {
+                "type": "skill", "name": "combat", "value": 1}
             game_state.ui.info_message(
                 Fore.CYAN
                 + "Your training allows you to react quickly in dangerous situations. (+1 Combat)"
@@ -2566,7 +2593,8 @@ def character_creation_event(
         pg.mixer.init()
         pg.mixer.music.set_volume(0.5)
     else:
-        game_state.ui.info_message(Fore.GREEN + "Audio notifications disabled.")
+        game_state.ui.info_message(
+            Fore.GREEN + "Audio notifications disabled.")
 
     # Create character & ship objects with chosen attributes
     from src.classes.ship import Ship
@@ -2625,7 +2653,8 @@ def character_creation_event(
         elif current_stat_key in character.faction_standings:
             # Faction standings from BACKGROUND_BONUSES are additive.
             character.faction_standings[current_stat_key] = (
-                character.faction_standings.get(current_stat_key, 0) + bonus_val
+                character.faction_standings.get(
+                    current_stat_key, 0) + bonus_val
             )
         elif hasattr(character, current_stat_key):
             # This handles base stats like 'technical_aptitude', 'resilience', 'perception', etc.
@@ -2633,7 +2662,8 @@ def character_creation_event(
             # The bonus_val from BACKGROUND_BONUSES should be ADDED to this base value.
             current_base_val = getattr(character, current_stat_key)
             setattr(
-                character, current_stat_key, current_base_val + cast(int, bonus_val)
+                character, current_stat_key, current_base_val +
+                cast(int, bonus_val)
             )
         # If current_stat_key is not a skill, not a faction, and not an attribute, it's an undefined bonus.
 
@@ -2656,12 +2686,14 @@ def character_creation_event(
                 "charisma",
             ] and hasattr(character, bonus_name):
                 current_skill_value = getattr(character, bonus_name)
-                setattr(character, bonus_name, current_skill_value + bonus_value)
+                setattr(character, bonus_name,
+                        current_skill_value + bonus_value)
                 applied_bonus_message = f"Your specialization grants an additional +{bonus_value} to {bonus_name} skill."
         elif bonus_type == "faction":
             # Specialization bonuses for factions are additive.
             if bonus_name in character.faction_standings:
-                current_faction_value = character.faction_standings.get(bonus_name, 0)
+                current_faction_value = character.faction_standings.get(
+                    bonus_name, 0)
                 character.faction_standings[bonus_name] = (
                     current_faction_value + bonus_value
                 )
@@ -2721,7 +2753,8 @@ def character_creation_event(
         and faction_influenced in character.faction_standings
     ):
         faction_bonus = 5  # Standard bonus for initial conversation
-        current_standing = character.faction_standings.get(faction_influenced, 0)
+        current_standing = character.faction_standings.get(
+            faction_influenced, 0)
         character.faction_standings[faction_influenced] = (
             current_standing + faction_bonus
         )
@@ -2857,7 +2890,8 @@ def quick_start(game_state: "Game"):
     game_state.ui.info_message(Fore.CYAN + f"Background: {background}")
     game_state.ui.info_message(Fore.CYAN + f"Positive Trait: {positive_trait}")
     game_state.ui.info_message(Fore.CYAN + f"Negative Trait: {negative_trait}")
-    game_state.ui.info_message(Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})")
+    game_state.ui.info_message(
+        Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})")
     game_state.ui.info_message(
         f"\n{Fore.GREEN}Quick start initiated! Welcome aboard the {ship_name}."
     )

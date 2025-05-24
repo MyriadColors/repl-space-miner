@@ -53,7 +53,8 @@ def cargo_command(game_state: Game) -> None:
                 f"{ore_name:<20} {cargo.quantity:<10} {ore_volume:<10.2f} {ore_value:<12.2f} {ore_total_value:<12.2f}"
             )
 
-        game_state.ui.info_message(f"\nTotal Ore Value: {total_ore_value:.2f} credits")
+        game_state.ui.info_message(
+            f"\nTotal Ore Value: {total_ore_value:.2f} credits")
         game_state.ui.info_message(
             f"Total Ore Volume: {player_ship.cargohold_occupied:.2f} m³\n"
         )
@@ -92,7 +93,8 @@ def cargo_command(game_state: Game) -> None:
     # Display total cargo value
     total_cargo_value = total_ore_value + total_mineral_value
     game_state.ui.info_message("=== SUMMARY ===")
-    game_state.ui.info_message(f"Total Cargo Value: {total_cargo_value:.2f} credits")
+    game_state.ui.info_message(
+        f"Total Cargo Value: {total_cargo_value:.2f} credits")
     game_state.ui.info_message(
         f"Total Cargo Space Used: {total_occupied:.2f}/{player_ship.cargohold_capacity:.2f} m³"
     )

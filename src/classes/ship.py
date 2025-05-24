@@ -223,7 +223,8 @@ class Ship:
         self.fuel += value
 
     def calculate_travel_data(self, destination: Vector2):
-        distance = round(euclidean_distance(self.space_object.position, destination), 3)
+        distance = round(euclidean_distance(
+            self.space_object.position, destination), 3)
         time = round(distance / self.moves.speed, 3)
         fuel_consumed = round(distance * self.fuel_consumption, 3)
         return distance, time, fuel_consumed
@@ -245,7 +246,8 @@ class Ship:
         return round(fuel_consumed, 3)
 
     def travel(self, game_state, destination: Vector2):
-        distance, travel_time, fuel_consumed = self.calculate_travel_data(destination)
+        distance, travel_time, fuel_consumed = self.calculate_travel_data(
+            destination)
 
         # Apply character's fuel consumption modifier if applicable
         character = game_state.get_player_character()
@@ -301,8 +303,10 @@ class Ship:
         print(f"The ship has arrived at {vector_to_string(destination)}")
 
     def status_to_string(self) -> list[str]:
-        ore_units_on_cargohold = sum(cargo.quantity for cargo in self.cargohold)
-        mineral_units_on_mineralhold = sum(cargo.quantity for cargo in self.mineralhold)
+        ore_units_on_cargohold = sum(
+            cargo.quantity for cargo in self.cargohold)
+        mineral_units_on_mineralhold = sum(
+            cargo.quantity for cargo in self.mineralhold)
         total_cargo_occupied = self.cargohold_occupied + self.mineralhold_occupied
         docked_at_name = "Not docked" if self.docked_at is None else self.docked_at.name
         return [
@@ -348,7 +352,8 @@ class Ship:
 
         # Validate ores if a list of selected ores is provided
         if ores_selected_list:
-            available_ores = {ore.name.lower() for ore in asteroid_field.ores_available}
+            available_ores = {ore.name.lower()
+                              for ore in asteroid_field.ores_available}
             invalid_ores = [
                 ore for ore in ores_selected_list if ore.lower() not in available_ores
             ]
@@ -452,7 +457,8 @@ class Ship:
             if ore_cargo:
                 ore_cargo.quantity += 1
             else:
-                ores_mined.append(OreCargo(ore, 1, ore.base_value, ore.base_value))
+                ores_mined.append(
+                    OreCargo(ore, 1, ore.base_value, ore.base_value))
 
             # Decrease the asteroid's volume and update ship's cargo data
             asteroid_being_mined.volume -= ore.volume
@@ -461,7 +467,8 @@ class Ship:
             time_spent += 1
 
         # Summarize mined results
-        total_volume = sum(cargo.quantity * cargo.ore.volume for cargo in ores_mined)
+        total_volume = sum(
+            cargo.quantity * cargo.ore.volume for cargo in ores_mined)
         total_quantity = sum(cargo.quantity for cargo in ores_mined)
         ore_names = {cargo.ore.name for cargo in ores_mined}
 
@@ -584,7 +591,8 @@ class Ship:
                 result.append("")
             result.append("=== Minerals ===")
             for cargo in self.mineralhold:
-                result.append(f"{cargo.quantity} units of {cargo.mineral.name}")
+                result.append(
+                    f"{cargo.quantity} units of {cargo.mineral.name}")
 
         # If we have no cargo, return a message
         if not result:
@@ -691,10 +699,12 @@ class Ship:
             Ship: A new Ship instance with properties from the template
         """
         if template_id not in SHIP_TEMPLATES:
-            raise ValueError(f"Template {template_id} not found in SHIP_TEMPLATES")
+            raise ValueError(
+                f"Template {template_id} not found in SHIP_TEMPLATES")
 
         template = SHIP_TEMPLATES[template_id]
-        ship_name: str = str(name) if name is not None else str(template["name"])
+        ship_name: str = str(
+            name) if name is not None else str(template["name"])
 
         # Create the ship with properties from the template, safely converting to expected types
         ship = cls(
@@ -781,7 +791,8 @@ class Ship:
                 fuel_consumption_modifier=engine_obj.fuel_consumption_modifier,
                 sensor_signature_modifier=engine_obj.sensor_signature_modifier,
                 maintenance_cost_modifier=engine_obj.maintenance_cost_modifier,
-                magneton_resistance=getattr(engine_obj, "magneton_resistance", 0.0),
+                magneton_resistance=getattr(
+                    engine_obj, "magneton_resistance", 0.0),
             )
             # Apply engine modifiers
             ship.moves.speed *= engine_obj.speed_modifier
@@ -831,7 +842,8 @@ class Ship:
             self.hull_integrity *= upgrade.multiplier
 
         elif upgrade.target == UpgradeTarget.SHIELD_CAPACITY:
-            self.shield_capacity = max(0.1, self.shield_capacity * upgrade.multiplier)
+            self.shield_capacity = max(
+                0.1, self.shield_capacity * upgrade.multiplier)
 
         # Store the applied upgrade
         if upgrade.id in self.applied_upgrades:
@@ -891,7 +903,8 @@ class Ship:
 
         elif upgrade.target == UpgradeTarget.CARGO_CAPACITY:
             result["before"] = float(self.cargohold_capacity)
-            result["after"] = float(self.cargohold_capacity * upgrade.multiplier)
+            result["after"] = float(
+                self.cargohold_capacity * upgrade.multiplier)
             result["is_positive"] = True
             result["unit"] = "m³"
 
@@ -909,7 +922,8 @@ class Ship:
 
         elif upgrade.target == UpgradeTarget.SHIELD_CAPACITY:
             result["before"] = float(self.shield_capacity)
-            result["after"] = float(max(0.1, self.shield_capacity * upgrade.multiplier))
+            result["after"] = float(
+                max(0.1, self.shield_capacity * upgrade.multiplier))
             result["is_positive"] = True
             result["unit"] = "%"  # Calculate percentage change
         try:
@@ -1036,7 +1050,8 @@ class Ship:
         self.containment_failure_risk = 0.0
 
         # Apply some wear on the containment system from emergency procedures
-        self.containment_integrity = max(70.0, self.containment_integrity - 10.0)
+        self.containment_integrity = max(
+            70.0, self.containment_integrity - 10.0)
 
         return True
 
@@ -1061,7 +1076,8 @@ class Ship:
         time_factor = time_since_check / 3600.0  # Convert to hours
 
         # Increase risk over time (0.1% per hour at 100% integrity, more at lower integrity)
-        added_risk = time_factor * (0.1 + (1.0 - self.containment_integrity / 100.0))
+        added_risk = time_factor * \
+            (0.1 + (1.0 - self.containment_integrity / 100.0))
 
         # Update the containment failure risk
         self.containment_failure_risk = min(100.0, base_risk + added_risk)

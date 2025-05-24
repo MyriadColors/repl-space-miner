@@ -65,14 +65,18 @@ def display_status(game_state: Game) -> None:
 
     # --- DEFENSE SECTION ---
     game_state.ui.info_message("DEFENSE:")
-    game_state.ui.info_message(f"Hull Integrity: {player_ship.hull_integrity:.1f}%")
-    game_state.ui.info_message(f"Shield Capacity: {player_ship.shield_capacity:.1f}%")
+    game_state.ui.info_message(
+        f"Hull Integrity: {player_ship.hull_integrity:.1f}%")
+    game_state.ui.info_message(
+        f"Shield Capacity: {player_ship.shield_capacity:.1f}%")
     game_state.ui.info_message("------------------------")
 
     # --- SENSORS SECTION ---
     game_state.ui.info_message("SENSORS:")
-    game_state.ui.info_message(f"Sensor Range: {player_ship.sensor_range:.2f} AU")
-    game_state.ui.info_message(f"Sensor Signature: {player_ship.sensor_signature:.2f}")
+    game_state.ui.info_message(
+        f"Sensor Range: {player_ship.sensor_range:.2f} AU")
+    game_state.ui.info_message(
+        f"Sensor Signature: {player_ship.sensor_signature:.2f}")
     game_state.ui.info_message("========================\n")
 
     # --- FINANCIAL STATUS ---
@@ -110,11 +114,13 @@ def display_status(game_state: Game) -> None:
         game_state.ui.info_message(f"Daily Interest Rate: {daily_rate:.1%}")
         next_interest = game_state.player_character.last_interest_time + 24
         time_to_next = next_interest - game_state.global_time
-        game_state.ui.info_message(f"Next interest in: {format_seconds(time_to_next)}")
+        game_state.ui.info_message(
+            f"Next interest in: {format_seconds(time_to_next)}")
         game_state.ui.info_message("------------------------")
 
     # --- GAME TIME ---
-    game_state.ui.info_message(f"Game Time: {format_seconds(game_state.global_time)}")
+    game_state.ui.info_message(
+        f"Game Time: {format_seconds(game_state.global_time)}")
 
 
 def display_time_and_status(game_state: Game) -> None:
@@ -170,7 +176,8 @@ def save_game_command(
         human_readable: If True, save in human-readable format; if None, user will be prompted
     """
     if not filename:
-        filename = input("Enter save filename (leave empty for auto-generated name): ")
+        filename = input(
+            "Enter save filename (leave empty for auto-generated name): ")
 
     try:
         # Handle None case by using a default value (False) or prompting user
@@ -300,7 +307,8 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         game_state.ui.info_message("")
 
         # NAVIGATION CATEGORY
-        game_state.ui.info_message(f"{Fore.CYAN}=== NAVIGATION ==={Style.RESET_ALL}")
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== NAVIGATION ==={Style.RESET_ALL}")
         write_command(
             "travel/t <x> <y>", "Travel to specific coordinates", True, "undocked"
         )
@@ -314,10 +322,13 @@ def display_help(game_state: Game, command_name: str = "") -> None:
             "direct/d <x> <y>", "Direct travel to coordinates", True, "undocked"
         )
         write_command("dock/do", "Dock with nearby station", True, "undocked")
-        write_command("undock/ud", "Undock from current station", True, "docked")
+        write_command("undock/ud", "Undock from current station",
+                      True, "docked")
         game_state.ui.info_message("")  # FTL TRAVEL CATEGORY
-        game_state.ui.info_message(f"{Fore.CYAN}=== FTL TRAVEL ==={Style.RESET_ALL}")
-        write_command("listsystems/lsys", "List all available solar systems", True)
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== FTL TRAVEL ==={Style.RESET_ALL}")
+        write_command("listsystems/lsys",
+                      "List all available solar systems", True)
         write_command(
             "ftl/ftl_jump <destination>",
             "Jump to a solar system by name or index",
@@ -357,16 +368,20 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         game_state.ui.info_message(
             f"{Fore.CYAN}=== CARGO & RESOURCES ==={Style.RESET_ALL}"
         )
-        write_command("cargo/inv/inventory", "Display ship cargo and inventory", True)
-        write_command("refine [amount]", "Refine ore to higher purity", True, "docked")
-        write_command("purify [amount]", "Convert ore to minerals", True, "docked")
+        write_command("cargo/inv/inventory",
+                      "Display ship cargo and inventory", True)
+        write_command("refine [amount]",
+                      "Refine ore to higher purity", True, "docked")
+        write_command("purify [amount]",
+                      "Convert ore to minerals", True, "docked")
         game_state.ui.info_message("")
 
         # TRADING CATEGORY
         game_state.ui.info_message(
             f"{Fore.CYAN}=== TRADING & COMMERCE ==={Style.RESET_ALL}"
         )
-        write_command("buy/b <item> <amount>", "Buy items from station", True, "docked")
+        write_command("buy/b <item> <amount>",
+                      "Buy items from station", True, "docked")
         write_command("sell/s", "Sell items to station", True, "docked")
         write_command(
             "market/prices/shop",
@@ -428,7 +443,8 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         game_state.ui.info_message("")
 
         # SYSTEM & UI COMMANDS
-        game_state.ui.info_message(f"{Fore.CYAN}=== SYSTEM & UI ==={Style.RESET_ALL}")
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== SYSTEM & UI ==={Style.RESET_ALL}")
         write_command("status", "Display ship and game status", True)
         write_command("time", "Display current game time", True)
         write_command("clear", "Clear the screen", True)
@@ -439,14 +455,17 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         game_state.ui.info_message("")
 
         # CUSTOMIZATION
-        game_state.ui.info_message(f"{Fore.CYAN}=== CUSTOMIZATION ==={Style.RESET_ALL}")
-        write_command("color <text|background> <color>", "Change terminal colors", True)
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== CUSTOMIZATION ==={Style.RESET_ALL}")
+        write_command("color <text|background> <color>",
+                      "Change terminal colors", True)
         write_command("reset", "Reset terminal colors to defaults", True)
         write_command("sound", "Toggle game sound effects", True)
         game_state.ui.info_message("")
 
         # DEBUG COMMANDS
-        game_state.ui.info_message(f"{Fore.CYAN}=== DEBUG ==={Style.RESET_ALL}")
+        game_state.ui.info_message(
+            f"{Fore.CYAN}=== DEBUG ==={Style.RESET_ALL}")
         write_command("debug", "Toggle debug mode", True)
         write_command(
             "add_ore/ao <amount> <ore_name>",

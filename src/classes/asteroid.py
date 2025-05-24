@@ -66,7 +66,8 @@ class AsteroidField:
             asteroid_field_info += (
                 f"Distance: {self.space_object.position.distance_to(position):.3f} AU\n"
             )
-        ore_list_info = "\n".join(ore.to_string() for ore in self.ores_available)
+        ore_list_info = "\n".join(ore.to_string()
+                                  for ore in self.ores_available)
         asteroid_field_info += (
             f"Radius: {self.radius:.3f} AU\n"
             f"Ores available:\n{ore_list_info}\n"
@@ -156,7 +157,8 @@ class AsteroidField:
 
         # Ensure ores_available is reconstructed from the actual ores in the loaded asteroids,
         # not just the template ores_available_ids, to reflect the true state.
-        actual_ores_in_asteroids = {ast.ore for ast in field.asteroids if ast.ore}
+        actual_ores_in_asteroids = {
+            ast.ore for ast in field.asteroids if ast.ore}
         field.ores_available = list(actual_ores_in_asteroids)
 
         field.rarity_score = (

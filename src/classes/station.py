@@ -78,9 +78,12 @@ class Station:
         self.ore_cargo = []
         for ore in self.ores_available:
             ore_quantity: int = 0  # Will be set in generate_ore_cargo
-            ore_buy_price: float = round(ore.base_value * rnd_float(0.75, 1.25), 2)
-            ore_sell_price: float = round(ore_buy_price * rnd_float(0.5, 1.0), 2)
-            ore_cargo = OreCargo(ore, ore_quantity, ore_buy_price, ore_sell_price)
+            ore_buy_price: float = round(
+                ore.base_value * rnd_float(0.75, 1.25), 2)
+            ore_sell_price: float = round(
+                ore_buy_price * rnd_float(0.5, 1.0), 2)
+            ore_cargo = OreCargo(
+                ore, ore_quantity, ore_buy_price, ore_sell_price)
             self.ore_cargo.append(ore_cargo)
 
     def generate_ore_cargo(self):
@@ -89,7 +92,8 @@ class Station:
         import random
 
         self.ore_cargo_volume = 0.0
-        max_total_volume = self.ore_capacity / rnd_int(1, 3)  # More generous allocation
+        max_total_volume = self.ore_capacity / \
+            rnd_int(1, 3)  # More generous allocation
 
         # First pass - ensure every ore has at least some quantity
         min_qty_per_ore = 5  # Minimum quantity of each ore type
@@ -176,7 +180,8 @@ class Station:
 
     def buy_fuel(self, player_ship, amount, game_state):
         total_cost = round(amount * self.fuel_price, 2)
-        print(f"Price: {total_cost} credits ({self.fuel_price} credits per m³)")
+        print(
+            f"Price: {total_cost} credits ({self.fuel_price} credits per m³)")
         response = take_input("Do you want to buy fuel? (y/n) ")
         if response != "y":
             return
@@ -196,7 +201,8 @@ class Station:
 
     def sell_fuel(self, player_ship, amount, game_state):
         total_price = round(amount * self.fuel_price, 2)
-        print(f"Price: {total_price} credits ({self.fuel_price} credits per m³)")
+        print(
+            f"Price: {total_price} credits ({self.fuel_price} credits per m³)")
         response = take_input("Do you want to sell fuel? (y/n) ")
         if response != "y":
             print("Fuel not sold")
@@ -301,7 +307,8 @@ class Station:
                 OreCargo(item_ore, item_quantity, buy_price, sell_price)
             )
         # Update ores_available and ore_cargo_volume after adding item
-        self.ores_available = [oc.ore for oc in self.ore_cargo if oc.ore is not None]
+        self.ores_available = [
+            oc.ore for oc in self.ore_cargo if oc.ore is not None]
         self.ore_cargo_volume = sum(
             oc.ore.volume * oc.quantity for oc in self.ore_cargo if oc.ore is not None
         )
