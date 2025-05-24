@@ -36,8 +36,7 @@ def add_ore_debug_command(game_state: Game, amount: int, ore_name: str) -> None:
         )
 
     ore_cargo = OreCargo(ore, amount, ore.base_value, ore.base_value)
-    update_ore_quantities(game_state, ore_cargo,
-                          ore_name, amount, ore.base_value)
+    update_ore_quantities(game_state, ore_cargo, ore_name, amount, ore.base_value)
     display_status(game_state)
 
 
@@ -48,8 +47,7 @@ def add_creds_debug_command(game_state: Game, amount: str) -> None:
     try:
         amount_value = float(amount)
     except ValueError:
-        game_state.ui.error_message(
-            "Invalid amount. Please enter a valid number.")
+        game_state.ui.error_message("Invalid amount. Please enter a valid number.")
         return
 
     if player_character is None:
@@ -70,8 +68,7 @@ def add_creds_debug_command(game_state: Game, amount: str) -> None:
             if confirm != "y":
                 return
         player_character.credits += amount_value
-        game_state.ui.success_message(
-            f"{amount_value} credits added to your credits.")
+        game_state.ui.success_message(f"{amount_value} credits added to your credits.")
     else:
         game_state.ui.error_message(
             "Debug commands can only be used through the use of the 'debug' ('dm') command."
@@ -84,8 +81,7 @@ def add_cargo_space_debug_command(game_state: Game, amount: str) -> None:
     try:
         amount_value = int(amount)
     except ValueError:
-        game_state.ui.error_message(
-            "Invalid amount. Please enter a valid integer.")
+        game_state.ui.error_message("Invalid amount. Please enter a valid integer.")
         return
 
     player_ship = game_state.get_player_ship()
@@ -99,8 +95,7 @@ def add_cargo_space_debug_command(game_state: Game, amount: str) -> None:
         return
 
     player_ship.cargohold_capacity += amount_value
-    game_state.ui.success_message(
-        f"{amount_value} cargo space added to your ship.")
+    game_state.ui.success_message(f"{amount_value} cargo space added to your ship.")
 
 
 def debug_mode_command(game_state: Game) -> None:

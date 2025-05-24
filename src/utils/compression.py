@@ -49,7 +49,7 @@ def decompress_save_data(compressed_str: str) -> Dict[str, Any]:
         raise ValueError("Not a valid compressed save file")
 
     # Extract Base64 data
-    b64_str = compressed_str[len("RSM_COMPRESSED_V1:"):]
+    b64_str = compressed_str[len("RSM_COMPRESSED_V1:") :]
 
     # Decode Base64
     compressed_bytes = base64.b64decode(b64_str)

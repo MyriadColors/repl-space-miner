@@ -43,15 +43,13 @@ def color_command(game_state, target: str, color_name: str):
             current_fg = COLOR_MAP[color_name]
             print(current_fg + f"Foreground color set to {color_name}.")
         else:
-            game_state.ui.error_message(
-                f"Unknown foreground color: {color_name}")
+            game_state.ui.error_message(f"Unknown foreground color: {color_name}")
     elif target == "bg":
         if color_name in BG_COLOR_MAP:
             current_bg = BG_COLOR_MAP[color_name]
             print(current_bg + f"Background color set to {color_name}.")
         else:
-            game_state.ui.error_message(
-                f"Unknown background color: {color_name}")
+            game_state.ui.error_message(f"Unknown background color: {color_name}")
 
 
 def reset_command(game_state, what: str):
@@ -67,10 +65,14 @@ def reset_command(game_state, what: str):
     elif what == "history":
         print("History reset (not implemented).")
     elif what == "game":
-        game_state.ui.info_message("Use 'game_reset' command to reset the game with optional seed.")
+        game_state.ui.info_message(
+            "Use 'game_reset' command to reset the game with optional seed."
+        )
     else:
         game_state.ui.error_message(f"Unknown reset target: {what}")
-        game_state.ui.info_message("Available reset targets: color, fg, bg, all, text, history, game")
+        game_state.ui.info_message(
+            "Available reset targets: color, fg, bg, all, text, history, game"
+        )
         game_state.ui.info_message("For game reset, use: game_reset [seed]")
 
 

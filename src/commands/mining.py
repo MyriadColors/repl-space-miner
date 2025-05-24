@@ -20,8 +20,7 @@ def mine_command(
     # Check if ship is in an asteroid field
     is_in_field, field = player_ship.check_field_presence(game_state)
     if not is_in_field or field is None:
-        game_state.ui.error_message(
-            "You must be in an asteroid field to mine.")
+        game_state.ui.error_message("You must be in an asteroid field to mine.")
         return
 
     # Check if cargo is full
@@ -30,8 +29,7 @@ def mine_command(
         return
 
     # Convert ore_selected to list if provided
-    ores_selected_list = [
-        ore_selected] if ore_selected else None  # Execute mining
+    ores_selected_list = [ore_selected] if ore_selected else None  # Execute mining
     player_ship.mine_belt(
         game_state,
         field,

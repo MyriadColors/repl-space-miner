@@ -39,8 +39,7 @@ def command_dock(game_state: Game) -> None:
     if target_station is None:  # If not exactly at a station, find the closest one
         stations = current_system.get_all_stations()
         if not stations:  # Check if there are any stations in the current system
-            game_state.ui.error_message(
-                "There are no stations in the current system.")
+            game_state.ui.error_message("There are no stations in the current system.")
             return
         target_station = get_closest_station(stations, player_ship)
 

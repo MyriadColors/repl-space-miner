@@ -38,8 +38,7 @@ def skills_command(game_state: Game, args=None) -> None:
     # Handle specific commands
     if args[0].lower() == "spend":
         if len(args) < 2:
-            game_state.ui.warn_message(
-                "Please specify a skill to spend points on.")
+            game_state.ui.warn_message("Please specify a skill to spend points on.")
             game_state.ui.info_message("Usage: skills spend [skill_name]")
             return
 
@@ -74,8 +73,7 @@ def display_all_skills(game_state: Game, skill_system) -> None:
     game_state.ui.info_message(
         "\nUse 'skills [skill_name]' to view details for a specific skill."
     )
-    game_state.ui.info_message(
-        "Use 'skills spend [skill_name]' to spend skill points.")
+    game_state.ui.info_message("Use 'skills spend [skill_name]' to spend skill points.")
 
 
 def display_skill_detail(game_state: Game, skill_system, skill_name: str) -> None:
@@ -105,8 +103,7 @@ def display_skill_detail(game_state: Game, skill_system, skill_name: str) -> Non
         game_state.ui.error_message(f"Skill '{skill_name}' not found.")
         # Show available skills
         available_skills = list(skill_system.skills.keys())
-        game_state.ui.info_message(
-            f"Available skills: {', '.join(available_skills)}")
+        game_state.ui.info_message(f"Available skills: {', '.join(available_skills)}")
         return
 
     progress = skill.xp_progress_percentage()
@@ -135,8 +132,7 @@ def display_skill_detail(game_state: Game, skill_system, skill_name: str) -> Non
 def spend_skill_point(game_state: Game, skill_system, skill_name: str) -> None:
     """Spend a skill point to level up a skill."""
     if skill_system.unspent_skill_points <= 0:
-        game_state.ui.error_message(
-            "You don't have any skill points to spend.")
+        game_state.ui.error_message("You don't have any skill points to spend.")
         return
 
     # First try exact match
@@ -164,8 +160,7 @@ def spend_skill_point(game_state: Game, skill_system, skill_name: str) -> None:
         game_state.ui.error_message(f"Skill '{skill_name}' not found.")
         # Show available skills
         available_skills = list(skill_system.skills.keys())
-        game_state.ui.info_message(
-            f"Available skills: {', '.join(available_skills)}")
+        game_state.ui.info_message(f"Available skills: {', '.join(available_skills)}")
         return
 
     # Try to spend the point
@@ -183,8 +178,7 @@ def spend_skill_point(game_state: Game, skill_system, skill_name: str) -> None:
                 f"{skill_name.capitalize()} is already at maximum level ({skill.level})."
             )
         else:
-            game_state.ui.error_message(
-                f"Failed to spend skill point on {skill_name}.")
+            game_state.ui.error_message(f"Failed to spend skill point on {skill_name}.")
 
 
 def generate_progress_bar(percentage: float, width: int = 20) -> str:

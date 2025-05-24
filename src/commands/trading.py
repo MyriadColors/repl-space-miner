@@ -55,8 +55,7 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
         None,
     )
     if not item:
-        game_state.ui.error_message(
-            f"Item {item_name} not found in station inventory.")
+        game_state.ui.error_message(f"Item {item_name} not found in station inventory.")
         return
 
     # Get the cargo that contains the ore
@@ -71,8 +70,7 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
 
     # Check if station has enough of the item
     if not ore_cargo:
-        game_state.ui.error_message(
-            f"Item {item_name} not available at this station.")
+        game_state.ui.error_message(f"Item {item_name} not available at this station.")
         return
 
     if ore_cargo.quantity < amount_int:
@@ -127,12 +125,10 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
             "Your negotiation skills helped secure a better price!"
         )
     elif price_modifier > 1.05:  # More than 5% increase
-        game_state.ui.warn_message(
-            "The merchant seems to be charging you a premium...")
+        game_state.ui.warn_message("The merchant seems to be charging you a premium...")
 
     if player_character.credits < total_price:
-        game_state.ui.error_message(
-            "Not enough credits to make this purchase.")
+        game_state.ui.error_message("Not enough credits to make this purchase.")
         return
 
     # Try to barter
@@ -177,8 +173,7 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
 
         if ore_cargo:  # Ensure ore_cargo is not None before accessing its attributes
             player_ship.cargohold.append(
-                OreCargo(item, amount_int, ore_cargo.buy_price,
-                         ore_cargo.sell_price)
+                OreCargo(item, amount_int, ore_cargo.buy_price, ore_cargo.sell_price)
             )
 
     game_state.ui.info_message(
@@ -211,8 +206,7 @@ def sell_command(game_state: Game) -> None:
 
     # Get user selection
     try:
-        selection = int(take_input(
-            "Select item number to sell (0 to cancel): "))
+        selection = int(take_input("Select item number to sell (0 to cancel): "))
         if selection == 0:
             return
         if selection < 1 or selection > len(player_ship.cargohold):
@@ -284,8 +278,7 @@ def sell_command(game_state: Game) -> None:
             "Your negotiation skills helped secure a better price!"
         )
     elif price_modifier < 0.95:  # More than 5% decrease
-        game_state.ui.warn_message(
-            "The merchant seems to be lowballing your offer...")
+        game_state.ui.warn_message("The merchant seems to be lowballing your offer...")
 
     # Try to barter
     final_price, bartered = barter(total_price)

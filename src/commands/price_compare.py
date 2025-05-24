@@ -442,8 +442,7 @@ def compare_prices_command(
             game_state.ui.info_message("No selling options available.\n")
 
     if option in ["trade", "all"]:
-        opportunities = get_trade_opportunities(
-            game_state, include_unreachable)
+        opportunities = get_trade_opportunities(game_state, include_unreachable)
 
         if opportunities:
             game_state.ui.info_message("=== TRADE OPPORTUNITIES ===")
@@ -576,8 +575,7 @@ def find_best_trade_routes(
 
             if ore_cargo:
                 # Calculate how many units of this ore the ship can hold
-                max_units = int(player_ship.cargohold_capacity //
-                                ore_cargo.ore.volume)
+                max_units = int(player_ship.cargohold_capacity // ore_cargo.ore.volume)
                 ore_capacity[ore_name] = max_units
 
     # Calculate potential routes
@@ -714,6 +712,5 @@ register_command(
 register_command(
     ["routes", "traderoutes", "bestroutes", "tr"],
     find_best_trade_routes,
-    [Argument("max_routes", int, True), Argument(
-        "include_unreachable", bool, True)],
+    [Argument("max_routes", int, True), Argument("include_unreachable", bool, True)],
 )

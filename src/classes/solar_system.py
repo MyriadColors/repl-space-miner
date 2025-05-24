@@ -16,8 +16,7 @@ from src.helpers import (
 )
 
 # Extended HasSpaceObjectType to include new celestial bodies
-HasSpaceObjectType = Union[AsteroidField,
-                           Station, Star, Planet, Moon, AsteroidBelt]
+HasSpaceObjectType = Union[AsteroidField, Station, Star, Planet, Moon, AsteroidBelt]
 
 
 class SolarSystem:
@@ -143,17 +142,14 @@ class SolarSystem:
             return
 
         star = next(cb for cb in self.celestial_bodies if isinstance(cb, Star))
-        num_planets = rnd_int(
-            data.PLANET_MIN_MAX_NUM[0], data.PLANET_MIN_MAX_NUM[1])
+        num_planets = rnd_int(data.PLANET_MIN_MAX_NUM[0], data.PLANET_MIN_MAX_NUM[1])
         used_orbital_distances: List[float] = []
 
         for i in range(num_planets):
             planet_name = f"{self.name} {self._get_planet_designation(i)}"
-            orbital_distance = self._select_orbital_distance(
-                used_orbital_distances)
+            orbital_distance = self._select_orbital_distance(used_orbital_distances)
             if orbital_distance is None:  # Should not happen with fallback
-                print(
-                    f"Could not find orbital distance for planet {i+1}, skipping.")
+                print(f"Could not find orbital distance for planet {i+1}, skipping.")
                 continue
             used_orbital_distances.append(orbital_distance)
             position = self._calculate_orbital_position(orbital_distance)
@@ -176,8 +172,7 @@ class SolarSystem:
         if not num_belts:
             return
 
-        star = next(
-            (cb for cb in self.celestial_bodies if isinstance(cb, Star)), None)
+        star = next((cb for cb in self.celestial_bodies if isinstance(cb, Star)), None)
         if not star:
             print("Cannot generate asteroid belts without a star.")
             return
@@ -188,8 +183,7 @@ class SolarSystem:
 
         # Get distances of existing planets to avoid direct overlap with belts
         planet_distances = sorted(
-            [p.orbital_distance for p in self.celestial_bodies if isinstance(
-                p, Planet)]
+            [p.orbital_distance for p in self.celestial_bodies if isinstance(p, Planet)]
         )
 
         # Define a potential zone for asteroid belts
@@ -229,8 +223,7 @@ class SolarSystem:
 
             if belt_middle_dist is None:
                 # Fallback: just pick a random spot, might overlap
-                belt_middle_dist = rnd_float(
-                    min_belt_zone_start, max_belt_zone_end)
+                belt_middle_dist = rnd_float(min_belt_zone_start, max_belt_zone_end)
 
             used_belt_middles.append(belt_middle_dist)
 
@@ -280,8 +273,7 @@ class SolarSystem:
             num_moons = random.randint(1, 3)
             for i in range(num_moons):
                 # Position moon around planet
-                moon_distance = random.uniform(
-                    0.1, 0.5)  # Distance from planet
+                moon_distance = random.uniform(0.1, 0.5)  # Distance from planet
                 angle = random.uniform(0, 2 * math.pi)
 
                 moon_x = planet.space_object.position.x + moon_distance * math.cos(
@@ -324,12 +316,10 @@ class SolarSystem:
         angle = random.uniform(0, 2 * math.pi)
 
         station_x = (
-            celestial_body.space_object.position.x +
-            orbital_distance * math.cos(angle)
+            celestial_body.space_object.position.x + orbital_distance * math.cos(angle)
         )
         station_y = (
-            celestial_body.space_object.position.y +
-            orbital_distance * math.sin(angle)
+            celestial_body.space_object.position.y + orbital_distance * math.sin(angle)
         )
         station_position = Vector2(round(station_x, 2), round(station_y, 2))
 
@@ -534,8 +524,7 @@ class SolarSystem:
                 return field.asteroid_quantity
             elif sort_type in ("distance", "d"):
                 if position_flag is None:
-                    raise ValueError(
-                        "Position flag is required for distance sorting")
+                    raise ValueError("Position flag is required for distance sorting")
                 return field.space_object.position.distance_to(position_flag)
             else:
                 raise ValueError(f"Invalid sort type: {sort_type}")
@@ -552,8 +541,7 @@ class SolarSystem:
         def sort_key(station_key):
             if sort_type in ("distance", "d"):
                 if position_flag is None:
-                    raise ValueError(
-                        "Position flag is required for distance sorting")
+                    raise ValueError("Position flag is required for distance sorting")
                 return station_key.space_object.position.distance_to(position_flag)
             else:
                 raise ValueError(f"Invalid sort type: {sort_type}")
@@ -573,8 +561,7 @@ class SolarSystem:
     def sort_objects_by_distance(objects: list[HasSpaceObjectType], position: Vector2):
         sorted_objects = sorted(
             objects,
-            key=lambda obj: euclidean_distance(
-                position, obj.space_object.position),
+            key=lambda obj: euclidean_distance(position, obj.space_object.position),
         )
         return sorted_objects
 
@@ -584,8 +571,7 @@ class SolarSystem:
 
         # Sort by distance and significance
         def scan_priority(obj):
-            distance = euclidean_distance(
-                player_position, obj.space_object.position)
+            distance = euclidean_distance(player_position, obj.space_object.position)
 
             # Priority multipliers based on object type
             if isinstance(obj, Star):

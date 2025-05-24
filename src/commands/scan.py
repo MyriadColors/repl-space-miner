@@ -31,8 +31,7 @@ def scan_command(game_state: Game, num_objects: str) -> None:
         all_objects = solar_system.get_all_space_objects()
 
         if not all_objects:
-            game_state.ui.warn_message(
-                "No objects found in the current system.")
+            game_state.ui.warn_message("No objects found in the current system.")
             return
 
         # Sort objects by distance for organized display
@@ -43,8 +42,7 @@ def scan_command(game_state: Game, num_objects: str) -> None:
             ),
         )
 
-        game_state.ui.info_message(
-            f"Total objects in system: {len(sorted_objects)}")
+        game_state.ui.info_message(f"Total objects in system: {len(sorted_objects)}")
         game_state.ui.info_message("-" * 50)
 
         # Display all objects with detailed information
@@ -76,8 +74,7 @@ def scan_command(game_state: Game, num_objects: str) -> None:
             )
             return
 
-        game_state.ui.info_message(
-            f"Scanning for {amount_of_objects} objects...")
+        game_state.ui.info_message(f"Scanning for {amount_of_objects} objects...")
 
         # Get limited objects from the scan based on sensor range and priority
         objects = game_state.get_current_solar_system().scan_system_objects(
@@ -86,8 +83,7 @@ def scan_command(game_state: Game, num_objects: str) -> None:
 
         # Check if any objects were found
         if not objects:
-            game_state.ui.warn_message(
-                "No objects detected within sensor range.")
+            game_state.ui.warn_message("No objects detected within sensor range.")
             return
 
         game_state.ui.info_message("Sensor detected the following objects:")
@@ -117,8 +113,7 @@ def scan_command(game_state: Game, num_objects: str) -> None:
         game_state.ui.warn_message(
             "Enter object to examine or navigate to, or -1 to abort:"
         )
-        input_response = take_input(
-            "Enter the number of the object or -1 to abort: ")
+        input_response = take_input("Enter the number of the object or -1 to abort: ")
 
         if input_response == "-1":
             return
@@ -140,8 +135,7 @@ def scan_command(game_state: Game, num_objects: str) -> None:
                     display_celestial_detail(game_state, selected_object)
 
                     # Ask if the player wants to travel to the object
-                    travel_response = take_input(
-                        "Travel to this object? (y/n): ")
+                    travel_response = take_input("Travel to this object? (y/n): ")
                     if travel_response.lower() != "y":
                         return
 
@@ -184,8 +178,7 @@ def scan_asteroids_command(game_state: Game) -> None:
         asteroid_quantity = (
             field.asteroid_quantity / 50
         )  # More asteroids = higher difficulty
-        base_difficulty = min(
-            2.0, max(1.0, (ore_variety + asteroid_quantity) / 2))
+        base_difficulty = min(2.0, max(1.0, (ore_variety + asteroid_quantity) / 2))
 
         # Apply rarity modifier - rarer fields are more complex to analyze
         final_difficulty = base_difficulty * field.rarity_score * 0.7
@@ -193,8 +186,7 @@ def scan_asteroids_command(game_state: Game) -> None:
         # Check if the player has enough energy to scan
         energy_cost = 10  # Example energy cost
         if player_ship.power < energy_cost:
-            game_state.ui.warn_message(
-                "Not enough ship power to perform scan.")
+            game_state.ui.warn_message("Not enough ship power to perform scan.")
             return
 
         # Deduct energy cost
@@ -235,8 +227,7 @@ def scan_celestial_command(game_state: Game) -> None:
 
     # Display the bodies
     if not celestial_bodies:
-        game_state.ui.warn_message(
-            "No celestial bodies detected in this system.")
+        game_state.ui.warn_message("No celestial bodies detected in this system.")
         return
 
     game_state.ui.info_message("Celestial bodies in this system:")
@@ -247,8 +238,7 @@ def scan_celestial_command(game_state: Game) -> None:
 
     # Let player select a body for detailed info
     game_state.ui.warn_message("Enter body number to examine or -1 to abort:")
-    response = take_input(
-        "Enter the number of the celestial body or -1 to abort: ")
+    response = take_input("Enter the number of the celestial body or -1 to abort: ")
 
     if response == "-1":
         return
@@ -260,8 +250,7 @@ def scan_celestial_command(game_state: Game) -> None:
             display_celestial_detail(game_state, selected_body)
 
             # Ask if the player wants to travel to the body
-            travel_response = take_input(
-                "Travel to this celestial body? (y/n): ")
+            travel_response = take_input("Travel to this celestial body? (y/n): ")
             if travel_response.lower() == "y":
                 direct_travel_command(
                     game_state,
@@ -273,8 +262,7 @@ def scan_celestial_command(game_state: Game) -> None:
                 f"Invalid selection. Please choose a number between 0 and {len(celestial_bodies) - 1}."
             )
     except ValueError:
-        game_state.ui.error_message(
-            "Invalid input. Please enter a valid number.")
+        game_state.ui.error_message("Invalid input. Please enter a valid number.")
 
     # Process skill experience
     if game_state.player_character:
@@ -290,10 +278,8 @@ def display_celestial_detail(game_state: Game, celestial_body: CelestialBody) ->
 
     if isinstance(celestial_body, Star):
         game_state.ui.info_message("Type: Star")
-        game_state.ui.info_message(
-            f"Stellar Class: {celestial_body.stellar_class}")
-        game_state.ui.info_message(
-            f"Temperature: {celestial_body.temperature} K")
+        game_state.ui.info_message(f"Stellar Class: {celestial_body.stellar_class}")
+        game_state.ui.info_message(f"Temperature: {celestial_body.temperature} K")
         game_state.ui.info_message(
             f"Luminosity: {celestial_body.luminosity} solar units"
         )
@@ -322,8 +308,7 @@ def display_celestial_detail(game_state: Game, celestial_body: CelestialBody) ->
         game_state.ui.info_message(
             f"Planet Type: {celestial_body.planet_type.name.replace('_', ' ').title()}"
         )
-        game_state.ui.info_message(
-            f"Atmosphere: {celestial_body.atmosphere.title()}")
+        game_state.ui.info_message(f"Atmosphere: {celestial_body.atmosphere.title()}")
 
         # Display UHS information
         if (
@@ -348,8 +333,7 @@ def display_celestial_detail(game_state: Game, celestial_body: CelestialBody) ->
         game_state.ui.info_message(f"Radius: {celestial_body.radius:.2f} AU")
 
         # List moons
-        moons = [
-            child for child in celestial_body.children if isinstance(child, Moon)]
+        moons = [child for child in celestial_body.children if isinstance(child, Moon)]
         if moons:
             game_state.ui.info_message(f"\nMoons ({len(moons)}):")
             for moon in moons:

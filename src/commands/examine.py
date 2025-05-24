@@ -35,8 +35,7 @@ def examine_command(game_state: Game, object_id_str: Optional[str] = None) -> No
     try:
         object_id = int(object_id_str)
     except ValueError:
-        game_state.ui.error_message(
-            "Invalid ID. Please provide a valid numeric ID.")
+        game_state.ui.error_message("Invalid ID. Please provide a valid numeric ID.")
         return
 
     player_ship = game_state.get_player_ship()
@@ -166,8 +165,7 @@ def _display_star_info(game_state: Game, star: Star) -> None:
     if star.children or star.stations:
         game_state.ui.info_message("\nOrbiting Objects:")
         for child in star.children:
-            game_state.ui.info_message(
-                f"- {child.name} (ID: {child.space_object.id})")
+            game_state.ui.info_message(f"- {child.name} (ID: {child.space_object.id})")
         for station in star.stations:
             game_state.ui.info_message(
                 f"- {station.name} Station (ID: {station.space_object.id})"
@@ -183,10 +181,8 @@ def _display_planet_info(game_state: Game, planet: Planet) -> None:
     )
     game_state.ui.info_message(f"Type: {planet.planet_type}")
     game_state.ui.info_message(f"Atmosphere: {planet.atmosphere}")
-    game_state.ui.info_message(
-        f"Habitability Score: {planet.habitability_score}")
-    game_state.ui.info_message(
-        f"Orbital Distance: {planet.orbital_distance:.2f} AU")
+    game_state.ui.info_message(f"Habitability Score: {planet.habitability_score}")
+    game_state.ui.info_message(f"Orbital Distance: {planet.orbital_distance:.2f} AU")
     game_state.ui.info_message(f"Radius: {planet.radius:.3f} AU")
 
     # List moons and stations
@@ -214,8 +210,7 @@ def _display_moon_info(game_state: Game, moon: Moon) -> None:
         f"Position: ({moon.space_object.position.x:.2f}, {moon.space_object.position.y:.2f})"
     )
     game_state.ui.info_message(f"Parent Planet: {moon.parent_planet.name}")
-    game_state.ui.info_message(
-        f"Orbital Distance: {moon.orbital_distance:.2f} AU")
+    game_state.ui.info_message(f"Orbital Distance: {moon.orbital_distance:.2f} AU")
     game_state.ui.info_message(f"Radius: {moon.radius:.3f} AU")
 
     # List stations
@@ -363,8 +358,7 @@ def belt_fields_command(game_state: Game, belt_id_str: str) -> None:
             break
 
     if not found_belt:
-        game_state.ui.error_message(
-            f"No asteroid belt found with ID {belt_id}")
+        game_state.ui.error_message(f"No asteroid belt found with ID {belt_id}")
         return
 
     if not found_belt.asteroid_fields:
@@ -389,8 +383,7 @@ def belt_fields_command(game_state: Game, belt_id_str: str) -> None:
         ore_names = [ore.name for ore in field.ores_available]
         ore_list = ", ".join(ore_names) if ore_names else "Unknown"
 
-        game_state.ui.info_message(
-            f"Field {i + 1}: ID {field.space_object.id}")
+        game_state.ui.info_message(f"Field {i + 1}: ID {field.space_object.id}")
         game_state.ui.info_message(
             f"  Position: ({field.space_object.position.x:.2f}, {field.space_object.position.y:.2f})"
         )
@@ -409,8 +402,7 @@ def belt_fields_command(game_state: Game, belt_id_str: str) -> None:
                 len(found_belt.asteroid_fields)
             )
         )
-        game_state.ui.info_message(
-            "- Enter 'closest' to travel to the nearest field")
+        game_state.ui.info_message("- Enter 'closest' to travel to the nearest field")
         game_state.ui.info_message("- Enter 'quit' or 'q' to exit")
 
         choice = take_input("Choose an option: ").strip().lower()

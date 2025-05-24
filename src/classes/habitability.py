@@ -159,12 +159,9 @@ class HabitabilityCalculator:
     def _calculate_phf(cls, factors: HabitabilityFactors) -> float:
         """Calculate Primary Habitability Factor (weighted average)"""
         return (
-            factors.atmospheric_conditions *
-            cls.PHF_WEIGHTS["atmospheric_conditions"]
-            + factors.substrate_geochemistry *
-            cls.PHF_WEIGHTS["substrate_geochemistry"]
-            + factors.energy_availability *
-            cls.PHF_WEIGHTS["energy_availability"]
+            factors.atmospheric_conditions * cls.PHF_WEIGHTS["atmospheric_conditions"]
+            + factors.substrate_geochemistry * cls.PHF_WEIGHTS["substrate_geochemistry"]
+            + factors.energy_availability * cls.PHF_WEIGHTS["energy_availability"]
             + factors.environmental_stability
             * cls.PHF_WEIGHTS["environmental_stability"]
             + factors.planetary_characteristics
@@ -310,11 +307,9 @@ class PlanetaryHabitabilityAssessor:
         elif extended_min <= orbital_distance <= extended_max:
             base_score = 0.6
         elif orbital_distance < extended_min:
-            base_score = max(
-                0.0, 0.8 - (extended_min - orbital_distance) * 0.4)
+            base_score = max(0.0, 0.8 - (extended_min - orbital_distance) * 0.4)
         else:  # orbital_distance > extended_max
-            base_score = max(
-                0.0, 0.8 - (orbital_distance - extended_max) * 0.2)
+            base_score = max(0.0, 0.8 - (orbital_distance - extended_max) * 0.2)
 
         # Atmospheric effects
         if atmosphere in ["breathable", "ideal"]:
@@ -490,14 +485,12 @@ class PlanetaryHabitabilityAssessor:
             return 10.0  # Not suitable for surface life
 
         # Ideal characteristics similar to Earth
-        radius_score = max(0, 100 - abs(1.0 - radius)
-                           * 100)  # Earth radius = ~1.0
+        radius_score = max(0, 100 - abs(1.0 - radius) * 100)  # Earth radius = ~1.0
         mass_score = max(0, 100 - abs(1.0 - mass) * 80)  # Earth mass = 1.0
 
         # Gravity assessment (derived from mass and radius)
         gravity = mass / (radius**2) if radius > 0 else 0
-        gravity_score = max(0, 100 - abs(1.0 - gravity)
-                            * 50)  # Earth gravity = 1.0
+        gravity_score = max(0, 100 - abs(1.0 - gravity) * 50)  # Earth gravity = 1.0
 
         return (radius_score + mass_score + gravity_score) / 3.0
 

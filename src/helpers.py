@@ -82,8 +82,7 @@ def get_closest_field(solar_system, position, is_at_field=False):
         # Sort the fields by distance
         sorted_fields = sorted(
             solar_system,
-            key=lambda field: euclidean_distance(
-                position, field.space_object.position),
+            key=lambda field: euclidean_distance(position, field.space_object.position),
         )
         # Return the second closest if at a field, otherwise the closest
         return (

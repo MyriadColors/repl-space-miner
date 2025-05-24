@@ -79,8 +79,7 @@ def register_commands(game_state: "Game"):
         ["load"], load_game_command, [Argument("filename", str, True, 0, None)]
     )
     register_command(
-        ["character", "char", "c", "character_sheet",
-            "cs"], display_character_sheet, []
+        ["character", "char", "c", "character_sheet", "cs"], display_character_sheet, []
     )
 
     # Navigation commands
@@ -207,8 +206,7 @@ def run_intro_and_setup(game_state, args: argparse.Namespace):
 
     if not game_state.player_ship:
         # Use the balanced cruiser template as a default when creating a new ship
-        game_state.player_ship = Ship.from_template(
-            "balanced_cruiser", SHIP_NAME)
+        game_state.player_ship = Ship.from_template("balanced_cruiser", SHIP_NAME)
         # Position it at the random station
         if game_state.rnd_station:  # Check if rnd_station is not None
             game_state.player_ship.space_object.position = (

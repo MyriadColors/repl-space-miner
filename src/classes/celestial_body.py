@@ -91,8 +91,7 @@ class CelestialBody:
         else:
             # Fallback or error for unknown type
             # For now, let's assume all types are handled above or raise error
-            raise ValueError(
-                f"Unknown body type for ID generation: {self.body_type}")
+            raise ValueError(f"Unknown body type for ID generation: {self.body_type}")
 
     def add_child(self, child: "CelestialBody") -> None:
         """Add a child celestial body (e.g., moon to planet)"""
@@ -145,8 +144,7 @@ class CelestialBody:
         # The 'cls' call here assumes derived class __init__ can handle these base parameters
         # or that this method is primarily for the CelestialBody class itself.
         # For inherited from_dict, derived classes often call their own 'cls' with their specific signature.
-        body = cls(data["name"], body_type, position,
-                   data["radius"], data["mass"])
+        body = cls(data["name"], body_type, position, data["radius"], data["mass"])
 
         # Override the auto-generated ID with the one from data
         if hasattr(body, "space_object") and "id" in data:
@@ -158,8 +156,7 @@ class CelestialBody:
 
         # Deserialize stations
         if "stations" in data:
-            body.stations = [Station.from_dict(
-                st_data) for st_data in data["stations"]]
+            body.stations = [Station.from_dict(st_data) for st_data in data["stations"]]
 
         # Deserialize children (recursive call to from_dict)
         if "children" in data:
@@ -269,8 +266,7 @@ class Planet(CelestialBody):
             stellar_age: Age of the host star in billion years
         """
         # Generate physical properties based on orbital distance and zone
-        planet_type, radius, mass = self._generate_physical_properties(
-            orbital_distance)
+        planet_type, radius, mass = self._generate_physical_properties(orbital_distance)
 
         super().__init__(name, CelestialBodyType.PLANET, position, radius, mass)
 
@@ -360,8 +356,7 @@ class Planet(CelestialBody):
         }
 
         # Get the original assessment for structure and metadata
-        original_result = PlanetaryHabitabilityAssessor.assess_planet(
-            planet_data)
+        original_result = PlanetaryHabitabilityAssessor.assess_planet(planet_data)
 
         # Override the UHS score with our distribution-based score
         original_result.uhs_score = score
@@ -420,36 +415,30 @@ class Planet(CelestialBody):
 
         details.append(f"Universal Habitability Score: {result.uhs_score}/100")
         details.append(f"Rating: {result.rating_text}")
-        details.append(
-            f"Viable for Life: {'Yes' if result.is_viable else 'No'}")
+        details.append(f"Viable for Life: {'Yes' if result.is_viable else 'No'}")
         details.append("")
         details.append("Critical Viability Factors:")
         details.append(f"  Overall CVF: {result.cvf_score:.4f}")
         details.append(
             f"  Liquid Water: {result.factors.liquid_water_availability:.2f}"
         )
-        details.append(
-            f"  Temperature: {result.factors.biocompatible_temperature:.2f}")
+        details.append(f"  Temperature: {result.factors.biocompatible_temperature:.2f}")
         details.append(
             f"  Radiation Protection: {result.factors.radiation_protection:.2f}"
         )
         details.append("")
         details.append("Primary Habitability Factors:")
         details.append(f"  Overall PHF: {result.phf_score:.1f}/100")
-        details.append(
-            f"  Atmosphere: {result.factors.atmospheric_conditions:.1f}/100")
+        details.append(f"  Atmosphere: {result.factors.atmospheric_conditions:.1f}/100")
         details.append(
             f"  Geochemistry: {result.factors.substrate_geochemistry:.1f}/100"
         )
-        details.append(
-            f"  Energy: {result.factors.energy_availability:.1f}/100")
-        details.append(
-            f"  Stability: {result.factors.environmental_stability:.1f}/100")
+        details.append(f"  Energy: {result.factors.energy_availability:.1f}/100")
+        details.append(f"  Stability: {result.factors.environmental_stability:.1f}/100")
         details.append(
             f"  Planetary: {result.factors.planetary_characteristics:.1f}/100"
         )
-        details.append(
-            f"  Stellar: {result.factors.stellar_characteristics:.1f}/100")
+        details.append(f"  Stellar: {result.factors.stellar_characteristics:.1f}/100")
 
         return "\n".join(details)
 
@@ -813,8 +802,7 @@ class AsteroidBelt(CelestialBody):
         for planet in planets:
             distance = abs(planet.orbital_distance - belt_center)
             influence = max(
-                0.0, (max_influence_distance - distance) /
-                max_influence_distance
+                0.0, (max_influence_distance - distance) / max_influence_distance
             )
 
             if influence > 0:
@@ -1016,8 +1004,7 @@ class AsteroidBelt(CelestialBody):
         if "asteroid_fields" in data:
             for field_data in data["asteroid_fields"]:
                 try:
-                    belt.asteroid_fields.append(
-                        AsteroidField.from_dict(field_data))
+                    belt.asteroid_fields.append(AsteroidField.from_dict(field_data))
                 except Exception as e:
                     print(
                         f"Error loading AsteroidField from dict for belt {belt.name}: {e}"
@@ -1031,8 +1018,7 @@ class AsteroidBelt(CelestialBody):
         if "stations" in data:  # Copied from CelestialBody.from_dict logic
             from src.classes.station import Station
 
-            belt.stations = [Station.from_dict(
-                st_data) for st_data in data["stations"]]
+            belt.stations = [Station.from_dict(st_data) for st_data in data["stations"]]
         if "children" in data:  # Copied from CelestialBody.from_dict logic
             # This recursive call might need adjustment if children can be specific types like Planet, Moon
             belt.children = [

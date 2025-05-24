@@ -13,8 +13,7 @@ def integrate_dual_fuel_system():
     This must be called during application startup before any Ship objects are created.
     """
     setattr(Ship, "add_antimatter", DualFuelSystem.add_antimatter)
-    setattr(Ship, "check_containment_status",
-            DualFuelSystem.check_containment_status)
+    setattr(Ship, "check_containment_status", DualFuelSystem.check_containment_status)
     setattr(Ship, "repair_containment", DualFuelSystem.repair_containment)
     setattr(
         Ship,
@@ -81,8 +80,7 @@ def update_ship_serialization():
             ship.antimatter_consumption = float(
                 data.get("antimatter_consumption", 0.05)
             )
-            ship.containment_integrity = float(
-                data.get("containment_integrity", 100.0))
+            ship.containment_integrity = float(data.get("containment_integrity", 100.0))
             ship.containment_power_draw = float(
                 data.get("containment_power_draw", 0.001)
             )

@@ -326,10 +326,8 @@ class Character:
         # Apply Technical Aptitude-based bonuses
         # Each point above 5 gives 5% bonus to repair efficiency and salvaging success
         if self.technical_aptitude > 5:
-            self.repair_efficiency_mod = 1 + \
-                ((self.technical_aptitude - 5) * 0.05)
-            self.salvage_success_mod = 1 + \
-                ((self.technical_aptitude - 5) * 0.05)
+            self.repair_efficiency_mod = 1 + ((self.technical_aptitude - 5) * 0.05)
+            self.salvage_success_mod = 1 + ((self.technical_aptitude - 5) * 0.05)
 
     def get_mining_bonus(self):
         """Calculate mining bonus based on stats and skills"""
@@ -470,8 +468,7 @@ class Character:
                 return (self.round_credits(total_interest), self.debt)
             else:
                 # No full days have passed, set last_interest_time so next interest is due in 6 hours
-                self.last_interest_time = max(
-                    0, current_time - PERIOD_LENGTH + 6)
+                self.last_interest_time = max(0, current_time - PERIOD_LENGTH + 6)
                 return None
 
         # Calculate time difference in hours since last interest calculation
@@ -600,8 +597,7 @@ class Character:
 
         # Set reputation values
         character.reputation_states = data.get("reputation_states", 0)
-        character.reputation_corporations = data.get(
-            "reputation_corporations", 0)
+        character.reputation_corporations = data.get("reputation_corporations", 0)
         character.reputation_pirates = data.get("reputation_pirates", 0)
         character.reputation_belters = data.get("reputation_belters", 0)
         character.reputation_traders = data.get("reputation_traders", 0)
@@ -698,7 +694,7 @@ class Game:
             seed = int(time.time())
         self.seed = seed
         random.seed(self.seed)
-        
+
         self.global_time = 0
         self.region = Region.generate_random_region("Local Sector", 50)
         self.solar_systems = self.region.solar_systems
@@ -707,9 +703,7 @@ class Game:
         )
         current_system = self.solar_systems[self.current_solar_system_index]
         all_stations = current_system.get_all_stations()
-        self.rnd_station = (
-            random.choice(all_stations) if all_stations else None
-        )
+        self.rnd_station = random.choice(all_stations) if all_stations else None
         self.player_character: Character
         self.player_ship: Ship
         self.debug_flag = debug_flag
@@ -776,7 +770,7 @@ class Game:
 
         Args:
             time_delta (timedelta): The amount of time to advance
-        """        # Convert timedelta to seconds and add to global_time
+        """  # Convert timedelta to seconds and add to global_time
         self.global_time += time_delta.total_seconds()
 
     def get_region(self) -> Region:
@@ -795,8 +789,8 @@ class Game:
             "debug_flag": self.debug_flag,
             "mute_flag": self.mute_flag,
             "skip_customization": self.skipc,
-        }    
-    
+        }
+
     @classmethod
     def from_dict(cls, data, ui_instance):
         game = cls(
@@ -811,8 +805,7 @@ class Game:
         game.solar_systems = [
             SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]
         ]
-        game.current_solar_system_index = data.get(
-            "current_solar_system_index", 0)
+        game.current_solar_system_index = data.get("current_solar_system_index", 0)
         if not game.solar_systems:
             game.solar_systems = [
                 SolarSystem(
@@ -827,8 +820,7 @@ class Game:
             game.current_solar_system_index = 0
 
         if data["player_character"]:
-            game.player_character = Character.from_dict(
-                data["player_character"])
+            game.player_character = Character.from_dict(data["player_character"])
         if data["player_ship"]:
             game.player_ship = Ship.from_dict(data["player_ship"], game)
         game.ui = ui_instance  # Assign the passed UI instance
@@ -863,8 +855,7 @@ class Game:
                     self.save_preference = human_readable
                     break
                 else:
-                    self.ui.warn_message(
-                        "Invalid choice. Please enter 'c' or 'h'.")
+                    self.ui.warn_message("Invalid choice. Please enter 'c' or 'h'.")
         else:
             # Use remembered preference
             human_readable = self.save_preference
@@ -891,8 +882,7 @@ class Game:
                 # Calculate compression rate for user feedback
                 original_size = len(json.dumps(game_data))
                 compressed_size = len(compressed_data)
-                compression_rate = (
-                    1 - (compressed_size / original_size)) * 100
+                compression_rate = (1 - (compressed_size / original_size)) * 100
 
                 # Write the compressed data to file
                 with open(save_path, "w") as f:
@@ -909,8 +899,7 @@ class Game:
                 try:
                     with open(save_path, "w") as f:
                         json.dump(game_data, f, indent=4)
-                    self.ui.warn_message(
-                        f"Saved uncompressed backup to {save_path}")
+                    self.ui.warn_message(f"Saved uncompressed backup to {save_path}")
                 except IOError as e:
                     self.ui.error_message(f"Error saving backup: {e}")
 
@@ -947,18 +936,15 @@ class Game:
 
             while True:
                 try:
-                    choice_str = input(
-                        "Enter the number of the save file to load: ")
+                    choice_str = input("Enter the number of the save file to load: ")
                     choice_idx = int(choice_str) - 1
                     if 0 <= choice_idx < len(save_files):
                         filename = save_files[choice_idx]
                         break
                     else:
-                        ui_instance.warn_message(
-                            "Invalid selection. Please try again.")
+                        ui_instance.warn_message("Invalid selection. Please try again.")
                 except ValueError:
-                    ui_instance.warn_message(
-                        "Invalid input. Please enter a number.")
+                    ui_instance.warn_message("Invalid input. Please enter a number.")
 
         load_path = os.path.join(save_dir, filename)
         if not os.path.exists(load_path):
@@ -980,8 +966,7 @@ class Game:
                     ui_instance.info_message("Loaded compressed save file.")
                 else:
                     # Handle uncompressed saves (for backward compatibility)
-                    ui_instance.info_message(
-                        "Loading uncompressed save file...")
+                    ui_instance.info_message("Loading uncompressed save file...")
                     game_data = json.loads(file_content)
             except json.JSONDecodeError:
                 # Last resort, try to load the original way

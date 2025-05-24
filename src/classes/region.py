@@ -108,8 +108,7 @@ class Region:
                         candidate_ok = True
                         for pos_x, pos_y in used_positions:
                             distance = math.sqrt(
-                                (x_candidate - pos_x) ** 2 +
-                                (y_candidate - pos_y) ** 2
+                                (x_candidate - pos_x) ** 2 + (y_candidate - pos_y) ** 2
                             )
                             if distance < local_min_distance:
                                 candidate_ok = False
