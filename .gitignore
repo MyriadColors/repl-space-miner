@@ -113,3 +113,4 @@ game.txt
 .github
 .vscode
 *.zip
+.ruff_cache/
