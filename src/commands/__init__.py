@@ -22,6 +22,7 @@ from .ftl_commands import (
     ftl_jump_command,
     list_systems_command,
 )
+from .game_reset import game_reset_command
 
 # Antimatter Commands:
 # - refuel_antimatter_command: Refuels the antimatter containment system.
@@ -88,7 +89,7 @@ __all__ = [
     "ftl_jump_command",
     "list_systems_command",
     "refine_command",
-    "refine_to_minerals_command",
-    "compare_prices_command",
+    "refine_to_minerals_command",    "compare_prices_command",
     "find_best_trade_routes",
+    "game_reset_command",
 ]

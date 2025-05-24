@@ -1,10 +1,11 @@
 import json
 import os
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 import pygame as pg  # Add pygame for Vector2
 from datetime import datetime
 from dataclasses import dataclass
 import random  # MODIFIED: Changed from 'from random import choice' to 'import random'
+import time  # Add time import for default seed
 from colorama import Fore, Back, Style, init
 
 from src.classes.ship import Ship
@@ -690,7 +691,14 @@ class Game:
         debug_flag: bool = False,
         mute_flag: bool = False,
         skip_customization: bool = False,
+        seed: Optional[int] = None,
     ) -> None:
+        # Set the random seed for procedural generation
+        if seed is None:
+            seed = int(time.time())
+        self.seed = seed
+        random.seed(self.seed)
+        
         self.global_time = 0
         self.region = Region.generate_random_region("Local Sector", 50)
         self.solar_systems = self.region.solar_systems
@@ -701,8 +709,7 @@ class Game:
         all_stations = current_system.get_all_stations()
         self.rnd_station = (
             random.choice(all_stations) if all_stations else None
-        )  # Changed from Optional to non-optional type since these will always be set
-        # before they are used in the game logic
+        )
         self.player_character: Character
         self.player_ship: Ship
         self.debug_flag = debug_flag
@@ -769,8 +776,7 @@ class Game:
 
         Args:
             time_delta (timedelta): The amount of time to advance
-        """
-        # Convert timedelta to seconds and add to global_time
+        """        # Convert timedelta to seconds and add to global_time
         self.global_time += time_delta.total_seconds()
 
     def get_region(self) -> Region:
@@ -779,6 +785,7 @@ class Game:
     def to_dict(self):
         return {
             "global_time": self.global_time,
+            "seed": self.seed,
             "solar_systems": [ss.to_dict() for ss in self.solar_systems],
             "current_solar_system_index": self.current_solar_system_index,
             "player_character": (
@@ -788,14 +795,15 @@ class Game:
             "debug_flag": self.debug_flag,
             "mute_flag": self.mute_flag,
             "skip_customization": self.skipc,
-        }
-
+        }    
+    
     @classmethod
     def from_dict(cls, data, ui_instance):
         game = cls(
             debug_flag=data.get("debug_flag", False),
             mute_flag=data.get("mute_flag", False),
             skip_customization=data.get("skip_customization", False),
+            seed=data.get("seed", None),
         )
         game.global_time = data["global_time"]
         # Ensure solar_systems are loaded correctly using the new constructor if applicable

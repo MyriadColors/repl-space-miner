@@ -173,6 +173,7 @@ def start_repl(args: argparse.Namespace):
         debug_flag=args.debug if hasattr(args, "debug") else False,
         mute_flag=args.mute if hasattr(args, "mute") else False,
         skip_customization=args.skipc if hasattr(args, "skipc") else False,
+        seed=args.seed if hasattr(args, "seed") else None,
     )
 
     if game_state.sound_enabled:

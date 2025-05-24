@@ -55,7 +55,7 @@ def color_command(game_state, target: str, color_name: str):
 
 
 def reset_command(game_state, what: str):
-    """Reset terminal settings."""
+    """Reset terminal settings or game state."""
     global current_fg, current_bg
     what = what.lower()
     if what in ("color", "fg", "bg", "all"):
@@ -66,8 +66,12 @@ def reset_command(game_state, what: str):
         print(Style.RESET_ALL + "Text style reset.")
     elif what == "history":
         print("History reset (not implemented).")
+    elif what == "game":
+        game_state.ui.info_message("Use 'game_reset' command to reset the game with optional seed.")
     else:
         game_state.ui.error_message(f"Unknown reset target: {what}")
+        game_state.ui.info_message("Available reset targets: color, fg, bg, all, text, history, game")
+        game_state.ui.info_message("For game reset, use: game_reset [seed]")
 
 
 register_command(

@@ -13,6 +13,9 @@ def parse_arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--skipc", action="store_true", help="Skip character customization"
     )
+    parser.add_argument(
+        "--seed", type=int, help="Seed for procedural generation (uses current time if not provided)"
+    )
     return parser.parse_args(argv)
 
 
