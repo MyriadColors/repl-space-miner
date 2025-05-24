@@ -1,6 +1,5 @@
 from typing import Optional
 from src.classes.game import Game
-from src.classes.ore import PurityLevel
 from src.classes.mineral import MINERALS, MineralQuality
 from src.helpers import take_input
 from src.data import OreCargo, MineralCargo
@@ -330,7 +329,8 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         amount = min(amount, max_amount)
 
         # Calculate refining cost based on refining difficulty and amount
-        base_refining_cost = 75  # Base cost per unit (higher than regular refining)
+        # Base cost per unit (higher than regular refining)
+        base_refining_cost = 75
         refining_cost_per_unit = (
             base_refining_cost * selected_cargo.ore.refining_difficulty
         )

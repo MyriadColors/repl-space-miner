@@ -1,13 +1,43 @@
 from dataclasses import dataclass
 from random import choice
 from enum import Enum, auto
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple
 
 from src.classes.ore import Ore, ORES, PurityLevel
 
 # Import Mineral and MineralQuality at the top level
 from src.classes.mineral import Mineral, MineralQuality
 from src.classes.engine import Engine, EngineType
+
+
+class SolarSystemZone(Enum):
+    """
+    Represents different temperature zones in a solar system based on distance from the star.
+    These zones determine the types of materials that can condense and form solid bodies.
+    """
+
+    INNER_HOT = auto()  # Close to star, only high-temperature materials condense
+    MIDDLE_WARM = auto()  # Moderate distance, mid-temperature materials condense
+    OUTER_COLD = auto()  # Far from star, all materials including ices can condense
+
+
+class PlanetType(Enum):
+    """
+    Types of planets that can form in different zones of a solar system.
+    """
+
+    ROCKY = auto()  # Small, dense planets made of rock and metal (inner zone)
+    GAS_GIANT = auto()  # Large planets with thick atmospheres (outer zone)
+    ICE_GIANT = auto()  # Planets with significant ice content (outer zone)
+    SUPER_EARTH = auto()  # Larger rocky planets (can form in various zones)
+
+
+# Constants for celestial body generation
+# Min/max number of planets to generate
+PLANET_MIN_MAX_NUM: Tuple[int, int] = (3, 8)
+ASTEROID_BELT_MIN_MAX_NUM: Tuple[int, int] = (1, 3)  # Min/max number of asteroid belts
+ASTEROID_BELT_WIDTH_MIN_MAX: Tuple[float, float] = (0.5, 2.0)  # Belt width in AU
+ASTEROID_BELT_FIELDS_MIN_MAX: Tuple[int, int] = (3, 8)  # Fields per belt
 
 # This will be used to generate random names
 name_parts = [
@@ -216,7 +246,6 @@ class OreCargo:
 
     @classmethod
     def from_dict(cls, data):
-        from src.classes.ore import ORES, PurityLevel
 
         ore_obj = ORES.get(data["ore_id"])
         if ore_obj is None:
@@ -281,7 +310,7 @@ class MineralCargo:
 
     @classmethod
     def from_dict(cls, data):
-        from src.classes.mineral import MINERALS, MineralQuality
+        from src.classes.mineral import MINERALS
 
         mineral_obj = MINERALS.get(data["mineral_id"])
         if mineral_obj is None:
@@ -568,7 +597,8 @@ SHIP_TEMPLATES = {
         "engine_id": "standard",  # Default standard engine
         "sensor_signature": 1.2,  # Higher signature due to bulk
         "antimatter_capacity": 5.0,  # Standard antimatter capacity
-        "antimatter_consumption": 0.07,  # Higher consumption due to mass (0.07g/LY)
+        # Higher consumption due to mass (0.07g/LY)
+        "antimatter_consumption": 0.07,
     },
     "agile_interceptor": {
         "name": "Agile Interceptor",
@@ -619,7 +649,8 @@ SHIP_TEMPLATES = {
         "engine_id": "cargo_hauler",  # Better for hauling cargo
         "sensor_signature": 1.1,  # Higher signature due to mining equipment
         "antimatter_capacity": 4.0,  # Lower antimatter capacity
-        "antimatter_consumption": 0.065,  # Higher consumption due to bulk (0.065g/LY)
+        # Higher consumption due to bulk (0.065g/LY)
+        "antimatter_consumption": 0.065,
     },  # Special ships for contacts
     "merc_veteran": {
         "name": "Mercenary Veteran",
@@ -636,7 +667,8 @@ SHIP_TEMPLATES = {
         "engine_id": "stealth",  # Stealth engine
         "sensor_signature": 0.7,  # Low signature for stealth operations
         "antimatter_capacity": 6.0,  # Enhanced antimatter capacity
-        "antimatter_consumption": 0.048,  # Efficient military-grade system (0.048g/LY)
+        # Efficient military-grade system (0.048g/LY)
+        "antimatter_consumption": 0.048,
     },
     "hunter_ship": {
         "name": "Bounty Hunter's Pursuit",

@@ -73,11 +73,11 @@ def banking_menu_command(game_state: Game) -> None:
 
         # Main menu options
         game_state.ui.info_message(f"\n{Fore.YELLOW}Banking Services:{Style.RESET_ALL}")
-        game_state.ui.info_message(f"1. Debt Management")
-        game_state.ui.info_message(f"2. Loans")
-        game_state.ui.info_message(f"3. Savings Account")
-        game_state.ui.info_message(f"4. Transaction History")
-        game_state.ui.info_message(f"5. Return to Station")
+        game_state.ui.info_message("1. Debt Management")
+        game_state.ui.info_message("2. Loans")
+        game_state.ui.info_message("3. Savings Account")
+        game_state.ui.info_message("4. Transaction History")
+        game_state.ui.info_message("5. Return to Station")
 
         choice = input(Fore.YELLOW + "Enter your choice (1-5): " + Style.RESET_ALL)
 
@@ -121,7 +121,7 @@ def display_financial_summary(game_state: Game, character) -> None:
     elif debt > 10000:
         game_state.ui.error_message(f"Current Debt: {debt:.2f} credits (HIGH)")
         game_state.ui.warn_message(
-            f"Warning: High debt levels. Interest is accumulating rapidly!"
+            "Warning: High debt levels. Interest is accumulating rapidly!"
         )
     elif debt > 5000:
         game_state.ui.warn_message(f"Current Debt: {debt:.2f} credits (Moderate)")
@@ -176,12 +176,12 @@ def debt_management_menu(game_state: Game, character) -> None:
         game_state.ui.info_message(
             f"\n{Fore.YELLOW}Repayment Options:{Style.RESET_ALL}"
         )
-        game_state.ui.info_message(f"1. Make Custom Payment")
+        game_state.ui.info_message("1. Make Custom Payment")
         game_state.ui.info_message(f"2. Pay in Full ({character.debt:.2f} credits)")
         game_state.ui.info_message(
             f"3. Pay Minimum (Interest Only: {daily_interest:.2f} credits)"
         )
-        game_state.ui.info_message(f"4. Return to Banking Menu")
+        game_state.ui.info_message("4. Return to Banking Menu")
 
         choice = input(Fore.YELLOW + "Enter your choice (1-4): " + Style.RESET_ALL)
 
@@ -261,9 +261,9 @@ def loan_menu(game_state: Game, character) -> None:
 
         # Loan options
         game_state.ui.info_message(f"\n{Fore.YELLOW}Loan Options:{Style.RESET_ALL}")
-        game_state.ui.info_message(f"1. Apply for New Loan")
-        game_state.ui.info_message(f"2. View Loan Terms")
-        game_state.ui.info_message(f"3. Return to Banking Menu")
+        game_state.ui.info_message("1. Apply for New Loan")
+        game_state.ui.info_message("2. View Loan Terms")
+        game_state.ui.info_message("3. Return to Banking Menu")
 
         choice = input(Fore.YELLOW + "Enter your choice (1-3): " + Style.RESET_ALL)
 
@@ -314,9 +314,9 @@ def savings_menu(game_state: Game, character) -> None:
 
         # Savings options
         game_state.ui.info_message(f"\n{Fore.YELLOW}Account Options:{Style.RESET_ALL}")
-        game_state.ui.info_message(f"1. Deposit Credits")
-        game_state.ui.info_message(f"2. Withdraw Credits")
-        game_state.ui.info_message(f"3. Return to Banking Menu")
+        game_state.ui.info_message("1. Deposit Credits")
+        game_state.ui.info_message("2. Withdraw Credits")
+        game_state.ui.info_message("3. Return to Banking Menu")
 
         choice = input(Fore.YELLOW + "Enter your choice (1-3): " + Style.RESET_ALL)
 
@@ -521,7 +521,7 @@ def apply_for_loan(game_state: Game, character, max_loan: float) -> None:
     weekly_rate = 0.05 * character.debt_interest_mod
 
     # Show loan terms
-    game_state.ui.info_message(f"\nLoan Terms:")
+    game_state.ui.info_message("\nLoan Terms:")
     game_state.ui.info_message(f"Principal: {amount:.2f} credits")
     game_state.ui.info_message(f"Interest Rate: {weekly_rate:.1%}/week")
     game_state.ui.warn_message(f"Weekly Interest: {amount * weekly_rate:.2f} credits")
@@ -533,7 +533,7 @@ def apply_for_loan(game_state: Game, character, max_loan: float) -> None:
     # Confirm loan
     confirm = input(
         Fore.YELLOW
-        + f"Do you accept these terms and wish to proceed with the loan? (y/n): "
+        + "Do you accept these terms and wish to proceed with the loan? (y/n): "
         + Style.RESET_ALL
     )
     if confirm.lower() != "y":
@@ -584,28 +584,28 @@ def display_loan_terms(game_state: Game, character) -> None:
             )
             if character.negative_trait == "Indebted":
                 game_state.ui.warn_message(
-                    f"Your 'Indebted' trait increases your interest rates."
+                    "Your 'Indebted' trait increases your interest rates."
                 )
         else:
             game_state.ui.success_message(
                 f"Your Personalized Rate: {adjusted_rate:.1%}/week (-{(1-character.debt_interest_mod)*100:.0f}%)"
             )
 
-    game_state.ui.info_message(f"\nLoan Terms:")
-    game_state.ui.info_message(f"- Interest is calculated and applied weekly")
-    game_state.ui.info_message(f"- No early repayment penalties")
-    game_state.ui.info_message(f"- Loan eligibility depends on credit score")
+    game_state.ui.info_message("\nLoan Terms:")
+    game_state.ui.info_message("- Interest is calculated and applied weekly")
+    game_state.ui.info_message("- No early repayment penalties")
+    game_state.ui.info_message("- Loan eligibility depends on credit score")
     game_state.ui.info_message(
-        f"- Failure to make regular payments may affect credit score"
+        "- Failure to make regular payments may affect credit score"
     )
     game_state.ui.warn_message(
-        f"- High debt levels may attract attention from debt collectors"
+        "- High debt levels may attract attention from debt collectors"
     )
 
-    game_state.ui.info_message(f"\nCredit Score Factors:")
-    game_state.ui.info_message(f"- Total debt amount")
-    game_state.ui.info_message(f"- Regular debt repayment history")
-    game_state.ui.info_message(f"- Savings account balance")
+    game_state.ui.info_message("\nCredit Score Factors:")
+    game_state.ui.info_message("- Total debt amount")
+    game_state.ui.info_message("- Regular debt repayment history")
+    game_state.ui.info_message("- Savings account balance")
 
     input(Fore.YELLOW + "\nPress Enter to return to loan menu..." + Style.RESET_ALL)
 

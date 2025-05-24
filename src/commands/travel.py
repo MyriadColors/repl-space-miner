@@ -38,7 +38,7 @@ def travel_command(game_state: Game, **kwargs) -> float:
         return 0.0
 
     # Show travel details before confirmation
-    game_state.ui.info_message(f"Travel details:")
+    game_state.ui.info_message("Travel details:")
     game_state.ui.info_message(f"  Distance: {distance:.2f} AU")
     game_state.ui.info_message(
         f"  Fuel required: {fuel_consumed:.2f} m³ (You have: {player_ship.fuel:.2f} m³)"
@@ -64,7 +64,7 @@ def travel_command(game_state: Game, **kwargs) -> float:
         )
         if interest_result:
             interest_amount, new_debt = interest_result
-            game_state.ui.warn_message(f"\n⚠️ DEBT ALERT! ⚠️")
+            game_state.ui.warn_message("\n⚠️ DEBT ALERT! ⚠️")
             game_state.ui.warn_message(
                 f"While traveling, {interest_amount:.2f} credits of interest has accumulated on your debt!"
             )
@@ -96,7 +96,7 @@ def closest_travel(game_state: Game, object_type: str) -> None:
 
     if object_type.lower() == "field":
         closest_field = get_closest_field(
-            current_system.asteroid_fields, player_ship.space_object.position
+            current_system.get_all_asteroid_fields(), player_ship.space_object.position
         )
         if closest_field:
             travel_command(
@@ -109,7 +109,7 @@ def closest_travel(game_state: Game, object_type: str) -> None:
 
     elif object_type.lower() == "station":
         closest_station = get_closest_station(
-            current_system.stations, player_ship.space_object.position
+            current_system.get_all_stations(), player_ship.space_object.position
         )
         if closest_station:
             travel_command(

@@ -1,15 +1,26 @@
+from typing import Optional, TYPE_CHECKING
 from src import helpers
 from src.classes.ore import Ore
 from src.data import OreCargo
 from src.helpers import take_input, rnd_float, rnd_int
 
+if TYPE_CHECKING:
+    from src.classes.celestial_body import CelestialBody
+
 
 class Station:
-    def __init__(self, name, station_id, position) -> None:
+    def __init__(
+        self,
+        name,
+        station_id,
+        position,
+        orbital_parent: Optional["CelestialBody"] = None,
+    ) -> None:
         from src.classes.ship import IsSpaceObject
 
         self.name: str = name
         self.space_object = IsSpaceObject(position, station_id)
+        self.orbital_parent: Optional["CelestialBody"] = orbital_parent
         self.fuel_tank_capacity: float = helpers.rnd_float(5_000, 20_000)
         self.fuel_tank: float = self.fuel_tank_capacity / helpers.rnd_int(1, 4)
         self.fuel_price: float = helpers.rnd_float(8, 20)
@@ -18,6 +29,17 @@ class Station:
         self.ore_cargo_volume: float = 0.0
         self.ore_capacity: float = helpers.rnd_float(25_000, 75_000)
         self.visited: bool = False
+
+        # For serialization - store celestial body parent info
+        self.orbital_parent_id: Optional[int] = None
+        self.orbital_parent_type: Optional[str] = None
+        self.orbital_parent_name: Optional[str] = None
+
+        if orbital_parent:
+            self.orbital_parent_id = orbital_parent.space_object.id
+            self.orbital_parent_type = orbital_parent.body_type.value
+            self.orbital_parent_name = orbital_parent.name
+
         self.generate_ores_availability()
         self.generate_ore_cargo_instances()
         self.generate_ore_cargo()
@@ -65,7 +87,6 @@ class Station:
         # Assign a random quantity to each ore type, respecting ore capacity
         # All stations will have all products but with varied quantities
         import random
-        from src.helpers import rnd_int
 
         self.ore_cargo_volume = 0.0
         max_total_volume = self.ore_capacity / rnd_int(1, 3)  # More generous allocation
@@ -195,7 +216,7 @@ class Station:
         )
 
     def to_dict(self):
-        return {
+        data = {
             "name": self.name,
             "position": {
                 "x": self.space_object.position.x,
@@ -210,9 +231,21 @@ class Station:
             "visited": self.visited,
         }
 
+        # Add orbital parent information if applicable
+        if self.orbital_parent:
+            data["orbital_parent_id"] = self.orbital_parent.space_object.id
+            data["orbital_parent_type"] = self.orbital_parent.body_type.value
+            data["orbital_parent_name"] = self.orbital_parent.name
+        elif self.orbital_parent_id is not None:
+            # Use the stored information if a real parent object isn't linked yet
+            data["orbital_parent_id"] = self.orbital_parent_id
+            data["orbital_parent_type"] = self.orbital_parent_type
+            data["orbital_parent_name"] = self.orbital_parent_name
+
+        return data
+
     @classmethod
     def from_dict(cls, data):
-        from src.classes.ore import ORES  # Local import
         from src.classes.ship import IsSpaceObject  # Local import
         from pygame import Vector2
         from src.data import OreCargo  # Ensure OreCargo is imported for from_dict
@@ -241,9 +274,16 @@ class Station:
             for oc in station.ore_cargo
             if oc.ore is not None
         )
-
         station.ore_capacity = data["ore_capacity"]
         station.visited = data.get("visited", False)
+
+        # Orbital parent will be set when the system loads celestial bodies
+        # Just store the information temporarily (full linking happens after all objects are loaded)
+        if "orbital_parent_id" in data:
+            station.orbital_parent_id = data["orbital_parent_id"]
+            station.orbital_parent_type = data["orbital_parent_type"]
+            station.orbital_parent_name = data["orbital_parent_name"]
+
         return station
 
     def add_item(self, item_ore: Ore, item_quantity: int):
@@ -287,3 +327,17 @@ class Station:
                 )
                 return True
         return False
+
+    def get_orbital_info(self) -> str:
+        """Return information about orbital status"""
+        if self.orbital_parent:
+            distance = self.space_object.position.distance_to(
+                self.orbital_parent.space_object.position
+            )
+            return f"Orbiting {self.orbital_parent.name} at {distance:.2f} AU"
+        else:
+            return "Independent station"
+
+    def is_orbital_station(self) -> bool:
+        """Check if this station is orbiting a celestial body"""
+        return self.orbital_parent is not None

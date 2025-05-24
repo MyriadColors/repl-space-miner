@@ -95,7 +95,7 @@ def display_status(game_state: Game) -> None:
         if debt > 10000:
             game_state.ui.error_message(f"DEBT: {debt:.2f} credits")
             game_state.ui.warn_message(
-                f"Warning: High debt levels! Banks may send debt collectors."
+                "Warning: High debt levels! Banks may send debt collectors."
             )
         elif debt > 5000:
             game_state.ui.warn_message(f"DEBT: {debt:.2f} credits")
@@ -132,13 +132,18 @@ def command_exit(game_state: Game) -> bool:
     Returns:
         bool: True if exit confirmed, False otherwise
     """
-    confirm = input("Are you sure you want to exit? (y/n): ")
-    if confirm.lower() in ["y", "yes"]:
+    try:
+        confirm = input("Are you sure you want to exit? (y/n): ")
+        if confirm.lower() in ["y", "yes"]:
+            game_state.ui.info_message("Thanks for playing!")
+            return True
+        else:
+            game_state.ui.info_message("Exit canceled.")
+            return False
+    except EOFError:
+        # Handle EOF gracefully (e.g., when input is piped)
         game_state.ui.info_message("Thanks for playing!")
         return True
-    else:
-        game_state.ui.info_message("Exit canceled.")
-        return False
 
 
 def clear(game_state: Game) -> None:
@@ -332,6 +337,19 @@ def display_help(game_state: Game, command_name: str = "") -> None:
         write_command("scan/sc", "Scan for objects in the system", True)
         write_command(
             "scan_asteroids/scna", "Scan current asteroid field for ores", True, "field"
+        )
+        write_command(
+            "scan_celestial/scc",
+            "Detailed scan of celestial bodies (stars, planets, moons)",
+            True,
+        )
+        write_command(
+            "belt_fields/bf <belt_id>",
+            "List asteroid fields in a specific belt and navigate to them",
+            True,
+        )
+        write_command(
+            "examine/ex [object_id]", "Examine an object for detailed information", True
         )
         game_state.ui.info_message("")
 

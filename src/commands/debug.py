@@ -75,6 +75,7 @@ def add_creds_debug_command(game_state: Game, amount: str) -> None:
         )
         return
 
+
 def add_cargo_space_debug_command(game_state: Game, amount: str) -> None:
     """Debug command to add cargo space to the player's ship."""
     try:
@@ -95,6 +96,7 @@ def add_cargo_space_debug_command(game_state: Game, amount: str) -> None:
 
     player_ship.cargohold_capacity += amount_value
     game_state.ui.success_message(f"{amount_value} cargo space added to your ship.")
+
 
 def debug_mode_command(game_state: Game) -> None:
     """Toggle debug mode on/off."""

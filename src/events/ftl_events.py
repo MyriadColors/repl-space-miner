@@ -3,6 +3,7 @@ FTL travel events that can occur during faster-than-light jumps.
 These events add depth to the FTL travel experience beyond just a time skip.
 """
 
+from src.classes.game import Game, background_choices
 import random
 from colorama import Fore, Style
 from time import sleep
@@ -10,8 +11,6 @@ from typing import Dict, Optional, Union
 
 # Define a type alias for our event result dictionaries
 EventResultDict = Dict[str, Union[str, int, float]]
-
-from src.classes.game import Game, background_choices
 
 
 # Importing quick_start function to avoid circular imports
@@ -37,11 +36,11 @@ def quick_start(game_state: "Game"):
     if not chosen_background:
         # Fallback in case the background isn't found
         print(Fore.RED + "Error: Background not found. Using default settings.")
-        return
-    # Create the character with default settings
+        return  # Create the character with default settings
+    # Create character using Character class
     from src.classes.game import Character
 
-    game_state.player_character = Character(
+    character = Character(
         name=player_name,
         age=age,
         sex=sex,
@@ -50,25 +49,27 @@ def quick_start(game_state: "Game"):
         starting_debt=10000.0,  # Add default starting debt
     )
 
-    # Apply personality traits
-    game_state.player_character.positive_trait = chosen_positive
-    game_state.player_character.negative_trait = chosen_negative
+    # Set traits on the character object directly
+    character.positive_trait = chosen_positive
+    character.negative_trait = chosen_negative
+
+    # Assign the fully initialized character to game_state
+    game_state.player_character = character
 
     print(Fore.GREEN + f"Created character: {player_name}, {age} year old {sex}")
     print(Fore.GREEN + f"Background: {chosen_background.name}")
     print(Fore.GREEN + f"Positive trait: {chosen_positive}")
-    print(Fore.GREEN + f"Negative trait: {chosen_negative}")
     # Create default ship
+    print(Fore.GREEN + f"Negative trait: {chosen_negative}")
     from src.classes.ship import Ship
 
     # Use the balanced cruiser template as a default ship
-    game_state.player_ship = Ship.from_template("balanced_cruiser", "Rusty Bucket")
+    ship = Ship.from_template("balanced_cruiser", "Rusty Bucket")
+    # Assign the ship to game_state
+    game_state.player_ship = ship
+
     # Position it at the random station
-    if (
-        game_state.rnd_station
-        and game_state.player_ship is not None
-        and hasattr(game_state.player_ship, "space_object")
-    ):
+    if game_state.rnd_station and hasattr(game_state.player_ship, "space_object"):
         game_state.player_ship.space_object.position = (
             game_state.rnd_station.position.copy()
         )
@@ -341,7 +342,8 @@ class SpacetimeDisruption(FTLEvent):
                 result_system = {"affected": "hull", "damage": damage}
 
             else:  # antimatter
-                loss = round(random.uniform(0.1, 0.3), 2)  # 10-30% of a random resource
+                # 10-30% of a random resource
+                loss = round(random.uniform(0.1, 0.3), 2)
                 if player_ship.antimatter > loss:
                     player_ship.antimatter -= loss
                     print(
@@ -448,7 +450,7 @@ class SpacetimeDisruption(FTLEvent):
                     print(
                         f"{Fore.GREEN}You navigate the disruption brilliantly!{Style.RESET_ALL}"
                     )
-                    print(f"The experience improves your piloting skills.")
+                    print("The experience improves your piloting skills.")
                     if hasattr(player_character, "piloting"):
                         player_character.piloting += 1
                         print(

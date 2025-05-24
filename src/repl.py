@@ -31,6 +31,7 @@ from src.commands import (
     Argument,
 )
 from src.command_handlers import process_command
+from pygame import Vector2  # Add this import
 
 # Import from events.py module directly
 import src.events
@@ -168,9 +169,9 @@ def register_commands(game_state: "Game"):
 def start_repl(args: argparse.Namespace):
     # Create game state with command-line flags
     game_state = Game(
-        debug_flag=args.debug if hasattr(args, 'debug') else False,
-        mute_flag=args.mute if hasattr(args, 'mute') else False,
-        skip_customization=args.skipc if hasattr(args, 'skipc') else False
+        debug_flag=args.debug if hasattr(args, "debug") else False,
+        mute_flag=args.mute if hasattr(args, "mute") else False,
+        skip_customization=args.skipc if hasattr(args, "skipc") else False,
     )
 
     if game_state.sound_enabled:
@@ -182,7 +183,6 @@ def start_repl(args: argparse.Namespace):
 
 
 def run_intro_and_setup(game_state, args: argparse.Namespace):
-    import src.events
     from src.events.character_creation import quick_start
 
     # Only run character creation event if not skipping customization
@@ -191,7 +191,7 @@ def run_intro_and_setup(game_state, args: argparse.Namespace):
     else:
         # Use the quick_start function if we're skipping customization
         quick_start(game_state)
-        
+
     # If character still doesn't exist (both methods failed, unlikely but just in case)
     if not game_state.player_character:
         game_state.player_character = Character(
@@ -207,27 +207,50 @@ def run_intro_and_setup(game_state, args: argparse.Namespace):
         # Use the balanced cruiser template as a default when creating a new ship
         game_state.player_ship = Ship.from_template("balanced_cruiser", SHIP_NAME)
         # Position it at the random station
-        game_state.player_ship.space_object.position = (
-            game_state.rnd_station.position.copy()
-        )
-        # Dock the ship at the random station
-        game_state.player_ship.dock_into_station(
-            game_state.rnd_station
-        )  # Add this line
+        if game_state.rnd_station:  # Check if rnd_station is not None
+            game_state.player_ship.space_object.position = (
+                game_state.rnd_station.position.copy()
+            )
+            # Dock the ship at the random station
+            game_state.player_ship.dock_into_station(game_state.rnd_station)
+        else:
+            print("Error: No random station found to position the player ship.")
+            # Handle the case where no station is available, e.g., position at (0,0) or raise an error
+            game_state.player_ship.space_object.position = Vector2(0, 0)
+            print("Player ship positioned at (0,0) due to no available station.")
 
     # Ensure the ship is docked even if created during the intro event
     # Check if player_ship exists and is not docked
     elif game_state.player_ship and not game_state.player_ship.is_docked:
-        game_state.player_ship.space_object.position = (
-            game_state.rnd_station.position.copy()
-        )
-        # Dock the ship at the random station
-        game_state.player_ship.dock_into_station(game_state.rnd_station)
+        if game_state.rnd_station:  # Check if rnd_station is not None
+            game_state.player_ship.space_object.position = (
+                game_state.rnd_station.position.copy()
+            )
+            # Dock the ship at the random station
+            game_state.player_ship.dock_into_station(game_state.rnd_station)
+        else:
+            print(
+                "Error: No random station found to dock the player ship during setup."
+            )
+            # Handle the case where no station is available for docking
+            # Potentially leave undocked or position at a default safe spot if applicable
+            if (
+                game_state.player_ship.space_object.position is None
+            ):  # If position was also not set
+                game_state.player_ship.space_object.position = Vector2(0, 0)
+                print("Player ship positioned at (0,0) and remains undocked.")
 
 
 def run_game_loop(game_state):
     while True:
-        command_input = input("> ").lower()
+        try:
+            command_input = input("> ").lower()
+        except EOFError:
+            # Handle EOF gracefully (e.g., when input is piped)
+            print("\nExiting game due to end of input.")
+            command_exit(game_state)
+            break
+
         if command_input in ["exit", "quit"]:
             command_exit(game_state)
             break

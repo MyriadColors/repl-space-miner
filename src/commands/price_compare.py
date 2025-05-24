@@ -2,14 +2,11 @@
 This module implements commands for comparing prices across different stations in the system.
 """
 
-from pygame import Vector2
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 from colorama import Fore, Style
 
 from src.classes.game import Game
 from src.classes.station import Station
-from src.data import OreCargo
-from src.helpers import format_seconds
 from .base import register_command
 from .registry import Argument
 
@@ -83,7 +80,7 @@ def get_best_buy_prices(
             price_modifier *= trader_bonus
 
     # Process each station
-    for station in current_system.stations:
+    for station in current_system.get_all_stations():
         # Skip current station if docked
         if player_ship.is_docked and player_ship.docked_at == station:
             distance, travel_time, fuel_consumed = 0.0, 0.0, 0.0
@@ -160,7 +157,7 @@ def get_best_sell_prices(
             price_modifier *= trader_bonus
 
     # Process each station
-    for station in current_system.stations:
+    for station in current_system.get_all_stations():
         # Skip current station if docked
         if player_ship.is_docked and player_ship.docked_at == station:
             distance, travel_time, fuel_consumed = 0.0, 0.0, 0.0
@@ -408,7 +405,8 @@ def compare_prices_command(
             game_state.ui.info_message("-" * 70)
 
             for ore_name in sorted(buy_prices.keys()):
-                best_deal = buy_prices[ore_name][0]  # The best deal is already first
+                # The best deal is already first
+                best_deal = buy_prices[ore_name][0]
                 station, price, fuel_cost, _, reachable = best_deal
 
                 reachable_str = "Yes" if reachable else "No (Low fuel)"
@@ -431,7 +429,8 @@ def compare_prices_command(
             game_state.ui.info_message("-" * 70)
 
             for ore_name in sorted(sell_prices.keys()):
-                best_deal = sell_prices[ore_name][0]  # The best deal is already first
+                # The best deal is already first
+                best_deal = sell_prices[ore_name][0]
                 station, price, fuel_cost, _, reachable = best_deal
 
                 reachable_str = "Yes" if reachable else "No (Low fuel)"
@@ -487,7 +486,9 @@ def compare_prices_command(
 
     if option in ["fuel", "all"]:
         # Compare fuel prices across stations
-        compare_fuel_prices(game_state, current_system.stations, include_unreachable)
+        compare_fuel_prices(
+            game_state, current_system.get_all_stations(), include_unreachable
+        )
 
     game_state.ui.info_message("\n=== COMMAND HELP ===")
     game_state.ui.info_message("Usage: compare [option] [show_all]")
@@ -548,7 +549,8 @@ def find_best_trade_routes(
     else:
         include_unreachable_bool = bool(include_unreachable)
 
-    if not current_system or not current_system.stations:
+    stations = current_system.get_all_stations()
+    if not current_system or not stations:
         game_state.ui.error_message("No stations found in the current system.")
         return
 

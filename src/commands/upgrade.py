@@ -112,7 +112,7 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
                     precision = preview.get("display_precision", 2)
                     unit = preview.get("unit", "")
 
-                    if preview["is_positive"] == False:
+                    if not preview["is_positive"]:
                         value_format = f"  Effect: {attribute_name} {{:.{precision}f}} → {{:.{precision}f}} ({{:+.1f}}%)"
                         if unit:
                             value_format = f"  Effect: {attribute_name} {{:.{precision}f}} {unit} → {{:.{precision}f}} {unit} ({{:+.1f}}%)"
@@ -240,7 +240,7 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
     unit = preview.get("unit", "")
 
     # Show confirmation message with formatted values
-    game_state.ui.info_message(f"=== UPGRADE CONFIRMATION ===")
+    game_state.ui.info_message("=== UPGRADE CONFIRMATION ===")
     game_state.ui.info_message(f"Purchase {upgrade.name} for {price:.2f} credits?")
 
     # Display level information if applicable
@@ -251,7 +251,7 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
             f"This will upgrade from Level {current_level} to Level {next_level}."
         )
 
-    game_state.ui.info_message(f"\nUpgrade effect on your ship:")
+    game_state.ui.info_message("\nUpgrade effect on your ship:")
 
     # Format the display based on the attribute type
     if unit:
@@ -265,10 +265,8 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
         value_format.format(
             preview["before"], preview["after"], preview["percent_change"]
         )
-    )
-
-    # Provide evaluation of the effect
-    if preview["is_positive"] == False:  # For attributes where lower is better
+    )  # Provide evaluation of the effect
+    if not preview["is_positive"]:  # For attributes where lower is better
         if preview["after"] < preview["before"]:
             game_state.ui.info_message(
                 "✓ This upgrade will improve your ship's efficiency."
@@ -288,7 +286,7 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
             )
 
     # Financial impact
-    game_state.ui.info_message(f"\nFinancial impact:")
+    game_state.ui.info_message("\nFinancial impact:")
     credits = game_state.get_credits()
     if credits is not None:
         game_state.ui.info_message(f"Credits: {credits:.2f} → {credits - price:.2f}")
@@ -298,7 +296,7 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
         )
 
     # Confirmation prompt
-    game_state.ui.info_message(f"\nConfirm purchase? (y/n)")
+    game_state.ui.info_message("\nConfirm purchase? (y/n)")
     response = input("Your choice: ")
     if response.lower() != "y":
         game_state.ui.info_message("Purchase cancelled.")

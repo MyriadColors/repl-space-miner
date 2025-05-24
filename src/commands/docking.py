@@ -1,7 +1,7 @@
 from src.classes.game import Game
 from src.classes.solar_system import SolarSystem
 from src.classes.station import Station
-from src.helpers import get_closest_station, euclidean_distance, vector_to_string
+from src.helpers import get_closest_station
 from src.events.skill_events import (
     process_skill_xp_from_activity,
     notify_skill_progress,
@@ -19,11 +19,12 @@ def command_dock(game_state: Game) -> None:
         game_state.ui.info_message("You are already docked.")
         return
 
-    current_system: SolarSystem = game_state.get_current_solar_system()
-
-    # Check if player is already at a station (i.e., position matches very closely)
+    current_system: SolarSystem = (
+        game_state.get_current_solar_system()
+        # Check if player is already at a station (i.e., position matches very closely)
+    )
     current_station_at_loc = None
-    for station_obj in current_system.stations:
+    for station_obj in current_system.get_all_stations():
         if (
             station_obj.space_object.position.distance_to(
                 player_ship.space_object.position
@@ -36,12 +37,11 @@ def command_dock(game_state: Game) -> None:
     target_station = current_station_at_loc
 
     if target_station is None:  # If not exactly at a station, find the closest one
-        if (
-            not current_system.stations
-        ):  # Check if there are any stations in the current system
+        stations = current_system.get_all_stations()
+        if not stations:  # Check if there are any stations in the current system
             game_state.ui.error_message("There are no stations in the current system.")
             return
-        target_station = get_closest_station(current_system.stations, player_ship)
+        target_station = get_closest_station(stations, player_ship)
 
     if target_station is None:
         game_state.ui.error_message(

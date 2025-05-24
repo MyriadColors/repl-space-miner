@@ -9,7 +9,9 @@ def parse_arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Space Trader CLI Game")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--mute", action="store_true", help="Mute game sounds")
-    parser.add_argument("--skipc", action="store_true", help="Skip character customization")
+    parser.add_argument(
+        "--skipc", action="store_true", help="Skip character customization"
+    )
     return parser.parse_args(argv)
 
 

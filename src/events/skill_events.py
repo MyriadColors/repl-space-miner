@@ -6,7 +6,7 @@ This module provides functions for handling skill XP gain during gameplay events
 
 from src.classes.game import Game
 import random
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple
 
 
 def process_skill_xp_from_activity(

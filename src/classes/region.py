@@ -1,8 +1,6 @@
 from typing import List, Optional
 import math
 
-from pygame import Vector2
-from src import helpers
 from src.classes.solar_system import SolarSystem
 import random
 
@@ -31,10 +29,13 @@ class Region:
         s2 = self.get_system_by_name(system2_name)
         if s1 is None or s2 is None:
             raise ValueError("One or both systems not found in region.")
-        # Ensure x and y are floats
+        # Ensure x and y are floats for both systems
         x1, y1 = float(s1.x), float(s1.y)
-        x2, y2 = float(s2.x), float(s2.y)  # Convert to Vector2 for distance calculation
-        return float(helpers.euclidean_distance(Vector2(x1, y1), Vector2(x2, y2)))
+        x2, y2 = float(s2.x), float(s2.y)
+
+        # Calculate Euclidean distance manually to ensure we're using the correct values
+        distance = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        return round(distance, 2)
 
     @staticmethod
     def generate_random_region(
@@ -62,6 +63,7 @@ class Region:
         for i in range(num_systems):
             attempt_count = 0
             valid_position = False
+            x, y = 0.0, 0.0  # Initialize x and y here
 
             while not valid_position and attempt_count < max_placement_attempts:
                 # Generate random coordinates
@@ -77,30 +79,57 @@ class Region:
                         break
 
                 attempt_count += 1
-            # Initialize default position in case of failure
-            x = 0.0
-            y = 0.0
 
-            # If we couldn't find a valid position after max attempts, adjust min_distance
-            if attempt_count >= max_placement_attempts:
+            # If we couldn\'t find a valid position after max attempts, try with reduced constraints
+            if not valid_position:  # Check if still not valid after initial attempts
                 print(
-                    f"Warning: Could not place system {i+1} with min_distance={min_distance}. Reducing constraints."
+                    f"Warning: Could not place system {i+1} with min_distance={min_distance} after {max_placement_attempts} attempts. Reducing constraints."
                 )
-                # Try again with reduced distance constraint
-                local_min_distance = (
-                    min_distance  # Use a local copy to not affect future systems
-                )
-                while not valid_position and local_min_distance > 0.1:
-                    local_min_distance *= 0.5
-                    x = round(random.uniform(-100, 100), 2)
-                    y = round(random.uniform(-100, 100), 2)
+                local_min_distance = min_distance
+                fallback_attempts = 0
+                max_fallback_attempts = 10  # Limit attempts with reduced constraints
 
-                    valid_position = True
-                    for pos_x, pos_y in used_positions:
-                        distance = math.sqrt((x - pos_x) ** 2 + (y - pos_y) ** 2)
-                        if distance < local_min_distance:
-                            valid_position = False
+                while (
+                    not valid_position
+                    and fallback_attempts < max_fallback_attempts
+                    and local_min_distance > 0.01
+                ):  # Ensure local_min_distance is positive
+                    local_min_distance *= 0.5
+                    if local_min_distance < 0.01:  # Prevent extremely small distances
+                        local_min_distance = 0.01
+
+                    # Try to find a position with the new local_min_distance
+                    for _ in range(
+                        max_placement_attempts // 5
+                    ):  # Fewer attempts for fallback
+                        x_candidate = round(random.uniform(-100, 100), 2)
+                        y_candidate = round(random.uniform(-100, 100), 2)
+
+                        candidate_ok = True
+                        for pos_x, pos_y in used_positions:
+                            distance = math.sqrt(
+                                (x_candidate - pos_x) ** 2 + (y_candidate - pos_y) ** 2
+                            )
+                            if distance < local_min_distance:
+                                candidate_ok = False
+                                break
+                        if candidate_ok:
+                            x, y = x_candidate, y_candidate
+                            valid_position = True
                             break
+                    fallback_attempts += 1
+
+                if not valid_position:
+                    print(
+                        f"Critical: Failed to place system {i+1} even with reduced constraints. Placing at a default offset to avoid (0,0)."
+                    )
+                    # Fallback to a slightly offset position to avoid stacking all at (0,0)
+                    # This is a last resort and indicates a potential issue with density or region size.
+                    x = round(random.uniform(0.1, 1.0) * (i + 1), 2)
+                    y = round(random.uniform(0.1, 1.0) * (i + 1), 2)
+                    # Ensure it's still within bounds, though this is less critical than avoiding (0,0)
+                    x = max(-100, min(100, x))
+                    y = max(-100, min(100, y))
 
             # Add the position to our used positions list
             used_positions.append((x, y))

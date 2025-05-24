@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Optional, Tuple, Dict, Any, Union, TYPE_CHECKING
+from typing import Tuple, Dict, Any, TYPE_CHECKING
 
 import random
 from pygame import Vector2
@@ -172,7 +172,8 @@ class DualFuelSystem:
                 False,
                 f"Antimatter containment system unstable. Current risk: {risk:.1f}%. Repairs needed before FTL jump.",
             )  # All checks passed, perform FTL jump
-        self.antimatter -= required_antimatter  # Calculate travel time based on the desired speed of 1e-10 LY per day for fastest ships        # Use a more reasonable scale for FTL travel - 1 LY per day as base speed
+        # Calculate travel time based on the desired speed of 1e-10 LY per day for fastest ships        # Use a more reasonable scale for FTL travel - 1 LY per day as base speed
+        self.antimatter -= required_antimatter
         # This means a distance of 1 LY would take approximately 1 day to travel
         base_ftl_speed = 1.0  # LY per day
 
@@ -199,18 +200,16 @@ class DualFuelSystem:
             result = {
                 "description": "No significant events during the jump.",
                 "success": True,
-            }
-
-        # Create travel summary
+            }  # Create travel summary
         # Ensure summary is used in the return statement
-        summary = {
-            "origin": getattr(game_state.player_ship, "current_system", "Unknown"),
-            "destination": destination_system,
-            "distance": distance_ly,
-            "antimatter_used": required_antimatter,
-            "travel_time": travel_time_seconds,
-            "event": result,
-        }
+        # summary = {
+        #     "origin": getattr(game_state.player_ship, "current_system", "Unknown"),
+        #     "destination": destination_system,
+        #     "distance": distance_ly,
+        #     "antimatter_used": required_antimatter,
+        #     "travel_time": travel_time_seconds,
+        #     "event": result,
+        # }  # TODO: Use summary for travel reports in future features
 
         if hasattr(game_state, "advance_time"):
             # Apply the full travel time without any cap
@@ -218,9 +217,12 @@ class DualFuelSystem:
         else:
             raise AttributeError("Game object is missing 'advance_time' method.")
         if game_state.player_ship is not None:
-            game_state.player_ship.previous_system = getattr(game_state.player_ship, "current_system", "Unknown")  # type: ignore
+            game_state.player_ship.previous_system = getattr(
+                game_state.player_ship, "current_system", "Unknown"
+            )  # type: ignore
             game_state.player_ship.current_system = destination_system  # type: ignore
-            game_state.player_ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
+            # type: ignore # Default to center of system
+            game_state.player_ship.location = Vector2(0, 0)
         else:
             raise AttributeError(
                 "Game object is missing 'player_ship' attribute or it is None."
@@ -229,7 +231,8 @@ class DualFuelSystem:
         assert game_state.player_ship is not None, "Player ship is None"
         game_state.player_ship.previous_system = game_state.player_ship.current_system  # type: ignore
         game_state.player_ship.current_system = destination_system  # type: ignore
-        game_state.player_ship.location = Vector2(0, 0)  # type: ignore # Default to center of system
+        # type: ignore # Default to center of system
+        game_state.player_ship.location = Vector2(0, 0)
 
         # Apply a small degradation to containment integrity from the jump
         # Simulate the stress of the jump on the FTL drive components

@@ -91,7 +91,7 @@ def cargo_command(game_state: Game) -> None:
 
     # Display total cargo value
     total_cargo_value = total_ore_value + total_mineral_value
-    game_state.ui.info_message(f"=== SUMMARY ===")
+    game_state.ui.info_message("=== SUMMARY ===")
     game_state.ui.info_message(f"Total Cargo Value: {total_cargo_value:.2f} credits")
     game_state.ui.info_message(
         f"Total Cargo Space Used: {total_occupied:.2f}/{player_ship.cargohold_capacity:.2f} m³"

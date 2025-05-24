@@ -39,19 +39,19 @@ class Command:
             return False, "Too many arguments provided."
 
         for i, (arg, value) in enumerate(zip(self.arguments, args), start=1):
-            if arg.type == int:
+            if arg.type is int:
                 if not self._is_valid_int(value):
                     return False, f"Argument {i} ({arg.name}) must be an integer."
-            elif arg.type == float:
+            elif arg.type is float:
                 if not self._is_valid_float(value):
                     return False, f"Argument {i} ({arg.name}) must be a float."
-            elif arg.type == bool:
+            elif arg.type is bool:
                 if not self._is_valid_bool(value):
                     return (
                         False,
                         f"Argument {i} ({arg.name}) must be a boolean value (true/false or 1/0).",
                     )
-            elif arg.type == str:
+            elif arg.type is str:
                 pass
             else:
                 if not value:

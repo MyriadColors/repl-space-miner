@@ -1,3 +1,5 @@
+from src.commands.refuel import refuel_command
+from src.commands import commands, Argument, register_command
 from src.classes.game import Game
 
 # Colorama is still needed for direct colors in specific cases
@@ -5,15 +7,6 @@ import colorama
 
 colorama.init()
 
-from src.commands import commands, Argument, register_command
-from src.commands.travel import *
-from src.commands.trading import *
-from src.commands.mining import *
-from src.commands.system import *
-from src.commands.docking import *
-from src.commands.debug import *
-from src.commands.upgrade import *
-from src.commands.refuel import refuel_command
 
 # Make refuel_command available in this module's namespace
 __all__ = [
@@ -85,7 +78,9 @@ def execute_valid_command(game_state: Game, command_name: str, args: list[str]):
         if i < len(args):
             arg_dict[arg.name] = args[i]
         elif arg.is_optional:
-            arg_dict[arg.name] = ""
+            arg_dict[arg.name] = (
+                ""  # Using empty string as default for optional string arguments
+            )
         else:
             raise ValueError(f"Missing required argument: {arg.name}")
 

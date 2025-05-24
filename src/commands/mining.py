@@ -29,10 +29,8 @@ def mine_command(
         return
 
     # Convert ore_selected to list if provided
-    ores_selected_list = [ore_selected] if ore_selected else None
-
-    # Execute mining
-    time_spent = player_ship.mine_belt(
+    ores_selected_list = [ore_selected] if ore_selected else None  # Execute mining
+    player_ship.mine_belt(
         game_state,
         field,
         time_to_mine,
@@ -56,7 +54,7 @@ def mine_command(
         )
         if interest_result:
             interest_amount, new_debt = interest_result
-            game_state.ui.warn_message(f"\n⚠️ DEBT ALERT! ⚠️")
+            game_state.ui.warn_message("\n⚠️ DEBT ALERT! ⚠️")
             game_state.ui.warn_message(
                 f"While mining, {interest_amount:.2f} credits of interest has accumulated on your debt!"
             )

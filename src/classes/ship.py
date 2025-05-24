@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Optional, Tuple, List, Dict
 
 from pygame import Vector2
@@ -32,7 +31,8 @@ class Ship:
         value: float = 10000.0,  # Default value
         mining_speed: float = 1.0,  # Default mining_speed
         sensor_range: float = 1.0,  # Default sensor_range
-        appearance: str = "Rust Bucket",  # Default appearance, describes the visual style of the ship
+        # Default appearance, describes the visual style of the ship
+        appearance: str = "Rust Bucket",
     ):
         """
         Initialize a new Ship instance.
@@ -53,7 +53,8 @@ class Ship:
         self.space_object = IsSpaceObject(position, self.ship_id_counter)
         Ship.ship_id_counter += 1
         self.moves = CanMove(speed)  # in AU/s
-        self.last_position: Optional[Vector2] = None  # Initialize last_position
+        # Initialize last_position
+        self.last_position: Optional[Vector2] = None
 
         # Standard fuel (Hydrogen Cells) for sub-FTL travel
         self.fuel = max_fuel  # in m3
@@ -68,13 +69,15 @@ class Ship:
 
         # Power system for ship operations and containment
         self.power = 100.0  # Current power level (units)
-        self.max_power = 100.0  # Maximum power capacity (units)        # Antimatter containment system
+        # Maximum power capacity (units)        # Antimatter containment system
+        self.max_power = 100.0
         # Ensures safe storage of antimatter; integrity is a percentage (0-100%)
         self.containment_integrity = 100.0  # percentage
         self.containment_power_draw = (
             0.001  # fuel consumed per hour to maintain containment
         )
-        self.containment_failure_risk = 0.0  # Percentage chance of containment failure; increases with damage or time
+        # Percentage chance of containment failure; increases with damage or time
+        self.containment_failure_risk = 0.0
         self.last_containment_check = 0.0  # game time of last integrity check
 
         self.cargohold: list = []
@@ -87,22 +90,32 @@ class Ship:
         self.appearance = (
             appearance  # Appearance attribute, used to define the ship's visual style
         )
-        self.interaction_radius = 0.001  # Radius in AUs around the player ship where it can interact with other objects
+        # Radius in AUs around the player ship where it can interact with other objects
+        self.interaction_radius = 0.001
         self.is_docked = False
         self.docked_at: Station | None = None
         self.calculate_cargo_occupancy()
-        self.sensor_range = sensor_range  # If any entity enters this range around the ship, it is detected
+        # If any entity enters this range around the ship, it is detected
+        self.sensor_range = sensor_range
         # Track applied upgrades
         self.applied_upgrades: Dict[str, Upgrade] = {}
         self.hull_integrity: float = 100.0  # Base hull integrity (percentage)
         self.shield_capacity: float = (
-            0.0  # Base shield capacity (percentage)        # Engine-related attributes
+            # Base shield capacity (percentage)        # Engine-related attributes
+            0.0
         )
         self.base_speed: float = speed  # Store original base speed
         self.base_fuel_consumption: float = (
-            fuel_consumption  # Store original base fuel consumption
+            # Store original base fuel consumption  # Base sensor signature (affects detection)
+            fuel_consumption
         )
-        self.sensor_signature: float = 1.0  # Base sensor signature (affects detection)
+        self.sensor_signature: float = 1.0
+
+        # FTL travel system tracking
+        self.previous_system: str = "Unknown"
+        self.current_system: str = "Unknown"
+        self.location: Vector2 = position  # Current location within the system
+
         if "standard" in ENGINES:
             std_engine_obj = ENGINES["standard"]
             self.engine = Engine(
@@ -264,7 +277,7 @@ class Ship:
             print("Not enough fuel to travel. Please refuel.")
             return
 
-        confirm = input(f"Confirm travel? (y/n) ")
+        confirm = input("Confirm travel? (y/n) ")
         if confirm != "y":
             print("Travel cancelled.")
             return
@@ -471,7 +484,8 @@ class Ship:
         else:
             print(
                 "No ores were mined."
-            )  # Recalculate cargo occupancy and update global game time        self.calculate_cargo_occupancy()
+                # Recalculate cargo occupancy and update global game time        self.calculate_cargo_occupancy()
+            )
         print(f"Time spent mining: {time_spent} seconds.")
         game_state.global_time += time_spent
 
@@ -492,13 +506,12 @@ class Ship:
         """Get the remaining cargo space, accounting for both ores and minerals
 
         Returns:
-            float: Available cargo space in cubic meters
-        """
+            float: Available cargo space in cubic meters"""
         total_occupied = self.cargohold_occupied + self.mineralhold_occupied
         return max(0.0, self.cargohold_capacity - total_occupied)
 
     def check_field_presence(self, game_state) -> Tuple[bool, Optional[AsteroidField]]:
-        for field in game_state.get_current_solar_system().asteroid_fields:  # MODIFIED
+        for field in game_state.get_current_solar_system().get_all_asteroid_fields():
             if self.interaction_radius > euclidean_distance(
                 self.space_object.position, field.space_object.position
             ):
@@ -506,9 +519,9 @@ class Ship:
         return False, None
 
     def scan_field(self, game_state) -> None:
-        fields: list[AsteroidField] = (
-            game_state.get_current_solar_system().asteroid_fields
-        )  # MODIFIED
+        # fields: list[AsteroidField] = (
+        #     game_state.get_current_solar_system().get_all_asteroid_fields()
+        # )  # TODO: Use this variable when implementing field scanning features
 
         is_inside_field, field = self.check_field_presence(game_state)
 
@@ -647,7 +660,8 @@ class Ship:
             docked_station = next(
                 (
                     s
-                    for s in game_state.get_current_solar_system().stations  # MODIFIED
+                    # MODIFIED
+                    for s in game_state.get_current_solar_system().stations
                     if s.space_object.id == data["docked_at_id"]
                 ),
                 None,
@@ -865,7 +879,8 @@ class Ship:
             result["before"] = float(self.fuel_consumption)
             result["after"] = float(self.fuel_consumption * upgrade.multiplier)
             result["is_positive"] = False  # Lower fuel consumption is better
-            result["display_precision"] = 4  # More precision for fuel consumption
+            # More precision for fuel consumption
+            result["display_precision"] = 4
             result["unit"] = "m³/AU"
 
         elif upgrade.target == UpgradeTarget.FUEL_CAPACITY:

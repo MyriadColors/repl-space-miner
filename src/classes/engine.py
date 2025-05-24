@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 
 
 class EngineType(Enum):
@@ -30,7 +30,8 @@ class Engine:
     maintenance_cost_modifier: float = 1.0
 
     # Special properties
-    magneton_resistance: float = 0.0  # How much it reduces Magneton interference (0-1)
+    # How much it reduces Magneton interference (0-1)
+    magneton_resistance: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization"""

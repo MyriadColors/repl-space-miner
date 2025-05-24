@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 
 
 class MineralQuality(Enum):
@@ -9,6 +9,12 @@ class MineralQuality(Enum):
     STANDARD = auto()  # Standard quality
     HIGH_GRADE = auto()  # High-grade quality
     SPECIALIZED = auto()  # Specialized grades (e.g., Ultra-Pure, Mil-Grade)
+
+
+class MaterialCategory(Enum):
+    HIGH_TEMP = auto()  # Condensed at high temperatures (e.g., rock, metal)
+    MID_TEMP = auto()  # Condensed at moderate temperatures
+    LOW_TEMP = auto()  # Condensed at low temperatures (e.g., ices, some organics)
 
 
 @dataclass
@@ -26,6 +32,9 @@ class Mineral:
     volume: float  # in m³ per unit
     id: int
     quality: MineralQuality = MineralQuality.STANDARD  # Default quality is STANDARD
+    category: MaterialCategory = (
+        MaterialCategory.HIGH_TEMP
+    )  # Default category, will be overridden
 
     def to_string(self):
         """Get a string representation of the mineral."""
@@ -84,19 +93,25 @@ class Mineral:
 
 
 # Define minerals in a dictionary
-MINERALS = {
-    0: Mineral("Iron", 75.0, 0.2, 0),
-    1: Mineral("Carbon", 45.0, 0.1, 1),
-    2: Mineral("Silicon", 90.0, 0.15, 2),
-    3: Mineral("Copper", 110.0, 0.25, 3),
-    4: Mineral("Zinc", 85.0, 0.2, 4),
-    5: Mineral("Aluminum", 95.0, 0.18, 5),
-    6: Mineral("Titanium", 200.0, 0.3, 6),
-    7: Mineral("Nickel", 150.0, 0.22, 7),
-    8: Mineral("Neodymium", 300.0, 0.25, 8),
-    9: Mineral("Gold", 500.0, 0.1, 9),
-    10: Mineral("Rare Earth Elements", 450.0, 0.15, 10),
-    11: Mineral("Exotic Materials", 1200.0, 0.5, 11),
+MINERALS: Dict[int, Mineral] = {
+    0: Mineral("Iron", 75.0, 0.2, 0, category=MaterialCategory.HIGH_TEMP),
+    1: Mineral(
+        "Carbon", 45.0, 0.1, 1, category=MaterialCategory.LOW_TEMP
+    ),  # Representing volatile carbon or less refractory forms
+    2: Mineral("Silicon", 90.0, 0.15, 2, category=MaterialCategory.HIGH_TEMP),
+    3: Mineral("Copper", 110.0, 0.25, 3, category=MaterialCategory.MID_TEMP),
+    4: Mineral("Zinc", 85.0, 0.2, 4, category=MaterialCategory.MID_TEMP),
+    5: Mineral("Aluminum", 95.0, 0.18, 5, category=MaterialCategory.HIGH_TEMP),
+    6: Mineral("Titanium", 200.0, 0.3, 6, category=MaterialCategory.HIGH_TEMP),
+    7: Mineral("Nickel", 150.0, 0.22, 7, category=MaterialCategory.HIGH_TEMP),
+    8: Mineral("Neodymium", 300.0, 0.25, 8, category=MaterialCategory.HIGH_TEMP),
+    9: Mineral("Gold", 500.0, 0.1, 9, category=MaterialCategory.HIGH_TEMP),
+    10: Mineral(
+        "Rare Earth Elements", 450.0, 0.15, 10, category=MaterialCategory.HIGH_TEMP
+    ),
+    11: Mineral(
+        "Exotic Materials", 1200.0, 0.5, 11, category=MaterialCategory.HIGH_TEMP
+    ),  # Assumption
 }
 
 

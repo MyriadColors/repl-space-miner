@@ -5,8 +5,7 @@ This module provides classes for tracking and managing character skills,
 including experience points, skill levels, and skill-based bonuses.
 """
 
-from typing import Dict, List, Optional, Tuple
-import math
+from typing import Dict, Optional, Tuple
 
 # Constants for skill system
 MAX_SKILL_LEVEL = 20  # Maximum level a skill can reach

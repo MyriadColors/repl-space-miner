@@ -112,7 +112,7 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
     ):
         if random.random() < 0.1:  # 10% chance to miss a deal
             game_state.ui.warn_message(
-                f"You notice the transaction number ends in 13. A bad omen! You negotiate nervously."
+                "You notice the transaction number ends in 13. A bad omen! You negotiate nervously."
             )
             price_modifier *= 1.05  # 5% price increase
 
@@ -122,12 +122,10 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
     # Show price adjustment notification if significant
     if price_modifier < 0.95:  # More than 5% discount
         game_state.ui.success_message(
-            f"Your negotiation skills helped secure a better price!"
+            "Your negotiation skills helped secure a better price!"
         )
     elif price_modifier > 1.05:  # More than 5% increase
-        game_state.ui.warn_message(
-            f"The merchant seems to be charging you a premium..."
-        )
+        game_state.ui.warn_message("The merchant seems to be charging you a premium...")
 
     if player_character.credits < total_price:
         game_state.ui.error_message("Not enough credits to make this purchase.")
@@ -135,7 +133,8 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
 
     # Try to barter
     final_price, bartered = barter(total_price)
-    final_price = round(final_price, 2)  # Ensure the bartered price is also rounded
+    # Ensure the bartered price is also rounded
+    final_price = round(final_price, 2)
 
     # Apply Charismatic trait message if applicable and wasn't already bartered down
     if (
@@ -266,7 +265,7 @@ def sell_command(game_state: Game) -> None:
     ):
         if random.random() < 0.1:  # 10% chance to miss a deal
             game_state.ui.warn_message(
-                f"You notice it's the 13th deal of the day. A bad omen! You negotiate nervously."
+                "You notice it's the 13th deal of the day. A bad omen! You negotiate nervously."
             )
             price_modifier *= 0.95  # 5% price decrease
 
@@ -276,14 +275,15 @@ def sell_command(game_state: Game) -> None:
     # Show price adjustment notification if significant
     if price_modifier > 1.05:  # More than 5% bonus
         game_state.ui.success_message(
-            f"Your negotiation skills helped secure a better price!"
+            "Your negotiation skills helped secure a better price!"
         )
     elif price_modifier < 0.95:  # More than 5% decrease
-        game_state.ui.warn_message(f"The merchant seems to be lowballing your offer...")
+        game_state.ui.warn_message("The merchant seems to be lowballing your offer...")
 
     # Try to barter
     final_price, bartered = barter(total_price)
-    final_price = round(final_price, 2)  # Ensure the bartered price is also rounded
+    # Ensure the bartered price is also rounded
+    final_price = round(final_price, 2)
 
     # Apply Charismatic trait message if applicable and wasn't already bartered up
     if (

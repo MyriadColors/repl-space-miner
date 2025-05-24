@@ -18,7 +18,8 @@ class Ore:
     name: str
     base_value: float  # in credits
     volume: float  # in m³ per unit
-    mineral_yield: List[Tuple[int, float]]  # List of tuples (mineral_id, yield_ratio)
+    # List of tuples (mineral_id, yield_ratio)
+    mineral_yield: List[Tuple[int, float]]
     id: int
     purity: PurityLevel = PurityLevel.RAW  # Default purity is RAW
     refining_difficulty: float = (
@@ -124,7 +125,8 @@ ORES = {
     0: Ore(
         "Pyrogen", 29.0, 0.3, [(0, 0.7), (1, 0.2)], 0, refining_difficulty=1.0
     ),  # Iron, Carbon
-    1: Ore("Ascorbon", 16.0, 0.15, [(1, 0.8)], 1, refining_difficulty=1.2),  # Carbon
+    # Carbon
+    1: Ore("Ascorbon", 16.0, 0.15, [(1, 0.8)], 1, refining_difficulty=1.2),
     2: Ore(
         "Angion", 55.0, 0.35, [(3, 0.6), (4, 0.3)], 2, refining_difficulty=1.5
     ),  # Copper, Zinc

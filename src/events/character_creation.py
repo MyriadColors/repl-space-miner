@@ -1,4 +1,3 @@
-from time import sleep
 from typing import Dict, cast, Any
 from colorama import init, Fore
 import pygame as pg
@@ -27,7 +26,8 @@ def character_creation_event(
     neg_trait_idx: int = 1  # Default value for negative trait index
     app_idx: int = 1  # Default value for all branches
     background: str = "Unknown"  # Default value for all branches
-    additional_bonus_details: Dict[str, Any] = {} # Initialize additional_bonus_details
+    # Initialize additional_bonus_details
+    additional_bonus_details: Dict[str, Any] = {}
 
     # Introduction text with more atmosphere and player involvement
     intro_text = [
@@ -192,7 +192,8 @@ def character_creation_event(
                 4: "Void Runner: 'Born in the deep black. Never known a planet's gravity for more than a few months.'",
                 5: "Corp Dropout: 'Used to wear a suit, push data, make others rich. Decided I'd rather make myself rich.'",
                 6: "Xeno-Biologist: 'Scientific expeditions. Started with research, then found I preferred the independence.'",
-                7: "Battle-Scarred Mercenary: 'Lot like you, I imagine. Fought in the border conflicts, got tired of others calling the shots.'",  # Mercenary's special background
+                # Mercenary's special background
+                7: "Battle-Scarred Mercenary: 'Lot like you, I imagine. Fought in the border conflicts, got tired of others calling the shots.'",
             }
 
             for i, option in background_options.items():
@@ -409,7 +410,7 @@ def character_creation_event(
         )
         # sleep(1.5)
         game_state.ui.info_message(
-            Fore.CYAN + f"Your experiences have shaped your skills and connections."
+            Fore.CYAN + "Your experiences have shaped your skills and connections."
         )
 
         # Assign positive_trait based on dialogue_trait_hint
@@ -427,7 +428,8 @@ def character_creation_event(
             elif positive_trait == "Resilient":
                 negative_trait = "Impatient"
             else:
-                negative_trait = "Superstitious"  # default fallback        #sleep(1)
+                # default fallback        #sleep(1)
+                negative_trait = "Superstitious"
 
         # Prompt for ship name before type selection
         # sleep(2)
@@ -663,7 +665,8 @@ def character_creation_event(
                 4: "Ex-Miner: 'Spent years breaking rocks in the belt. Looking for something more profitable now.'",
                 5: "Discharged Trooper: 'Military training. Let's just say there was a disagreement about orders.'",
                 6: "Xeno-Biologist: 'Research expeditions. Now I'm pursuing independent studies with fewer restrictions.'",
-                7: "Shadow Operative: 'Similar to you. Extraction specialist. Recently decided to be my own contractor.'",  # Bounty Hunter's special background
+                # Bounty Hunter's special background
+                7: "Shadow Operative: 'Similar to you. Extraction specialist. Recently decided to be my own contractor.'",
             }
 
             for i, option in background_options.items():
@@ -769,7 +772,8 @@ def character_creation_event(
                 4: "Void Runner: 'My family's been traveling the black for generations. It's all I've ever known.'",
                 5: "Xeno-Biologist: 'Used to study alien species. Academia got too political - and dangerous.'",
                 6: "Discharged Trooper: 'Military background. Let's just say there was a disagreement about orders.'",
-                7: "Shadow Operative: 'Similar to your line of work. Extraction specialist looking to be my own boss.'",  # Bounty Hunter's special background
+                # Bounty Hunter's special background
+                7: "Shadow Operative: 'Similar to your line of work. Extraction specialist looking to be my own boss.'",
             }
 
             for i, option in background_options.items():
@@ -878,7 +882,8 @@ def character_creation_event(
                 4: "Void Runner: 'Navigation and piloting. I can get to places others can't reach.'",
                 5: "Xeno-Biologist: 'Scientific analysis. I can understand and predict behavior patterns.'",
                 6: "Discharged Trooper: 'Tactical operations. I can handle myself in a fight and plan an approach.'",
-                7: "Shadow Operative: 'Asset acquisition and extraction. Similar to your line of work, but more specialized.'",  # Bounty Hunter's special background
+                # Bounty Hunter's special background
+                7: "Shadow Operative: 'Asset acquisition and extraction. Similar to your line of work, but more specialized.'",
             }
 
             for i, option in background_options.items():
@@ -959,7 +964,7 @@ def character_creation_event(
         # sleep(1.5)
         game_state.ui.info_message(
             Fore.CYAN
-            + f"Nova seems to appreciate your background, and you sense there might be future opportunities for collaboration."
+            + "Nova seems to appreciate your background, and you sense there might be future opportunities for collaboration."
         )
         # sleep(1)
 
@@ -1267,7 +1272,8 @@ def character_creation_event(
                 4: "Void Runner: 'When you're millions of miles from the nearest repair dock, you learn to fix things yourself.'",
                 5: "Lunar Drifter: 'In Luna's underground, we had to repurpose and hack everything just to survive.'",
                 6: "Discharged Trooper: 'Military tech specialist. Learned to maintain equipment under harsh conditions.'",
-                7: "Tech Savant: 'Always had a knack for technology. Can reverse-engineer almost any system given enough time.'",  # Engineer's special background
+                # Engineer's special background
+                7: "Tech Savant: 'Always had a knack for technology. Can reverse-engineer almost any system given enough time.'",
             }
 
             for i, option in background_options.items():
@@ -1361,10 +1367,7 @@ def character_creation_event(
             app_idx = 1  # Default value and type annotation
             while not valid_appearance_choice:
                 appearance_choice = input(Fore.WHITE + "\nYour description (1-3): ")
-                if (
-                    is_valid_int(appearance_choice)
-                    and 1 <= int(appearance_choice) <= 3
-                ):
+                if is_valid_int(appearance_choice) and 1 <= int(appearance_choice) <= 3:
                     valid_appearance_choice = True
                     app_idx = int(appearance_choice)
                 else:
@@ -1560,7 +1563,8 @@ def character_creation_event(
                 4: "Ex-Miner: 'Got my start in the asteroid fields. Hard work teaches you to value what you find.'",
                 5: "Corp Dropout: 'Had enough of corporate structure. Out here I make my own decisions.'",
                 6: "Discharged Trooper: 'Military background. Know how to follow and when to question orders.'",
-                7: "Tech Savant: 'Always had a gift for understanding systems. Technology speaks to me in ways people don't.'",  # Engineer's special background
+                # Engineer's special background
+                7: "Tech Savant: 'Always had a gift for understanding systems. Technology speaks to me in ways people don't.'",
             }
 
             for i, option in background_options.items():
@@ -1593,7 +1597,6 @@ def character_creation_event(
             elif bg_idx == 3:
                 background = "Void Runner"
                 game_state.ui.info_message(
-                   
                     Fore.CYAN
                     + "\n'Deep space is in your DNA then,' Zeta-9 observes. 'That's becoming increasingly rare and valuable.'"
                 )
@@ -1710,7 +1713,7 @@ def character_creation_event(
             faction_influenced = "explorers"
 
             # Background information through dialogue
-            if not "background" in locals():
+            if "background" not in locals():
                 # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -1763,7 +1766,7 @@ def character_creation_event(
                     )
 
             # Ship details if not already established
-            if not "ship_name" in locals():
+            if "ship_name" not in locals():
                 # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -1949,7 +1952,7 @@ def character_creation_event(
             faction_influenced = "traders"
 
             # Background information through dialogue
-            if not "background" in locals():
+            if "background" not in locals():
                 # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -1963,7 +1966,8 @@ def character_creation_event(
                     4: "Void Runner: 'Born in deep space. Never known a permanent home other than my ship.'",
                     5: "Lunar Drifter: 'Grew up in Luna's shadow districts. Learned to survive by any means necessary.'",
                     6: "Xeno-Biologist: 'Academic background. The limitations of institutional research became... problematic.'",
-                    7: "Station Fixer: 'Been a mediator between factions for years. Know how to grease the right gears.'",  # Bartender's special background
+                    # Bartender's special background
+                    7: "Station Fixer: 'Been a mediator between factions for years. Know how to grease the right gears.'",
                 }
 
                 for i, option in background_options.items():
@@ -2029,7 +2033,7 @@ def character_creation_event(
                     )
 
             # Ship details if not already established
-            if not "ship_name" in locals():
+            if "ship_name" not in locals():
                 # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -2151,7 +2155,9 @@ def character_creation_event(
             )
 
             # Offer negative traits
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat might get you into trouble?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nWhat might get you into trouble?"
+            )
             neg_trait_options = {
                 1: "Superstitious: 'I trust my hunches and omens. Logic isn't everything.'",
                 2: "Reckless: 'I take chances. Sometimes too many.'",
@@ -2213,7 +2219,7 @@ def character_creation_event(
             faction_influenced = "corporations"
 
             # Background information through dialogue
-            if not "background" in locals():
+            if "background" not in locals():
                 # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -2265,7 +2271,7 @@ def character_creation_event(
                         + "\n'Knowledge is valuable currency,' Obsidian says. 'Especially out here where mysteries still lurk in the dark.'"
                     )
             # Ship details if not already established
-            if not "ship_name" in locals():
+            if "ship_name" not in locals():
                 # sleep(2)
                 game_state.ui.info_message(
                     Fore.CYAN
@@ -2387,7 +2393,9 @@ def character_creation_event(
             )
 
             # Offer negative traits
-            game_state.ui.info_message(Fore.YELLOW + "\nWhat might get you into trouble?")
+            game_state.ui.info_message(
+                Fore.YELLOW + "\nWhat might get you into trouble?"
+            )
             neg_trait_options = {
                 1: "Superstitious: 'I trust my hunches and omens. Logic isn't everything.'",
                 2: "Reckless: 'I take chances. Sometimes too many.'",
@@ -2440,7 +2448,9 @@ def character_creation_event(
         game_state.ui.info_message(Fore.CYAN + f"Background: {background}")
         game_state.ui.info_message(Fore.CYAN + f"Positive Trait: {positive_trait}")
         game_state.ui.info_message(Fore.CYAN + f"Negative Trait: {negative_trait}")
-        game_state.ui.info_message(Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})")
+        game_state.ui.info_message(
+            Fore.CYAN + f"Ship: The {ship_name} ({ship_appearance})"
+        )
 
         # sleep(2)  # Background information for the selected background
         bg_descriptions = {
@@ -2461,10 +2471,15 @@ def character_creation_event(
         # Add specializations based on background for more depth
         if background == "Ex-Miner":
             game_state.ui.info_message(
-                Fore.YELLOW + "\nYour mining experience has given you a particular edge..."
+                Fore.YELLOW
+                + "\nYour mining experience has given you a particular edge..."
             )
             # sleep(1.5)
-            additional_bonus_details = {"type": "skill", "name": "engineering", "value": 1}
+            additional_bonus_details = {
+                "type": "skill",
+                "name": "engineering",
+                "value": 1,
+            }
             game_state.ui.info_message(
                 Fore.CYAN
                 + "Your knack for keeping aging mining equipment running was legendary. (+1 Engineering)"
@@ -2486,14 +2501,19 @@ def character_creation_event(
                 + "\nYour time navigating lunar politics gave you a particular advantage..."
             )
             # sleep(1.5)
-            additional_bonus_details = {"type": "stat", "name": "perception", "value": 1}
+            additional_bonus_details = {
+                "type": "stat",
+                "name": "perception",
+                "value": 1,
+            }
             game_state.ui.info_message(
                 Fore.CYAN
                 + "You learned to spot trouble before it finds you. (+1 Perception)"
             )
         elif background == "Void Runner":
             game_state.ui.info_message(
-                Fore.YELLOW + "\nBeing born in space has given you a natural affinity..."
+                Fore.YELLOW
+                + "\nBeing born in space has given you a natural affinity..."
             )
             # sleep(1.5)
             additional_bonus_details = {"type": "skill", "name": "piloting", "value": 1}
@@ -2507,14 +2527,19 @@ def character_creation_event(
                 + "\nYour scientific training has given you specialized knowledge..."
             )
             # sleep(1.5)
-            additional_bonus_details = {"type": "skill", "name": "education", "value": 1}
+            additional_bonus_details = {
+                "type": "skill",
+                "name": "education",
+                "value": 1,
+            }
             game_state.ui.info_message(
                 Fore.CYAN
                 + "Your research background has prepared you to analyze new situations methodically. (+1 Education)"
             )
         elif background == "Discharged Trooper":
             game_state.ui.info_message(
-                Fore.YELLOW + "\nYour military background has honed your combat reflexes..."
+                Fore.YELLOW
+                + "\nYour military background has honed your combat reflexes..."
             )
             # sleep(1.5)
             additional_bonus_details = {"type": "skill", "name": "combat", "value": 1}
@@ -2545,7 +2570,7 @@ def character_creation_event(
 
     # Create character & ship objects with chosen attributes
     from src.classes.ship import Ship
-    from src.classes.game import Game, Character  # Character is defined in game.py
+    from src.classes.game import Character  # Character is defined in game.py
 
     # Default starting values
     CHARACTER_STARTING_CREDS = 1000
@@ -2561,10 +2586,8 @@ def character_creation_event(
     game_state.ui.info_message(
         Fore.RED + f"Outstanding Debt: {CHARACTER_STARTING_DEBT}"
     )
-    # sleep(1.5)
-
-    # Create character instance with the information gathered through dialogue
-    game_state.player_character = Character(
+    # sleep(1.5)    # Create character instance with the information gathered through dialogue
+    character = Character(
         name=name,
         age=age,
         sex=sex,
@@ -2573,13 +2596,16 @@ def character_creation_event(
         starting_debt=CHARACTER_STARTING_DEBT,
     )
 
-    # Set personality traits as attributes
-    game_state.player_character.positive_trait = positive_trait
-    game_state.player_character.negative_trait = negative_trait
+    # Set personality traits directly on the character object
+    character.positive_trait = positive_trait
+    character.negative_trait = negative_trait
+
+    # Assign the fully initialized character to game_state
+    game_state.player_character = character
 
     # Apply background bonuses
-    bg_bonus: Dict[str, int] = BACKGROUND_BONUSES[background]  # More specific type hint
-    character = game_state.player_character  # shorthand
+    # More specific type hint
+    bg_bonus: Dict[str, int] = BACKGROUND_BONUSES[background]
 
     for loop_stat_key, bonus_val in bg_bonus.items():
         current_stat_key = cast(
@@ -2732,12 +2758,11 @@ def character_creation_event(
         Fore.CYAN
         + f"\nYou've made a connection with {contact_obj.name}, "
         + f"the {contact_type} at Terminus Bar. This connection may be valuable in the future."
-    )
+    )  # sleep(1.5)
 
-    # sleep(1.5)
-
-    # Create ship from the selected template
-    game_state.player_ship = Ship.from_template(ship_template_id, ship_name)
+    # Create ship from the selected template and assign it to game_state
+    ship = Ship.from_template(ship_template_id, ship_name)
+    game_state.player_ship = ship
 
 
 def quick_start(game_state: "Game"):
@@ -2767,10 +2792,8 @@ def quick_start(game_state: "Game"):
 
     # Default starting values
     CHARACTER_STARTING_CREDS = 1000
-    CHARACTER_STARTING_DEBT = 5000
-
-    # Create default character
-    game_state.player_character = Character(
+    CHARACTER_STARTING_DEBT = 5000  # Create default character
+    character = Character(
         name=name,
         age=age,
         sex=sex,
@@ -2778,13 +2801,16 @@ def quick_start(game_state: "Game"):
         starting_creds=CHARACTER_STARTING_CREDS,
         starting_debt=CHARACTER_STARTING_DEBT,
     )
-    # Set personality traits as attributes
-    game_state.player_character.positive_trait = positive_trait
-    game_state.player_character.negative_trait = negative_trait
+    # Set personality traits directly on the character object
+    character.positive_trait = positive_trait
+    character.negative_trait = negative_trait
+
+    # Assign the character to game_state
+    game_state.player_character = character
 
     # Apply Ex-Miner background bonuses
-    bg_bonus: Dict[str, int] = BACKGROUND_BONUSES["Ex-Miner"]  # More specific type hint
-    character = game_state.player_character  # shorthand
+    # More specific type hint
+    bg_bonus: Dict[str, int] = BACKGROUND_BONUSES["Ex-Miner"]
 
     for loop_key, bonus in bg_bonus.items():
         key = cast(
@@ -2808,7 +2834,8 @@ def quick_start(game_state: "Game"):
             setattr(
                 character, key, current_base_val + cast(int, bonus)
             )  # Add to existing base value    # Create ship from the default balanced template
-    game_state.player_ship = Ship.from_template("balanced_cruiser", ship_name)
+    ship = Ship.from_template("balanced_cruiser", ship_name)
+    game_state.player_ship = ship
     # Default sound to off in quick start
     game_state.sound_enabled = False
 
@@ -2840,7 +2867,7 @@ def quick_start(game_state: "Game"):
     )
     game_state.ui.info_message(
         f"{Fore.RED}Your starting debt: {CHARACTER_STARTING_DEBT}"
-    )    
+    )
     game_state.ui.info_message(
         f"{Fore.CYAN}You've established a connection with {bartender.name}, the bartender at Terminus Bar."
     )
@@ -2851,5 +2878,24 @@ def quick_start(game_state: "Game"):
         f"{Fore.CYAN}Note: You used the --skipc flag to skip customization. Next time, launch without this flag for full character creation."
     )
     # sleep(1)
+
+    # Position the ship at a station or at a safe location
+    if game_state.rnd_station:
+        # Position ship at the random station and dock it
+        game_state.player_ship.space_object.position = (
+            game_state.rnd_station.position.copy()
+        )
+        game_state.player_ship.dock_into_station(game_state.rnd_station)
+        game_state.ui.info_message(
+            f"{Fore.GREEN}Ship positioned and docked at {game_state.rnd_station.name}."
+        )
+    else:
+        # No station available, position ship at system center
+        from pygame import Vector2
+
+        game_state.player_ship.space_object.position = Vector2(0, 0)
+        game_state.ui.info_message(
+            f"{Fore.YELLOW}No docking station available. Ship positioned at system center (0,0)."
+        )
 
     return game_state

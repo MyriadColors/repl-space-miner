@@ -1,3 +1,4 @@
+from src.classes.ore import ORES
 import math
 import random
 
@@ -148,9 +149,6 @@ def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station
             tries -= 1
 
     print("Too many invalid attempts. Aborting.")
-
-
-from src.classes.ore import ORES
 
 
 def get_ore_by_id_or_name(identifier: str | int) -> Ore | None:

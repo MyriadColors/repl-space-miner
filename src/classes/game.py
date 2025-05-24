@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Union
 import pygame as pg  # Add pygame for Vector2
 from datetime import datetime
 from dataclasses import dataclass
@@ -304,19 +304,17 @@ class Character:
     def apply_adaptability_effects(self):
         """Apply effects from the Adaptability stat"""
         # Reset modifier to default
-        self.cross_cultural_mod = 1.0
-
-        # Apply Adaptability-based bonuses
+        self.cross_cultural_mod = 1.0  # Apply Adaptability-based bonuses
         # Each point above 5 gives 4% bonus to cross-cultural interactions
         if self.adaptability > 5:
             self.cross_cultural_mod = 1 + ((self.adaptability - 5) * 0.04)
 
             # Small bonus to skill synergy (this would affect skill experience gains)
             # This would be used in future skill improvement mechanics
-            skill_synergy_bonus = (self.adaptability - 5) * 0.02
+            # skill_synergy_bonus = (self.adaptability - 5) * 0.02  # TODO: Implement in future
 
             # Small bonus to environmental adaptation (used in future environmental hazards)
-            environmental_bonus = (self.adaptability - 5) * 0.03
+            # environmental_bonus = (self.adaptability - 5) * 0.03  # TODO: Implement in future
 
     def apply_technical_aptitude_effects(self):
         """Apply effects from the Technical Aptitude stat"""
@@ -432,7 +430,8 @@ class Character:
             # Forgetful has a random chance effect, handled in mining
             pass
         elif self.negative_trait == "Impatient":
-            self.mining_yield_mod *= 0.9  # 10% less mining efficiency        elif self.negative_trait == "Superstitious":
+            # 10% less mining efficiency        elif self.negative_trait == "Superstitious":
+            self.mining_yield_mod *= 0.9
             # Superstitious has special event handling, no modifier needed
             pass
         elif self.negative_trait == "Indebted":
@@ -494,7 +493,7 @@ class Character:
             trait_info = f"\nPositive Trait: {self.positive_trait}\nNegative Trait: {self.negative_trait}"
 
         stats_info = (
-            f"\nSTATS:"
+            "\nSTATS:"
             + f"\nPerception: {self.perception}"
             + f"\nResilience: {self.resilience}"
             + f"\nIntellect: {self.intellect}"
@@ -504,7 +503,7 @@ class Character:
         )
 
         skill_info = (
-            f"\nSKILLS:"
+            "\nSKILLS:"
             + f"\nPiloting: {self.piloting}\nEngineering: {self.engineering}\nCombat: {self.combat}"
             + f"\nEducation: {self.education}\nCharisma: {self.charisma}"
             + f"\nUnspent Skill Points: {self.skill_system.unspent_skill_points}"
@@ -691,14 +690,17 @@ class Game:
         self.global_time = 0
         self.region = Region.generate_random_region("Local Sector", 50)
         self.solar_systems = self.region.solar_systems
-        self.current_solar_system_index = 0
-        # Get stations from the current solar system
-        current_system = self.solar_systems[self.current_solar_system_index]
-        self.rnd_station = (
-            random.choice(current_system.stations) if current_system.stations else None
+        self.current_solar_system_index = (
+            0  # Get stations from the current solar system
         )
-        self.player_character: Optional[Character] = None
-        self.player_ship: Optional[Ship] = None
+        current_system = self.solar_systems[self.current_solar_system_index]
+        all_stations = current_system.get_all_stations()
+        self.rnd_station = (
+            random.choice(all_stations) if all_stations else None
+        )  # Changed from Optional to non-optional type since these will always be set
+        # before they are used in the game logic
+        self.player_character: Character
+        self.player_ship: Ship
         self.debug_flag = debug_flag
         self.mute_flag = mute_flag
         self.skipc = skip_customization
@@ -732,10 +734,9 @@ class Game:
         )
         return self.player_ship
 
-    def get_credits(self) -> float | None:
-        if self.player_character is not None:
-            return round(self.player_character.credits, 2)
-        return None
+    def get_credits(self) -> float:
+        """Get player character credits."""
+        return round(self.player_character.credits, 2)
 
     def get_ship(self):
         return self.player_ship

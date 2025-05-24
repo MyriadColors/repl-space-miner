@@ -3,6 +3,7 @@ from .base import register_command
 from .refuel import refuel_command
 from .travel import travel_command, direct_travel_command
 from .scan import scan_command, scan_asteroids_command
+from .examine import examine_command, belt_fields_command
 from .docking import command_dock, command_undock
 from .trading import buy_command, sell_command
 from .mining import mine_command
@@ -12,6 +13,7 @@ from .refine import refine_command, refine_to_minerals_command
 from .cargo import cargo_command
 from .market import market_command
 from .price_compare import compare_prices_command, find_best_trade_routes
+from .habitability import habitability_command, habitability_survey_command
 from .ftl_commands import (
     refuel_antimatter_command,
     repair_containment_command,
@@ -53,6 +55,8 @@ __all__ = [
     "direct_travel_command",
     "scan_command",
     "scan_asteroids_command",
+    "examine_command",
+    "belt_fields_command",
     "command_dock",
     "command_undock",
     "buy_command",
@@ -75,6 +79,8 @@ __all__ = [
     "debug_mode_command",
     "market_command",
     "cargo_command",
+    "habitability_command",
+    "habitability_survey_command",
     "refuel_antimatter_command",
     "repair_containment_command",
     "emergency_ejection_command",
