@@ -13,36 +13,97 @@ from src.classes.celestial_body import CelestialBody, Star, Planet, Moon, Astero
 
 def scan_command(game_state: Game, num_objects: str) -> None:
     """Scan for objects in the system."""
-    amount_of_objects: int = int(num_objects)
-    game_state.ui.info_message(f"Scanning for {amount_of_objects} objects...")
     player_ship = game_state.get_player_ship()
 
     if player_ship is None:
         game_state.ui.error_message("Error: Player ship not found.")
-        return  # Get all objects from the scan - now get them directly without sensor range filtering
-    objects = game_state.get_current_solar_system().scan_system_objects(
-        player_ship.space_object.get_position(), amount_of_objects
-    )
+        return
 
-    # Check if any objects were found
-    if not objects:
-        game_state.ui.warn_message("No objects detected within sensor range.")
-        return  # Only iterate through the actual number of objects found
-    game_state.ui.info_message("Sensor detected the following objects:")
-    for i in range(min(amount_of_objects, len(objects))):
-        game_state.ui.info_message(
-            f"{i}. {objects[i].to_string_short(player_ship.space_object.get_position())}"
+    # Check if 'all' flag is used for complete system map
+    if num_objects.lower() == "all":
+        game_state.ui.info_message("Performing complete system scan...")
+        game_state.ui.info_message("=" * 50)
+        game_state.ui.info_message("COMPLETE SYSTEM MAP")
+        game_state.ui.info_message("=" * 50)
+
+        # Get all objects in the system without limitations
+        solar_system = game_state.get_current_solar_system()
+        all_objects = solar_system.get_all_space_objects()
+
+        if not all_objects:
+            game_state.ui.warn_message("No objects found in the current system.")
+            return
+
+        # Sort objects by distance for organized display
+        sorted_objects = sorted(
+            all_objects,
+            key=lambda obj: obj.space_object.position.distance_to(
+                player_ship.space_object.position
+            ),
         )
 
-    # Process skill experience from scanning
+        game_state.ui.info_message(f"Total objects in system: {len(sorted_objects)}")
+        game_state.ui.info_message("-" * 50)
+
+        # Display all objects with detailed information
+        for i, obj in enumerate(sorted_objects):
+            game_state.ui.info_message(
+                f"{i}. {obj.to_string_short(player_ship.space_object.get_position())}"
+            )
+
+        # Also show asteroid fields from belts separately for clarity
+        from src.classes.celestial_body import AsteroidBelt
+
+        asteroid_fields = solar_system.get_all_asteroid_fields()
+        if asteroid_fields:
+            game_state.ui.info_message("-" * 50)
+            game_state.ui.info_message("ASTEROID FIELDS:")
+            for i, field in enumerate(asteroid_fields):
+                game_state.ui.info_message(
+                    f"  Field {i}: {field.to_string_short(player_ship.space_object.get_position())}"
+                )
+
+        game_state.ui.info_message("=" * 50)
+        objects = sorted_objects  # Use all objects for selection
+    else:
+        # Standard scan with limitations
+        try:
+            amount_of_objects: int = int(num_objects)
+        except ValueError:
+            game_state.ui.error_message(
+                "Invalid input. Please enter a number or 'all'."
+            )
+            return
+
+        game_state.ui.info_message(f"Scanning for {amount_of_objects} objects...")
+
+        # Get limited objects from the scan based on sensor range and priority
+        objects = game_state.get_current_solar_system().scan_system_objects(
+            player_ship.space_object.get_position(), amount_of_objects
+        )
+
+        # Check if any objects were found
+        if not objects:
+            game_state.ui.warn_message("No objects detected within sensor range.")
+            return
+
+        game_state.ui.info_message("Sensor detected the following objects:")
+        for i in range(min(amount_of_objects, len(objects))):
+            game_state.ui.info_message(
+                f"{i}. {objects[i].to_string_short(player_ship.space_object.get_position())}"
+            )  # Process skill experience from scanning
     if game_state.player_character:
         # Scanning gives education and engineering XP
+        # For 'all' scans, use a higher difficulty based on total objects found
+        if num_objects.lower() == "all":
+            difficulty = min(3.0, len(objects) / 10)  # All scan is more challenging
+        else:
+            difficulty = min(2.0, int(num_objects) / 5)  # Standard scan difficulty
+
         skill_results = process_skill_xp_from_activity(
             game_state,
             "scan",
-            difficulty=min(
-                2.0, amount_of_objects / 5
-            ),  # More objects = more difficult scan
+            difficulty=difficulty,
         )
         notify_skill_progress(game_state, skill_results)
 
