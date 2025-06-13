@@ -1,4 +1,5 @@
 from pygame import Vector2
+from colorama import Fore, Style
 from src.classes.game import Game
 from .registry import Argument
 from .base import register_command
@@ -273,22 +274,77 @@ def list_systems_command(game_state: Game) -> None:
         game_state.ui.warn_message("No solar systems found.")
         return
 
-    game_state.ui.info_message("Available Solar Systems:")
+    # Pre-calculate all data for proper alignment
+    system_data = []
+    max_index_width = len(str(len(systems) - 1))
+    max_name_width = 0
+    max_cost_width = 0
+    
     for idx, system in enumerate(systems):
-        marker = "(Current System)" if idx == current_system_idx else ""
         if idx == current_system_idx:
-            ftl_distance = "N/A (Current)"
+            marker = "(Current System)"
+            ftl_cost_str = "N/A (Current)"
             distance_str = "-"
-            cost_str = "-"
+            cost_needed = 0.0
+            can_reach = True  # Always can reach current system
+            has_fuel = True
+            distance_ly = 0.0  # Current system has 0 distance
         else:
-            distance = region.calculate_distance(current_system.name, system.name)
-            ftl_cost = distance * player_ship.antimatter_consumption
-            distance_str = f"{distance:.2f} LY"
-            cost_str = f"{ftl_cost:.2f}g"
-            ftl_distance = f"{cost_str} (Distance: {distance_str})"
-        game_state.ui.info_message(
-            f"  Index: {idx} | Name: {system.name} {marker} | FTL Cost: {ftl_distance}"
-        )
+            marker = ""
+            distance_ly = region.calculate_distance(current_system.name, system.name)
+            cost_needed = distance_ly * player_ship.antimatter_consumption
+            distance_str = f"{distance_ly:.2f} LY"
+            ftl_cost_str = f"{cost_needed:.2f}g (Distance: {distance_str})"
+            
+            # Determine reachability based on ship capabilities and fuel
+            # Check if ship can theoretically reach (based on max antimatter capacity)
+            max_possible_cost = distance_ly * player_ship.antimatter_consumption
+            can_reach = max_possible_cost <= player_ship.max_antimatter
+            
+            # Check if ship has enough fuel currently
+            has_fuel = cost_needed <= player_ship.antimatter
+        
+        # Calculate display name with marker
+        display_name = f"{system.name} {marker}".strip()
+        max_name_width = max(max_name_width, len(display_name))
+        max_cost_width = max(max_cost_width, len(ftl_cost_str))
+        system_data.append({
+            'idx': idx,
+            'name': display_name,
+            'cost_str': ftl_cost_str,            'can_reach': can_reach,
+            'has_fuel': has_fuel,
+            'is_current': idx == current_system_idx,
+            'distance_ly': distance_ly
+        })
+
+    # Sort systems by distance (current system first, then by proximity)
+    system_data.sort(key=lambda x: (not x['is_current'], x['distance_ly']))
+
+    game_state.ui.info_message("Available Solar Systems:")
+    
+    for data in system_data:
+        # Format index with proper padding
+        index_str = f"Index: {data['idx']:>{max_index_width}}"
+        
+        # Format name with proper padding
+        name_str = f"Name: {data['name']:<{max_name_width}}"
+        
+        # Format cost with proper padding
+        cost_str = f"FTL Cost: {data['cost_str']:<{max_cost_width}}"
+        
+        # Determine color for entire line based on reachability
+        if data['is_current']:
+            line_color = Fore.CYAN  # Current system - cyan
+        elif not data['can_reach']:
+            line_color = Fore.RED   # Cannot reach - red
+        elif not data['has_fuel']:
+            line_color = Fore.YELLOW  # Can reach but insufficient fuel - yellow
+        else:
+            line_color = Fore.GREEN  # Can reach with sufficient fuel - green
+        
+        # Create the formatted line with entire line colored
+        line = f"{line_color}  {index_str} | {name_str} | {cost_str}{Style.RESET_ALL}"
+        print(line)
 
     game_state.ui.info_message(
         "\nUse 'ftl <index>' or 'ftl <system_name>' to travel to another system."
