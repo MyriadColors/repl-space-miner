@@ -22,9 +22,7 @@ class Ore:
     mineral_yield: List[Tuple[int, float]]
     id: int
     purity: PurityLevel = PurityLevel.RAW  # Default purity is RAW
-    refining_difficulty: float = (
-        1.0  # Higher values mean harder to refine, affects refining time and cost
-    )
+    refining_difficulty: float = 1.0
 
     def to_string(self):
         purity_str = self.purity.name.capitalize()
