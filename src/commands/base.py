@@ -35,6 +35,6 @@ def register_command(
                     argument_struct_list_with_index.append(arg)
 
         command = Command(
-            function=command_function, arguments=argument_struct_list_with_index
+            command_function, argument_struct_list_with_index
         )
         command_registry.register(name, command)
