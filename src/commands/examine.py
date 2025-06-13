@@ -181,9 +181,9 @@ def _display_planet_info(game_state: Game, planet: Planet) -> None:
     )
     game_state.ui.info_message(f"Type: {planet.planet_type}")
     game_state.ui.info_message(f"Atmosphere: {planet.atmosphere}")
-    game_state.ui.info_message(f"Habitability Score: {planet.habitability_score}")
+    game_state.ui.info_message(f"Habitability Score: {planet.habitability_score:.2f}")
     game_state.ui.info_message(f"Orbital Distance: {planet.orbital_distance:.2f} AU")
-    game_state.ui.info_message(f"Radius: {planet.radius:.3f} AU")
+    game_state.ui.info_message(f"Radius: {planet.radius:.2f} AU")
 
     # List moons and stations
     if planet.children:

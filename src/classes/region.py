@@ -2,6 +2,7 @@ from typing import List, Optional
 import math
 
 from src.classes.solar_system import SolarSystem
+from src.data import STELLAR_SYSTEM_NAMES
 import random
 
 
@@ -50,14 +51,26 @@ class Region:
             min_distance: Minimum distance between any two systems (in light years)
 
         Returns:
-            A new Region object containing the generated solar systems
-        """
+            A new Region object containing the generated solar systems        """
         from src.classes.solar_system import SolarSystem
-
+        
         region = Region(name)
         used_positions: List[tuple[float, float]] = (
             []
         )  # Store positions as (x, y) tuples
+        
+        # Create a shuffled copy of stellar names to ensure uniqueness
+        available_names = STELLAR_SYSTEM_NAMES.copy()
+        random.shuffle(available_names)
+        
+        # If we need more systems than we have names, we'll need to generate additional names
+        if num_systems > len(available_names):
+            # Add numbered variants of existing names
+            base_names = available_names.copy()
+            for i in range(num_systems - len(available_names)):
+                base_name = base_names[i % len(base_names)]
+                available_names.append(f"{base_name} {(i // len(base_names)) + 2}")
+        
         max_placement_attempts = 5000  # Prevent infinite loops
 
         for i in range(num_systems):
@@ -129,12 +142,11 @@ class Region:
                     y = round(random.uniform(0.1, 1.0) * (i + 1), 2)
                     # Ensure it's still within bounds, though this is less critical than avoiding (0,0)
                     x = max(-100, min(100, x))
-                    y = max(-100, min(100, y))
-
-            # Add the position to our used positions list
+                    y = max(-100, min(100, y))            # Add the position to our used positions list
             used_positions.append((x, y))
 
-            system_name = f"System_{i+1}"
+            # Use a unique name from our available names list
+            system_name = available_names[i]
             # Todo, add templates for system generation so we can have different parameters for generating systems
             system = SolarSystem(
                 system_name,

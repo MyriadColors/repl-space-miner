@@ -15,7 +15,7 @@ from src.classes.space_object import IsSpaceObject
 from src.helpers import rnd_float, rnd_int
 from src.classes.asteroid import AsteroidField
 from src.classes.ore import Ore
-from src.data import ORES, PlanetType, SolarSystemZone
+from src.data import ORES, PlanetType, SolarSystemZone, StellarClass, STELLAR_PROPERTIES
 from src.classes.mineral import MaterialCategory
 
 if TYPE_CHECKING:
@@ -103,13 +103,13 @@ class CelestialBody:
 
     def get_all_objects_in_orbit(self) -> List[Union["CelestialBody", "Station"]]:
         """Return all objects orbiting this celestial body"""
-        return self.children + self.stations
+        return self.children + self.stations    
 
     def to_string_short(self, position=None):
         """Short description for scanning (base implementation)"""
         if position is None:
-            return f"{self.name} ({self.body_type.value.title()}), Position: {self.space_object.position}, ID: {self.space_object.id}"
-        return f"{self.name} ({self.body_type.value.title()}), Position: {self.space_object.position}, ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
+            return f"{self.name} ({self.body_type.value.title()}), Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}"
+        return f"{self.name} ({self.body_type.value.title()}), Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.2f} AU"
 
     def to_dict(self) -> dict:
         """Serialize to dictionary (following existing pattern)"""
@@ -174,25 +174,84 @@ class Star(CelestialBody):
 
     def __init__(self, name: str, position: Vector2 = Vector2(0, 0)):
         """
-        Initialize a star.
+        Initialize a star with realistic properties based on stellar classification.
 
         Args:
             name: Name of the star
             position: Position in space (defaults to 0,0 for central star)
-        """
-        # Main sequence star properties
+        """        # Generate random stellar class based on rarity weights
+        stellar_class = self._generate_stellar_class()
+        properties = STELLAR_PROPERTIES[stellar_class]
+        
+        # Generate random properties within the stellar class ranges
+        temp_range = properties["temperature_range"]
+        lum_range = properties["luminosity_range"]
+        mass_range = properties["mass_range"]
+        radius_range = properties["radius_range"]
+        
+        # Cast ranges to tuples to ensure they are indexable
+        temp_tuple = tuple(temp_range) if hasattr(temp_range, '__iter__') else (temp_range, temp_range)
+        lum_tuple = tuple(lum_range) if hasattr(lum_range, '__iter__') else (lum_range, lum_range)
+        mass_tuple = tuple(mass_range) if hasattr(mass_range, '__iter__') else (mass_range, mass_range)
+        radius_tuple = tuple(radius_range) if hasattr(radius_range, '__iter__') else (radius_range, radius_range)
+        
+        temperature = random.uniform(temp_tuple[0], temp_tuple[1])
+        luminosity = random.uniform(lum_tuple[0], lum_tuple[1])
+        mass = random.uniform(mass_tuple[0], mass_tuple[1])
+        radius = random.uniform(radius_tuple[0], radius_tuple[1]) * 0.01  # Scale down for game purposes
+
         super().__init__(
-            name, CelestialBodyType.STAR, position, radius=0.01, mass=1.0
-        )  # Small radius for game purposes
-        self.stellar_class = "G"  # G-type main sequence
-        self.temperature = 5778  # Kelvin
-        self.luminosity = 1.0  # Solar luminosities
+            name, CelestialBodyType.STAR, position, radius=radius, mass=mass
+        )
+
+        self.stellar_class = stellar_class.value  # Store as string for compatibility
+        self.temperature = temperature  # Kelvin
+        self.luminosity = luminosity  # Solar luminosities
+        self.color = properties["color"]
+
+        # Calculate frost line based on luminosity
+        # Frost line distance is approximately proportional to sqrt(luminosity)
+        # Base frost line for Sun (G-type, luminosity=1.0) is ~2.7 AU
+        self.frost_line_au = 2.7 * math.sqrt(luminosity)    
+        
+    def _generate_stellar_class(self) -> StellarClass:
+        """Generate a random stellar class based on rarity weights"""
+        classes = list(StellarClass)
+        weights = []
+        for cls in classes:
+            weight_value = STELLAR_PROPERTIES[cls]["rarity_weight"]
+            # Ensure weight_value is properly converted to float
+            if isinstance(weight_value, (int, float)):
+                weights.append(float(weight_value))
+            elif isinstance(weight_value, str):
+                try:
+                    weights.append(float(weight_value))
+                except ValueError:
+                    weights.append(1.0)  # Default weight if conversion fails
+            else:
+                weights.append(1.0)  # Default weight for unknown types
+        # Use weighted random selection
+        total_weight = sum(weights)
+        random_value = random.uniform(0, total_weight)
+        
+        cumulative_weight = 0.0
+        for cls, weight in zip(classes, weights):
+            cumulative_weight += weight
+            if random_value <= cumulative_weight:
+                return cls
+        # Fallback to most common class (M-type)
+        return StellarClass.M
+
+    def get_frost_line(self) -> float:
+        """Get the frost line distance for this star in AU"""
+        return self.frost_line_au
 
     def to_string_short(self, position=None):
         """Short description for scanning (following existing pattern)"""
+        star_info = f"★ {self.name} ({self.stellar_class}-type {self.color} star)"
         if position is None:
-            return f"★ {self.name} (Star), Position: {self.space_object.position}, ID: {self.space_object.id}"
-        return f"★ {self.name} (Star), Position: {self.space_object.position}, ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
+            return f"{star_info}, Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}"
+        return f"{star_info}, Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.2f} AU"
 
     def to_dict(self) -> dict:
         """Serialize star to dictionary with specialized properties"""
@@ -203,6 +262,8 @@ class Star(CelestialBody):
                 "stellar_class": self.stellar_class,
                 "temperature": self.temperature,
                 "luminosity": self.luminosity,
+                "color": self.color,
+                "frost_line_au": self.frost_line_au,
             }
         )
         return base_dict
@@ -215,12 +276,12 @@ class Star(CelestialBody):
         star.space_object = IsSpaceObject(position, data["id"])
         star.orbital_distance = data.get("orbital_distance", 0.0)
         star.radius = data.get("radius", 0.01)
-        star.mass = data.get("mass", 1.0)
-
-        # Set star-specific properties
+        star.mass = data.get("mass", 1.0)        # Set star-specific properties
         star.stellar_class = data.get("stellar_class", "G")
         star.temperature = data.get("temperature", 5778)
         star.luminosity = data.get("luminosity", 1.0)
+        star.color = data.get("color", "yellow")
+        star.frost_line_au = data.get("frost_line_au", 2.7)
         # Reconstruct children and stations
         for child_data in data.get("children", []):
             child_type = CelestialBodyType(child_data["body_type"])
@@ -452,8 +513,8 @@ class Planet(CelestialBody):
         """Short description for scanning (following existing pattern)"""
         planet_type_str = self.planet_type.name.replace("_", " ").title()
         if position is None:
-            return f"🪐 {self.name} ({planet_type_str}), Position: {self.space_object.position}, ID: {self.space_object.id}"
-        return f"🪐 {self.name} ({planet_type_str}), Position: {self.space_object.position}, ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
+            return f"🪐 {self.name} ({planet_type_str}), Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}"
+        return f"🪐 {self.name} ({planet_type_str}), Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.2f} AU"
 
     def to_dict(self) -> dict:
         """Serialize planet to dictionary with specialized properties"""
@@ -569,8 +630,8 @@ class Moon(CelestialBody):
     def to_string_short(self, position=None):
         """Short description for scanning (following existing pattern)"""
         if position is None:
-            return f"🌙 {self.name} (Moon of {self.parent_planet.name}), Position: {self.space_object.position}, ID: {self.space_object.id}"
-        return f"🌙 {self.name} (Moon of {self.parent_planet.name}), Position: {self.space_object.position}, ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
+            return f"🌙 {self.name} (Moon of {self.parent_planet.name}), Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}"
+        return f"🌙 {self.name} (Moon of {self.parent_planet.name}), Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.2f} AU"
 
     def _calculate_uhs(self):
         """Calculate Universal Habitability Score for moons using the UHS system"""
@@ -958,8 +1019,8 @@ class AsteroidBelt(CelestialBody):
     def to_string_short(self, position=None):
         """Short description for scanning (following existing pattern)"""
         if position is None:
-            return f"🪨 {self.name} (Asteroid Belt), Position: {self.space_object.position}, ID: {self.space_object.id}"
-        return f"🪨 {self.name} (Asteroid Belt), Position: {self.space_object.position}, ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.3f} AU"
+            return f"🪨 {self.name} (Asteroid Belt), Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}"
+        return f"🪨 {self.name} (Asteroid Belt), Position: [{self.space_object.position.x:.2f}, {self.space_object.position.y:.2f}], ID: {self.space_object.id}, Distance: {self.space_object.position.distance_to(position):.2f} AU"
 
     def to_dict(self) -> dict:
         data = super().to_dict()

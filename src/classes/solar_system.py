@@ -36,8 +36,6 @@ class SolarSystem:
         population: Optional[int] = None,
         tech_level: Optional[int] = None,
         anomalies: Optional[List[str]] = None,  # Added anomalies
-        # Default frost line, can be adjusted based on star type later
-        frost_line_au: float = 3.0,
     ):
         self.x = x  # X position in region (LY)
         self.y = y  # Y position in region (LY)
@@ -59,13 +57,20 @@ class SolarSystem:
         self.faction_id = faction_id
         self.security_level = security_level
         self.economy_type = economy_type
-        self.population = population
+        self.population = population        
         self.tech_level = tech_level
         self.anomalies = anomalies if anomalies is not None else []
-        self.frost_line_au = frost_line_au
 
-        # Generate celestial bodies
+        # Generate celestial bodies (frost line will be set after star generation)
         self.generate_celestial_bodies()
+
+    @property
+    def frost_line_au(self) -> float:
+        """Get the frost line distance from the central star"""
+        if self.star is not None:
+            return self.star.get_frost_line()
+        # Fallback to default frost line if no star exists
+        return 2.7
 
     def print_all_objects(self):
         # Print celestial bodies
