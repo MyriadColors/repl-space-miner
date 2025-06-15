@@ -89,9 +89,8 @@ class Station:
         import random
 
         self.ore_cargo_volume = 0.0
-        max_total_volume = self.ore_capacity / rnd_int(1, 3)  # More generous allocation
-
-        # First pass - ensure every ore has at least some quantity
+        # More generous allocation        # First pass - ensure every ore has at least some quantity
+        max_total_volume = self.ore_capacity / rnd_int(1, 3)
         min_qty_per_ore = 5  # Minimum quantity of each ore type
 
         for ore_cargo in self.ore_cargo:
@@ -107,7 +106,13 @@ class Station:
             if remaining_volume <= 0:
                 break
 
-            max_quantity = int(remaining_volume // ore_cargo.ore.volume)
+            # Check for zero volume_per_unit to prevent division by zero
+            if ore_cargo.ore.commodity.volume_per_unit <= 0:
+                continue
+
+            max_quantity = int(
+                remaining_volume // ore_cargo.ore.commodity.volume_per_unit
+            )
             if max_quantity <= 0:
                 continue
 
