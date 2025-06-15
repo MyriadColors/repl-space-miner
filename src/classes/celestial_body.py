@@ -70,9 +70,9 @@ class CelestialBody:
         self.mass = mass  # Relative mass (Earth = 1.0)
         self.orbital_distance = 0.0  # Distance from parent body
         self.children: List["CelestialBody"] = []
-        self.stations: List["Station"] = (
-            []
-        )  # Assuming Station is defined or TYPE_CHECKED
+        self.stations: List[
+            "Station"
+        ] = []  # Assuming Station is defined or TYPE_CHECKED
 
     def _get_next_id(self) -> int:
         """Get next ID based on body type (following existing pattern)"""
@@ -103,7 +103,7 @@ class CelestialBody:
 
     def get_all_objects_in_orbit(self) -> List[Union["CelestialBody", "Station"]]:
         """Return all objects orbiting this celestial body"""
-        return self.children + self.stations    
+        return self.children + self.stations
 
     def to_string_short(self, position=None):
         """Short description for scanning (base implementation)"""
@@ -179,26 +179,43 @@ class Star(CelestialBody):
         Args:
             name: Name of the star
             position: Position in space (defaults to 0,0 for central star)
-        """        # Generate random stellar class based on rarity weights
+        """  # Generate random stellar class based on rarity weights
         stellar_class = self._generate_stellar_class()
         properties = STELLAR_PROPERTIES[stellar_class]
-        
+
         # Generate random properties within the stellar class ranges
         temp_range = properties["temperature_range"]
         lum_range = properties["luminosity_range"]
         mass_range = properties["mass_range"]
         radius_range = properties["radius_range"]
-        
+
         # Cast ranges to tuples to ensure they are indexable
-        temp_tuple = tuple(temp_range) if hasattr(temp_range, '__iter__') else (temp_range, temp_range)
-        lum_tuple = tuple(lum_range) if hasattr(lum_range, '__iter__') else (lum_range, lum_range)
-        mass_tuple = tuple(mass_range) if hasattr(mass_range, '__iter__') else (mass_range, mass_range)
-        radius_tuple = tuple(radius_range) if hasattr(radius_range, '__iter__') else (radius_range, radius_range)
-        
+        temp_tuple = (
+            tuple(temp_range)
+            if hasattr(temp_range, "__iter__")
+            else (temp_range, temp_range)
+        )
+        lum_tuple = (
+            tuple(lum_range)
+            if hasattr(lum_range, "__iter__")
+            else (lum_range, lum_range)
+        )
+        mass_tuple = (
+            tuple(mass_range)
+            if hasattr(mass_range, "__iter__")
+            else (mass_range, mass_range)
+        )
+        radius_tuple = (
+            tuple(radius_range)
+            if hasattr(radius_range, "__iter__")
+            else (radius_range, radius_range)
+        )
+
         temperature = random.uniform(temp_tuple[0], temp_tuple[1])
         luminosity = random.uniform(lum_tuple[0], lum_tuple[1])
         mass = random.uniform(mass_tuple[0], mass_tuple[1])
-        radius = random.uniform(radius_tuple[0], radius_tuple[1]) * 0.01  # Scale down for game purposes
+        # Scale down for game purposes
+        radius = random.uniform(radius_tuple[0], radius_tuple[1]) * 0.01
 
         super().__init__(
             name, CelestialBodyType.STAR, position, radius=radius, mass=mass
@@ -212,8 +229,8 @@ class Star(CelestialBody):
         # Calculate frost line based on luminosity
         # Frost line distance is approximately proportional to sqrt(luminosity)
         # Base frost line for Sun (G-type, luminosity=1.0) is ~2.7 AU
-        self.frost_line_au = 2.7 * math.sqrt(luminosity)    
-        
+        self.frost_line_au = 2.7 * math.sqrt(luminosity)
+
     def _generate_stellar_class(self) -> StellarClass:
         """Generate a random stellar class based on rarity weights"""
         classes = list(StellarClass)
@@ -233,7 +250,7 @@ class Star(CelestialBody):
         # Use weighted random selection
         total_weight = sum(weights)
         random_value = random.uniform(0, total_weight)
-        
+
         cumulative_weight = 0.0
         for cls, weight in zip(classes, weights):
             cumulative_weight += weight
@@ -276,7 +293,7 @@ class Star(CelestialBody):
         star.space_object = IsSpaceObject(position, data["id"])
         star.orbital_distance = data.get("orbital_distance", 0.0)
         star.radius = data.get("radius", 0.01)
-        star.mass = data.get("mass", 1.0)        # Set star-specific properties
+        star.mass = data.get("mass", 1.0)  # Set star-specific properties
         star.stellar_class = data.get("stellar_class", "G")
         star.temperature = data.get("temperature", 5778)
         star.luminosity = data.get("luminosity", 1.0)

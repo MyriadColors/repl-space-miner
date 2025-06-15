@@ -20,7 +20,6 @@ HasSpaceObjectType = Union[AsteroidField, Station, Star, Planet, Moon, AsteroidB
 
 
 class SolarSystem:
-
     def __init__(
         self,
         name: str,
@@ -57,7 +56,7 @@ class SolarSystem:
         self.faction_id = faction_id
         self.security_level = security_level
         self.economy_type = economy_type
-        self.population = population        
+        self.population = population
         self.tech_level = tech_level
         self.anomalies = anomalies if anomalies is not None else []
 
@@ -154,7 +153,7 @@ class SolarSystem:
             planet_name = f"{self.name} {self._get_planet_designation(i)}"
             orbital_distance = self._select_orbital_distance(used_orbital_distances)
             if orbital_distance is None:  # Should not happen with fallback
-                print(f"Could not find orbital distance for planet {i+1}, skipping.")
+                print(f"Could not find orbital distance for planet {i + 1}, skipping.")
                 continue
             used_orbital_distances.append(orbital_distance)
             position = self._calculate_orbital_position(orbital_distance)
@@ -209,7 +208,7 @@ class SolarSystem:
         used_belt_middles: List[float] = []
 
         for i in range(num_belts):
-            belt_name = f"{self.name} Belt {chr(65+i)}"  # Belt A, Belt B, etc.
+            belt_name = f"{self.name} Belt {chr(65 + i)}"  # Belt A, Belt B, etc.
 
             # Attempt to find a clear middle point for the belt
             attempts = 0
@@ -521,7 +520,6 @@ class SolarSystem:
         return None
 
     def sort_fields(self, sort_order, sort_type, position_flag=None):
-
         def sort_key(field: AsteroidField):
             if sort_type in ("radius", "r"):
                 return field.radius
@@ -542,7 +540,6 @@ class SolarSystem:
         return sorted_fields
 
     def sort_stations(self, sort_order, sort_type, position_flag=None) -> list[Station]:
-
         def sort_key(station_key):
             if sort_type in ("distance", "d"):
                 if position_flag is None:

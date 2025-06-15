@@ -3,7 +3,11 @@ import math
 import random
 
 from src.classes.solar_system import SolarSystem
-from src.data import STELLAR_SYSTEM_NAMES, select_system_template, generate_system_from_template
+from src.data import (
+    STELLAR_SYSTEM_NAMES,
+    select_system_template,
+    generate_system_from_template,
+)
 
 
 class Region:
@@ -29,7 +33,8 @@ class Region:
         s1 = self.get_system_by_name(system1_name)
         s2 = self.get_system_by_name(system2_name)
         if s1 is None or s2 is None:
-            raise ValueError("One or both systems not found in region.")        # Ensure x and y are floats for both systems
+            # Ensure x and y are floats for both systems
+            raise ValueError("One or both systems not found in region.")
         x1, y1 = float(s1.x), float(s1.y)
         x2, y2 = float(s2.x), float(s2.y)
 
@@ -54,16 +59,16 @@ class Region:
             A new Region object containing the generated solar systems with diverse characteristics
         """
         from src.classes.solar_system import SolarSystem
-        
+
         region = Region(name)
-        used_positions: List[tuple[float, float]] = (
-            []
-        )  # Store positions as (x, y) tuples
-        
+        used_positions: List[
+            tuple[float, float]
+        ] = []  # Store positions as (x, y) tuples
+
         # Create a shuffled copy of stellar names to ensure uniqueness
         available_names = STELLAR_SYSTEM_NAMES.copy()
         random.shuffle(available_names)
-        
+
         # If we need more systems than we have names, we'll need to generate additional names
         if num_systems > len(available_names):
             # Add numbered variants of existing names
@@ -71,7 +76,7 @@ class Region:
             for i in range(num_systems - len(available_names)):
                 base_name = base_names[i % len(base_names)]
                 available_names.append(f"{base_name} {(i // len(base_names)) + 2}")
-        
+
         max_placement_attempts = 5000  # Prevent infinite loops
 
         for i in range(num_systems):
@@ -97,7 +102,7 @@ class Region:
             # If we couldn\'t find a valid position after max attempts, try with reduced constraints
             if not valid_position:  # Check if still not valid after initial attempts
                 print(
-                    f"Warning: Could not place system {i+1} with min_distance={min_distance} after {max_placement_attempts} attempts. Reducing constraints."
+                    f"Warning: Could not place system {i + 1} with min_distance={min_distance} after {max_placement_attempts} attempts. Reducing constraints."
                 )
                 local_min_distance = min_distance
                 fallback_attempts = 0
@@ -135,7 +140,7 @@ class Region:
 
                 if not valid_position:
                     print(
-                        f"Critical: Failed to place system {i+1} even with reduced constraints. Placing at a default offset to avoid (0,0)."
+                        f"Critical: Failed to place system {i + 1} even with reduced constraints. Placing at a default offset to avoid (0,0)."
                     )
                     # Fallback to a slightly offset position to avoid stacking all at (0,0)
                     # This is a last resort and indicates a potential issue with density or region size.
@@ -143,14 +148,16 @@ class Region:
                     y = round(random.uniform(0.1, 1.0) * (i + 1), 2)
                     # Ensure it's still within bounds, though this is less critical than avoiding (0,0)
                     x = max(-100, min(100, x))
-                    y = max(-100, min(100, y))            # Add the position to our used positions list
-            used_positions.append((x, y))            # Use a unique name from our available names list
+                    # Add the position to our used positions list
+                    y = max(-100, min(100, y))
+            # Use a unique name from our available names list
+            used_positions.append((x, y))
             system_name = available_names[i]
-            
+
             # Select a system template and generate parameters
             template = select_system_template()
             system_params = generate_system_from_template(system_name, x, y, template)
-            
+
             # Create the solar system using template parameters
             system = SolarSystem(**system_params)
             region.add_system(system)

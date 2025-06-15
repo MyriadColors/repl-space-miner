@@ -233,7 +233,7 @@ class AntimatterFluctuation(FTLEvent):
                 print(
                     f"{Fore.GREEN}Containment field recalibrated to {player_ship.containment_integrity:.1f}%.{Style.RESET_ALL}"
                 )
-                print(f"The procedure took {time_needed/60:.1f} additional minutes.")
+                print(f"The procedure took {time_needed / 60:.1f} additional minutes.")
 
             else:  # choice 3 or invalid
                 print(
@@ -305,13 +305,15 @@ class SpacetimeDisruption(FTLEvent):
                     f"{Fore.GREEN}The disruption creates a shortcut through spacetime!{Style.RESET_ALL}"
                 )
                 print(
-                    f"You arrive {abs(time_effect/60):.0f} minutes ahead of schedule."
+                    f"You arrive {abs(time_effect / 60):.0f} minutes ahead of schedule."
                 )
             else:
                 print(
                     f"{Fore.YELLOW}The disruption slows your FTL transit.{Style.RESET_ALL}"
                 )
-                print(f"Your journey takes an additional {time_effect/60:.0f} minutes.")
+                print(
+                    f"Your journey takes an additional {time_effect / 60:.0f} minutes."
+                )
 
             result_time: EventResultDict = {"time_effect": time_effect}
             return result_time
@@ -392,7 +394,7 @@ class SpacetimeDisruption(FTLEvent):
                         f"{Fore.YELLOW}You plot a safer course around the disruption.{Style.RESET_ALL}"
                     )
                     print(
-                        f"The detour adds {added_time/3600:.1f} hours to your journey."
+                        f"The detour adds {added_time / 3600:.1f} hours to your journey."
                     )
                     result_choice2: EventResultDict = {
                         "choice": "go_around",
@@ -438,7 +440,7 @@ class SpacetimeDisruption(FTLEvent):
                         f"{Fore.YELLOW}Your ship is buffeted by the disruption but survives intact.{Style.RESET_ALL}"
                     )
                     print(
-                        f"The ordeal adds {time_effect/60:.0f} minutes to your journey."
+                        f"The ordeal adds {time_effect / 60:.0f} minutes to your journey."
                     )
                     result_choice3_neutral: EventResultDict = {
                         "choice": "ride_out",

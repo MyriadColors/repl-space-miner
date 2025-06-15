@@ -505,24 +505,24 @@ def character_creation_event(
 
         # Get the template ID based on choice
         if ship_idx == 5:
-            assert isinstance(
-                ship_template_map[5], dict
-            ), "Expected ship_template_map[5] to be a dictionary."
+            assert isinstance(ship_template_map[5], dict), (
+                "Expected ship_template_map[5] to be a dictionary."
+            )
             # Cast the result of get() to str to satisfy mypy
             ship_template_id = cast(
                 str, ship_template_map[5].get(background, "balanced_cruiser")
             )
         else:
-            assert isinstance(
-                ship_template_map[ship_idx], str
-            ), "Expected ship_template_map[ship_idx] to be a string."
+            assert isinstance(ship_template_map[ship_idx], str), (
+                "Expected ship_template_map[ship_idx] to be a string."
+            )
             # Cast the map access to str after assertion to satisfy mypy
             ship_template_id = cast(str, ship_template_map[ship_idx])
 
         # Store the ship appearance for later reference
-        assert (
-            ship_template_id in SHIP_TEMPLATES
-        ), f"Ship template ID {ship_template_id} not found in SHIP_TEMPLATES."
+        assert ship_template_id in SHIP_TEMPLATES, (
+            f"Ship template ID {ship_template_id} not found in SHIP_TEMPLATES."
+        )
         # Explicitly cast dict access for mypy
         ship_appearance = cast(str, SHIP_TEMPLATES[ship_template_id]["name"])
 

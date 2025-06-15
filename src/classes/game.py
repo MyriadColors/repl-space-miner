@@ -1,19 +1,19 @@
 import json
 import os
 from typing import List, Dict, Union, Optional
-import pygame as pg  # Add pygame for Vector2
+import pygame as pg
 from datetime import datetime
 from dataclasses import dataclass
-import random  # MODIFIED: Changed from 'from random import choice' to 'import random'
-import time  # Add time import for default seed
+import random
+import time
 from colorama import Fore, Back, Style, init
 
 from src.classes.ship import Ship
 from src.classes.solar_system import SolarSystem
 from src.classes.region import Region
-from src.classes.skill_system import SkillSystem  # Importing SkillSystem
+from src.classes.skill_system import SkillSystem
 
-# Initialize colorama
+
 init(autoreset=True)
 
 
@@ -104,7 +104,6 @@ class Character:
         self.sex = sex
         self.background = background
 
-        # Stats - primary attributes that are mostly fixed
         self.perception = 5
         self.resilience = 5
         self.intellect = 5
@@ -112,9 +111,8 @@ class Character:
         self.adaptability = 5
         self.technical_aptitude = 5
 
-        # Initialize skill system instead of individual skills
         self.skill_system = SkillSystem()
-        # Reputation values
+
         self.reputation_states = 0
         self.reputation_corporations = 0
         self.reputation_pirates = 0
@@ -125,24 +123,19 @@ class Character:
         self.reputation_explorers = 0
         self.credits: float = self.round_credits(starting_creds)
         self.debt: float = self.round_credits(starting_debt)
-        # Initialize interest time to 0, allowing calculate_debt_interest to set it properly
-        # This way the first interest calculation will happen soon after game start
-        self.last_interest_time = 0  # Will be initialized properly on first debt check
 
-        # Savings account
+        self.last_interest_time = 0
+
         self.savings: float = 0.0
-        self.savings_interest_rate: float = 0.02  # 2% weekly interest rate
-        # Banking transaction history
-        self.bank_transactions: list = []  # List of BankingTransaction objects
+        self.savings_interest_rate: float = 0.02
 
-        # Initialize faction standings
+        self.bank_transactions: list = []
+
         self.initialize_faction_standings()
 
-        # Personality traits
         self.positive_trait = ""
         self.negative_trait = ""
 
-        # Trait effect modifiers (default to 1.0 = no effect)
         self.damage_resist_mod = 1.0
         self.mining_yield_mod = 1.0
         self.buy_price_mod = 1.0
@@ -165,7 +158,6 @@ class Character:
             "explorers": 0,
         }
 
-    # Backward compatibility properties for individual skills
     @property
     def piloting(self) -> int:
         """Get piloting skill level from skill system"""
@@ -231,7 +223,6 @@ class Character:
         if skill:
             skill._level = value
 
-    # Stats implementation methods
     def apply_stat_effects(self):
         """Apply effects from all character stats"""
         self.apply_perception_effects()
@@ -243,127 +234,96 @@ class Character:
 
     def apply_perception_effects(self):
         """Apply effects from the Perception stat"""
-        # Reset modifier to default
+
         self.critical_hit_chance_mod = 1.0
         self.hidden_discovery_chance_mod = 1.0
 
-        # Apply Perception-based bonuses
-        # Each point above 5 gives a 5% bonus to critical hits and hidden discovery chances.
-        # This reflects the character's heightened awareness and ability to spot opportunities.
         if self.perception > 5:
             bonus_multiplier = 1 + ((self.perception - 5) * 0.05)
             self.critical_hit_chance_mod = bonus_multiplier
             self.hidden_discovery_chance_mod = bonus_multiplier
 
-            # Additionally, perception improves sensor range by 3% per point above 5.
-            # This simulates the character's ability to interpret sensor data more effectively.
             self.sensor_range_mod *= 1 + ((self.perception - 5) * 0.03)
 
     def apply_resilience_effects(self):
         """Apply effects from the Resilience stat"""
-        # Reset modifier to default
+
         self.hull_integrity_mod = 1.0
         self.system_recovery_mod = 1.0
 
-        # Apply Resilience-based bonuses
-        # Each point above 5 gives 4% bonus to hull integrity and recovery speed
         if self.resilience > 5:
             self.hull_integrity_mod = 1 + ((self.resilience - 5) * 0.04)
             self.system_recovery_mod = 1 + ((self.resilience - 5) * 0.04)
-            # Also improves damage resistance
-            self.damage_resist_mod *= 1 - (
-                (self.resilience - 5) * 0.02
-            )  # Decrease damage taken
+
+            self.damage_resist_mod *= 1 - ((self.resilience - 5) * 0.02)
 
     def apply_intellect_effects(self):
         """Apply effects from the Intellect stat"""
-        # Reset modifier to default
+
         self.research_speed_mod = 1.0
         self.market_analysis_mod = 1.0
 
-        # Apply Intellect-based bonuses
-        # Each point above 5 gives 5% bonus to research speed and 3% to market analysis
         if self.intellect > 5:
             self.research_speed_mod = 1 + ((self.intellect - 5) * 0.05)
             self.market_analysis_mod = 1 + ((self.intellect - 5) * 0.03)
 
     def apply_presence_effects(self):
         """Apply effects from the Presence stat"""
-        # Reset modifier to default
+
         self.faction_relation_mod = 1.0
 
-        # Apply Presence-based bonuses
-        # Each point above 5 gives 5% better prices and 3% faster reputation gains
         if self.presence > 5:
             price_bonus = (self.presence - 5) * 0.05
-            self.buy_price_mod *= 1 - price_bonus  # Lower prices when buying
-            self.sell_price_mod *= 1 + price_bonus  # Higher prices when selling
-            self.faction_relation_mod = 1 + (
-                (self.presence - 5) * 0.03
-            )  # Faster reputation gains
+            self.buy_price_mod *= 1 - price_bonus
+            self.sell_price_mod *= 1 + price_bonus
+            self.faction_relation_mod = 1 + ((self.presence - 5) * 0.03)
 
     def apply_adaptability_effects(self):
         """Apply effects from the Adaptability stat"""
-        # Reset modifier to default
-        self.cross_cultural_mod = 1.0  # Apply Adaptability-based bonuses
-        # Each point above 5 gives 4% bonus to cross-cultural interactions
+
+        self.cross_cultural_mod = 1.0
+
         if self.adaptability > 5:
             self.cross_cultural_mod = 1 + ((self.adaptability - 5) * 0.04)
 
-            # Small bonus to skill synergy (this would affect skill experience gains)
-            # This would be used in future skill improvement mechanics
-            # skill_synergy_bonus = (self.adaptability - 5) * 0.02  # TODO: Implement in future
-
-            # Small bonus to environmental adaptation (used in future environmental hazards)
-            # environmental_bonus = (self.adaptability - 5) * 0.03  # TODO: Implement in future
-
     def apply_technical_aptitude_effects(self):
         """Apply effects from the Technical Aptitude stat"""
-        # Reset modifier to default
+
         self.repair_efficiency_mod = 1.0
         self.salvage_success_mod = 1.0
 
-        # Apply Technical Aptitude-based bonuses
-        # Each point above 5 gives 5% bonus to repair efficiency and salvaging success
         if self.technical_aptitude > 5:
             self.repair_efficiency_mod = 1 + ((self.technical_aptitude - 5) * 0.05)
             self.salvage_success_mod = 1 + ((self.technical_aptitude - 5) * 0.05)
 
     def get_mining_bonus(self):
         """Calculate mining bonus based on stats and skills"""
-        # Base mining yield modifier from traits
+
         mining_bonus = self.mining_yield_mod
 
-        # Add perception bonus for finding better mining spots (2% per point above 5)
         if self.perception > 5:
             mining_bonus *= 1 + ((self.perception - 5) * 0.02)
 
-        # Add technical aptitude bonus (1% per point above 5)
         if self.technical_aptitude > 5:
             mining_bonus *= 1 + ((self.technical_aptitude - 5) * 0.01)
-            # Engineering skill bonus is applied separately in the ship's mining method
 
         return mining_bonus
 
     def get_trading_bonus(self):
         """Calculate trading bonuses based on stats and skills"""
-        # Start with base modifiers from traits
+
         buy_mod = self.buy_price_mod
         sell_mod = self.sell_price_mod
 
-        # Apply presence bonuses (already calculated in apply_presence_effects)
-
-        # Apply intellect for better market analysis (1% per point above 5)
         if self.intellect > 5:
             market_bonus = (self.intellect - 5) * 0.01
-            buy_mod *= 1 - market_bonus  # Lower prices when buying
-            sell_mod *= 1 + market_bonus  # Higher prices when selling
+            buy_mod *= 1 - market_bonus
+            sell_mod *= 1 + market_bonus
 
-        # Apply charisma skill bonus (2% per point above 5)
         if self.charisma > 5:
             charisma_bonus = (self.charisma - 5) * 0.02
-            buy_mod *= 1 - charisma_bonus  # Lower prices when buying
-            sell_mod *= 1 + charisma_bonus  # Higher prices when selling
+            buy_mod *= 1 - charisma_bonus
+            sell_mod *= 1 + charisma_bonus
 
         return (buy_mod, sell_mod)
 
@@ -396,7 +356,7 @@ class Character:
 
     def apply_trait_effects(self):
         """Apply effects from personality traits"""
-        # Reset modifiers to default
+
         self.damage_resist_mod = 1.0
         self.mining_yield_mod = 1.0
         self.buy_price_mod = 1.0
@@ -406,39 +366,34 @@ class Character:
         self.fuel_consumption_mod = 1.0
         self.debt_interest_mod = 1.0
 
-        # Apply positive trait effects
         if self.positive_trait == "Resilient":
-            self.damage_resist_mod = 0.9  # 10% less damage
+            self.damage_resist_mod = 0.9
         elif self.positive_trait == "Resourceful":
-            self.mining_yield_mod = 1.05  # 5% more ore
+            self.mining_yield_mod = 1.05
         elif self.positive_trait == "Charismatic":
-            self.buy_price_mod = 0.95  # 5% cheaper purchases
-            self.sell_price_mod = 1.05  # 5% better sales
+            self.buy_price_mod = 0.95
+            self.sell_price_mod = 1.05
         elif self.positive_trait == "Perceptive":
-            self.sensor_range_mod = 1.15  # 15% better sensors
+            self.sensor_range_mod = 1.15
         elif self.positive_trait == "Quick":
-            self.evasion_mod = 1.1  # 10% better evasion
+            self.evasion_mod = 1.1
         elif self.positive_trait == "Methodical":
-            self.fuel_consumption_mod = 0.92  # 8% less fuel use
+            self.fuel_consumption_mod = 0.92
 
-        # Apply negative trait effects
         if self.negative_trait == "Reckless":
-            self.damage_resist_mod *= 1.1  # 10% more damage
+            self.damage_resist_mod *= 1.1
         elif self.negative_trait == "Paranoid":
-            self.buy_price_mod *= 1.05  # 5% higher prices overall
-            self.sell_price_mod *= 0.95  # 5% worse sales
+            self.buy_price_mod *= 1.05
+            self.sell_price_mod *= 0.95
         elif self.negative_trait == "Forgetful":
-            # Forgetful has a random chance effect, handled in mining
             pass
         elif self.negative_trait == "Impatient":
-            # 10% less mining efficiency        elif self.negative_trait == "Superstitious":
             self.mining_yield_mod *= 0.9
-            # Superstitious has special event handling, no modifier needed
+
             pass
         elif self.negative_trait == "Indebted":
-            self.debt_interest_mod = 1.1  # 10% higher interest
+            self.debt_interest_mod = 1.1
 
-        # Apply stats-based effects after trait effects
         self.apply_stat_effects()
 
     def calculate_debt_interest(self, current_time: int):
@@ -446,14 +401,12 @@ class Character:
         Calculate and apply interest on the debt
         Returns a tuple of (interest_amount, new_debt) if interest was applied, None otherwise
         """
-        # Daily interest rate (0.7% per day - approximately 5% per week)
+
         DAILY_INTEREST_RATE = 0.007
-        # Define a day as 24 hours
+
         PERIOD_LENGTH = 24
 
-        # If this is the first call, set last_interest_time to the current time minus any elapsed time
         if self.last_interest_time == 0:
-            # Apply interest for all full days that have already passed since game start
             days_passed = int(current_time // PERIOD_LENGTH)
             total_interest = 0.0
             current_debt = self.debt
@@ -467,11 +420,9 @@ class Character:
                 self.last_interest_time = days_passed * PERIOD_LENGTH
                 return (self.round_credits(total_interest), self.debt)
             else:
-                # No full days have passed, set last_interest_time so next interest is due in 6 hours
                 self.last_interest_time = max(0, current_time - PERIOD_LENGTH + 6)
                 return None
 
-        # Calculate time difference in hours since last interest calculation
         time_diff = current_time - self.last_interest_time
         days_passed = int(time_diff // PERIOD_LENGTH)
 
@@ -536,24 +487,20 @@ class Character:
             "age": self.age,
             "sex": self.sex,
             "background": self.background,
-            # Stats
             "perception": self.perception,
             "resilience": self.resilience,
             "intellect": self.intellect,
             "presence": self.presence,
             "adaptability": self.adaptability,
             "technical_aptitude": self.technical_aptitude,
-            # Skills (for backward compatibility)
             "piloting": self.piloting,
             "engineering": self.engineering,
             "combat": self.combat,
             "education": self.education,
             "charisma": self.charisma,
-            # Skill system (new format)
             "skill_system": (
                 self.skill_system.to_dict() if hasattr(self, "skill_system") else None
             ),
-            # Reputation
             "reputation_states": self.reputation_states,
             "reputation_corporations": self.reputation_corporations,
             "reputation_pirates": self.reputation_pirates,
@@ -562,7 +509,6 @@ class Character:
             "reputation_scientists": self.reputation_scientists,
             "reputation_military": self.reputation_military,
             "reputation_explorers": self.reputation_explorers,
-            # Other attributes
             "credits": self.credits,
             "debt": self.debt,
             "positive_trait": self.positive_trait,
@@ -580,7 +526,6 @@ class Character:
             starting_debt=data["debt"],
         )
 
-        # Set stat values
         character.perception = data.get("perception", 5)
         character.resilience = data.get("resilience", 5)
         character.intellect = data.get("intellect", 5)
@@ -588,14 +533,12 @@ class Character:
         character.adaptability = data.get("adaptability", 5)
         character.technical_aptitude = data.get("technical_aptitude", 5)
 
-        # Set skill values
         character.piloting = data.get("piloting", 5)
         character.engineering = data.get("engineering", 5)
         character.combat = data.get("combat", 5)
         character.education = data.get("education", 5)
         character.charisma = data.get("charisma", 5)
 
-        # Set reputation values
         character.reputation_states = data.get("reputation_states", 0)
         character.reputation_corporations = data.get("reputation_corporations", 0)
         character.reputation_pirates = data.get("reputation_pirates", 0)
@@ -607,7 +550,6 @@ class Character:
         character.positive_trait = data.get("positive_trait", "")
         character.negative_trait = data.get("negative_trait", "")
 
-        # Apply trait effects (which will also apply stat effects)
         character.apply_trait_effects()
 
         return character
@@ -623,34 +565,29 @@ class Contact(Character):
         location: str,
         specialty: str,
         faction: str,
-        age: int = 30,  # Default age if not specified
-        sex: str = "unknown",  # Default sex if not specified
+        age: int = 30,
+        sex: str = "unknown",
     ):
-        # Initialize base Character with minimal stats
         super().__init__(
             name=name,
             age=age,
             sex=sex,
-            background="NPC",  # NPCs don't have traditional backgrounds
-            starting_creds=0,  # NPCs don't use the credit system like players
-            starting_debt=0,  # NPCs don't have debt
+            background="NPC",
+            starting_creds=0,
+            starting_debt=0,
         )
 
         self.description = description
         self.location = location
         self.specialty = specialty
 
-        # Set the contact's primary faction
         self.primary_faction = faction
 
-        # NPCs might have special dialogue options or missions
         self.available_missions: List = []
         self.dialogue_options: Dict[str, Union[str, int]] = {}
 
-        # Relationship with the player (0-100)
-        self.player_standing = 10  # Start with a basic acquaintance level
+        self.player_standing = 10
 
-        # Track interactions with player
         self.last_interaction = "Initial meeting"
         self.met_during = "character_creation"
 
@@ -689,7 +626,6 @@ class Game:
         skip_customization: bool = False,
         seed: Optional[int] = None,
     ) -> None:
-        # Set the random seed for procedural generation
         if seed is None:
             seed = int(time.time())
         self.seed = seed
@@ -698,9 +634,7 @@ class Game:
         self.global_time = 0
         self.region = Region.generate_random_region("Local Sector", 50)
         self.solar_systems = self.region.solar_systems
-        self.current_solar_system_index = (
-            0  # Get stations from the current solar system
-        )
+        self.current_solar_system_index = 0
         current_system = self.solar_systems[self.current_solar_system_index]
         all_stations = current_system.get_all_stations()
         self.rnd_station = random.choice(all_stations) if all_stations else None
@@ -716,7 +650,7 @@ class Game:
         if self.sound_enabled:
             pg.mixer.init()
             pg.mixer.music.load("Decoherence.mp3")
-            pg.mixer.music.play(-1)  # Loop indefinitely
+            pg.mixer.music.play(-1)
 
     def set_player_character(
         self,
@@ -727,7 +661,6 @@ class Game:
         starting_creds: float,
         starting_debt: float,
     ):
-
         self.player_character = Character(
             name, age, sex, background, starting_creds, starting_debt
         )
@@ -770,7 +703,7 @@ class Game:
 
         Args:
             time_delta (timedelta): The amount of time to advance
-        """  # Convert timedelta to seconds and add to global_time
+        """
         self.global_time += time_delta.total_seconds()
 
     def get_region(self) -> Region:
@@ -800,8 +733,7 @@ class Game:
             seed=data.get("seed", None),
         )
         game.global_time = data["global_time"]
-        # Ensure solar_systems are loaded correctly using the new constructor if applicable
-        # The SolarSystem.from_dict should handle the new fields with .get for backward compatibility
+
         game.solar_systems = [
             SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]
         ]
@@ -820,7 +752,7 @@ class Game:
             game.player_character = Character.from_dict(data["player_character"])
         if data["player_ship"]:
             game.player_ship = Ship.from_dict(data["player_ship"], game)
-        game.ui = ui_instance  # Assign the passed UI instance
+        game.ui = ui_instance
         return game
 
     def save_game(self, filename: str = "", human_readable: bool = False):
@@ -836,11 +768,10 @@ class Game:
             filename = f"RSM_SAVE_{timestamp}.json"
 
         save_path = os.path.join("save", filename)
-        os.makedirs("save", exist_ok=True)  # Ensure save directory exists
+        os.makedirs("save", exist_ok=True)
 
         game_data = self.to_dict()
 
-        # If human_readable flag not provided, ask the user
         if not hasattr(self, "save_preference"):
             while True:
                 choice = input(
@@ -848,17 +779,15 @@ class Game:
                 ).lower()
                 if choice in ["c", "h"]:
                     human_readable = choice == "h"
-                    # Remember preference for this session
+
                     self.save_preference = human_readable
                     break
                 else:
                     self.ui.warn_message("Invalid choice. Please enter 'c' or 'h'.")
         else:
-            # Use remembered preference
             human_readable = self.save_preference
 
         if human_readable:
-            # Save as human-readable JSON
             try:
                 with open(save_path, "w") as f:
                     json.dump(game_data, f, indent=4)
@@ -868,20 +797,15 @@ class Game:
             except IOError as e:
                 self.ui.error_message(f"Error saving game: {e}")
         else:
-            # Save as compressed data
             try:
-                # Import compression utilities
                 from src.utils.compression import compress_save_data
 
-                # Compress the save data
                 compressed_data = compress_save_data(game_data)
 
-                # Calculate compression rate for user feedback
                 original_size = len(json.dumps(game_data))
                 compressed_size = len(compressed_data)
                 compression_rate = (1 - (compressed_size / original_size)) * 100
 
-                # Write the compressed data to file
                 with open(save_path, "w") as f:
                     f.write(compressed_data)
 
@@ -892,7 +816,7 @@ class Game:
                 self.ui.error_message(f"Error saving game: {e}")
             except Exception as e:
                 self.ui.error_message(f"Error during save compression: {e}")
-                # Fallback to uncompressed save if compression fails
+
                 try:
                     with open(save_path, "w") as f:
                         json.dump(game_data, f, indent=4)
@@ -917,14 +841,12 @@ class Game:
                 ui_instance.error_message("No save files found.")
                 return None
 
-            # Sort files by modification time (newest first)
             save_files.sort(
                 key=lambda f: os.path.getmtime(os.path.join(save_dir, f)), reverse=True
             )
 
             ui_instance.info_message("Available save files:")
             for i, sf in enumerate(save_files):
-                # Get modification time and format it
                 mod_time = datetime.fromtimestamp(
                     os.path.getmtime(os.path.join(save_dir, sf))
                 )
@@ -949,29 +871,23 @@ class Game:
             return None
 
         try:
-            # Import decompression utility
             from src.utils.compression import decompress_save_data
 
-            # Read the file content
             with open(load_path, "r") as f:
                 file_content = f.read()
 
             try:
-                # Try to decompress first (for compressed saves)
                 if file_content.startswith("RSM_COMPRESSED_V1:"):
                     game_data = decompress_save_data(file_content)
                     ui_instance.info_message("Loaded compressed save file.")
                 else:
-                    # Handle uncompressed saves (for backward compatibility)
                     ui_instance.info_message("Loading uncompressed save file...")
                     game_data = json.loads(file_content)
             except json.JSONDecodeError:
-                # Last resort, try to load the original way
                 with open(load_path, "r") as f:
                     game_data = json.load(f)
                 ui_instance.warn_message("Loaded using fallback method.")
 
-            # Create game instance from the loaded data
             game_instance = cls.from_dict(game_data, ui_instance)
             ui_instance.success_message(f"Game loaded from {load_path}")
             return game_instance

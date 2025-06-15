@@ -117,7 +117,9 @@ def _display_trading_header(
     cargo_color = (
         Fore.GREEN
         if cargo_percentage < 80
-        else Fore.YELLOW if cargo_percentage < 95 else Fore.RED
+        else Fore.YELLOW
+        if cargo_percentage < 95
+        else Fore.RED
     )
     game_state.ui.info_message(
         f"Cargo Space: {cargo_color}{cargo_used:.2f}/{cargo_capacity:.2f} m³ ({cargo_percentage:.1f}% full){Style.RESET_ALL}"
@@ -611,7 +613,7 @@ def _smart_cargo_management(game_state: Game) -> None:
 
     for i, (cargo, ore_name, sell_price, efficiency) in enumerate(cargo_efficiency[:3]):
         game_state.ui.info_message(
-            f"  {i+1}. {ore_name}: {efficiency:.2f} value/m³ (sell for {sell_price:.2f})"
+            f"  {i + 1}. {ore_name}: {efficiency:.2f} value/m³ (sell for {sell_price:.2f})"
         )
 
     game_state.ui.info_message(
@@ -622,7 +624,7 @@ def _smart_cargo_management(game_state: Game) -> None:
         station_efficiency[:3]
     ):
         game_state.ui.info_message(
-            f"  {i+1}. {ore_name}: {efficiency:.2f} value/m³ (buy for {buy_price:.2f})"
+            f"  {i + 1}. {ore_name}: {efficiency:.2f} value/m³ (buy for {buy_price:.2f})"
         )
 
     # Suggest optimization

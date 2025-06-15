@@ -30,7 +30,7 @@ def cargo_command(game_state: Game) -> None:
     game_state.ui.info_message(f"\n=== CARGO MANIFEST: {player_ship.name} ===")
     game_state.ui.info_message(
         f"Cargo Capacity: {total_occupied:.2f}/{player_ship.cargohold_capacity:.2f} m³ "
-        f"({(total_occupied/player_ship.cargohold_capacity*100):.1f}% full)"
+        f"({(total_occupied / player_ship.cargohold_capacity * 100):.1f}% full)"
     )
     game_state.ui.info_message(f"Available Space: {remaining_space:.2f} m³\n")
 
@@ -38,7 +38,7 @@ def cargo_command(game_state: Game) -> None:
     if player_ship.cargohold:
         game_state.ui.info_message("=== ORES ===")
         game_state.ui.info_message(
-            f"{"Ore":<20} {"Quantity":<10} {"Volume":<10} {"Value/Unit":<12} {"Total Value":<12}"
+            f"{'Ore':<20} {'Quantity':<10} {'Volume':<10} {'Value/Unit':<12} {'Total Value':<12}"
         )
         game_state.ui.info_message("-" * 70)
 
@@ -64,7 +64,7 @@ def cargo_command(game_state: Game) -> None:
     if player_ship.mineralhold:
         game_state.ui.info_message("=== MINERALS ===")
         game_state.ui.info_message(
-            f"{"Mineral":<20} {"Quality":<10} {"Quantity":<10} {"Volume":<10} {"Value/Unit":<12} {"Total Value":<12}"
+            f"{'Mineral':<20} {'Quality':<10} {'Quantity':<10} {'Volume':<10} {'Value/Unit':<12} {'Total Value':<12}"
         )
         game_state.ui.info_message("-" * 80)
 

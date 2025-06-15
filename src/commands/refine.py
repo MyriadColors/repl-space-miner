@@ -281,7 +281,7 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         minerals_str = ", ".join(minerals_list)
 
         game_state.ui.info_message(
-            f"{i}. {cargo.ore.purity.name} {cargo.ore.name} " f"-> {minerals_str}"
+            f"{i}. {cargo.ore.purity.name} {cargo.ore.name} -> {minerals_str}"
         )
         game_state.ui.info_message(
             f"   Quantity: {cargo.quantity}, Purity: {cargo.ore.purity.name}"

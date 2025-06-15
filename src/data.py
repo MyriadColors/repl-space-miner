@@ -32,7 +32,8 @@ STELLAR_PROPERTIES = {
         "temperature_range": (30000, 50000),  # Kelvin
         "luminosity_range": (30000, 1000000),  # Solar luminosities
         "mass_range": (15, 90),  # Solar masses
-        "radius_range": (6.6, 10.0),  # Solar radii (for game purposes, scaled down)
+        # Solar radii (for game purposes, scaled down)
+        "radius_range": (6.6, 10.0),
         "rarity_weight": 1,  # Very rare
         "color": "blue",
     },
@@ -117,33 +118,36 @@ ASTEROID_BELT_WIDTH_MIN_MAX: Tuple[float, float] = (0.5, 2.0)  # Belt width in A
 ASTEROID_BELT_FIELDS_MIN_MAX: Tuple[int, int] = (3, 8)  # Fields per belt
 
 # System generation templates for creating diverse solar systems
+
+
 @dataclass
 class SystemTemplate:
     """
     Template for generating solar systems with specific characteristics.
     Defines ranges and probabilities for system properties.
     """
+
     name: str
     description: str
-    
+
     # System size and structure
     size_range: Tuple[float, float]  # AU, system radius
     field_quantity_range: Tuple[int, int]  # Number of asteroid fields
     station_quantity_range: Tuple[int, int]  # Number of stations
-    
+
     # Preferred stellar classes (weighted selection)
     stellar_class_weights: Dict[StellarClass, float]
-    
+
     # Economic and political characteristics
     security_levels: List[str]  # Possible security levels
     economy_types: List[str]  # Possible economy types
     population_range: Tuple[int, int]  # Population range
     tech_level_range: Tuple[int, int]  # Technology level range
-      # Special characteristics
+    # Special characteristics
     faction_preference: Optional[str] = None  # Preferred faction
     anomaly_chance: float = 0.1  # Chance of having anomalies
     possible_anomalies: Optional[List[str]] = None  # Types of anomalies
-    
+
     # Generation weight for template selection
     generation_weight: float = 1.0
 
@@ -173,7 +177,6 @@ SYSTEM_TEMPLATES = {
         possible_anomalies=["Sensor Ghost", "Gravity Well", "Ancient Wreck"],
         generation_weight=30.0,
     ),
-    
     "core_world": SystemTemplate(
         name="Core World System",
         description="Heavily populated and developed system in civilized space",
@@ -198,7 +201,6 @@ SYSTEM_TEMPLATES = {
         possible_anomalies=["Trade Beacon", "Security Grid"],
         generation_weight=15.0,
     ),
-    
     "mining_hub": SystemTemplate(
         name="Mining Hub System",
         description="System rich in asteroids and mineral resources",
@@ -222,7 +224,6 @@ SYSTEM_TEMPLATES = {
         possible_anomalies=["Rich Asteroid Belt", "Depleted Field", "Mining Accident"],
         generation_weight=25.0,
     ),
-    
     "research_outpost": SystemTemplate(
         name="Research Outpost System",
         description="Scientific research system with unique phenomena",
@@ -244,10 +245,14 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(7, 10),
         faction_preference="Research Consortium",
         anomaly_chance=0.25,
-        possible_anomalies=["Stellar Anomaly", "Quantum Field", "Exotic Matter", "Time Dilation"],
+        possible_anomalies=[
+            "Stellar Anomaly",
+            "Quantum Field",
+            "Exotic Matter",
+            "Time Dilation",
+        ],
         generation_weight=10.0,
     ),
-    
     "trade_crossroads": SystemTemplate(
         name="Trade Crossroads System",
         description="Strategic system along major trade routes",
@@ -271,7 +276,6 @@ SYSTEM_TEMPLATES = {
         possible_anomalies=["Trade Beacon", "Pirate Activity", "Navigation Hazard"],
         generation_weight=20.0,
     ),
-    
     # New diverse system templates for expanded variety
     "abandoned_ruins": SystemTemplate(
         name="Abandoned Ruins System",
@@ -294,10 +298,16 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(0, 6),
         faction_preference=None,
         anomaly_chance=0.40,
-        possible_anomalies=["Ancient Wreck", "Derelict Station", "Quantum Signature", "Ruins", "Data Cache", "Defense Grid"],
+        possible_anomalies=[
+            "Ancient Wreck",
+            "Derelict Station",
+            "Quantum Signature",
+            "Ruins",
+            "Data Cache",
+            "Defense Grid",
+        ],
         generation_weight=8.0,
     ),
-    
     "military_outpost": SystemTemplate(
         name="Military Outpost System",
         description="Fortified system under military control with heavy security",
@@ -322,7 +332,6 @@ SYSTEM_TEMPLATES = {
         possible_anomalies=["Security Grid", "Defense Platform", "Patrol Route"],
         generation_weight=12.0,
     ),
-    
     "pirate_haven": SystemTemplate(
         name="Pirate Haven System",
         description="Lawless system controlled by pirate factions and smugglers",
@@ -344,10 +353,14 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(2, 6),
         faction_preference="Pirate Brotherhood",
         anomaly_chance=0.18,
-        possible_anomalies=["Pirate Activity", "Hidden Base", "Ambush Point", "Stolen Cargo"],
+        possible_anomalies=[
+            "Pirate Activity",
+            "Hidden Base",
+            "Ambush Point",
+            "Stolen Cargo",
+        ],
         generation_weight=15.0,
     ),
-    
     "corporate_domain": SystemTemplate(
         name="Corporate Domain System",
         description="System under direct corporate control with heavy industrial presence",
@@ -372,7 +385,6 @@ SYSTEM_TEMPLATES = {
         possible_anomalies=["Corporate Facility", "Production Line", "Trade Beacon"],
         generation_weight=18.0,
     ),
-    
     "agricultural_colony": SystemTemplate(
         name="Agricultural Colony System",
         description="Peaceful farming system providing food for nearby regions",
@@ -397,7 +409,6 @@ SYSTEM_TEMPLATES = {
         possible_anomalies=["Fertile Zone", "Weather Control", "Harvest Festival"],
         generation_weight=14.0,
     ),
-    
     "hazardous_zone": SystemTemplate(
         name="Hazardous Zone System",
         description="Dangerous system with extreme stellar phenomena and environmental hazards",
@@ -419,10 +430,15 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(5, 9),
         faction_preference=None,
         anomaly_chance=0.35,
-        possible_anomalies=["Solar Flare", "Radiation Storm", "Magnetic Field", "Plasma Eruption", "Stellar Wind"],
+        possible_anomalies=[
+            "Solar Flare",
+            "Radiation Storm",
+            "Magnetic Field",
+            "Plasma Eruption",
+            "Stellar Wind",
+        ],
         generation_weight=6.0,
     ),
-    
     "border_disputed": SystemTemplate(
         name="Border Disputed System",
         description="Contested system on the frontier between major factions",
@@ -444,10 +460,14 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(4, 8),
         faction_preference=None,
         anomaly_chance=0.15,
-        possible_anomalies=["Patrol Route", "Border Beacon", "Conflict Zone", "Neutral Ground"],
+        possible_anomalies=[
+            "Patrol Route",
+            "Border Beacon",
+            "Conflict Zone",
+            "Neutral Ground",
+        ],
         generation_weight=13.0,
     ),
-    
     "refinery_complex": SystemTemplate(
         name="Refinery Complex System",
         description="Industrial system specialized in ore processing and material refinement",
@@ -472,7 +492,6 @@ SYSTEM_TEMPLATES = {
         possible_anomalies=["Processing Plant", "Refinery Station", "Material Cache"],
         generation_weight=16.0,
     ),
-    
     "ancient_mystery": SystemTemplate(
         name="Ancient Mystery System",
         description="System containing artifacts and phenomena from a lost civilization",
@@ -494,10 +513,16 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(6, 10),
         faction_preference="Archaeological Institute",
         anomaly_chance=0.50,
-        possible_anomalies=["Ancient Artifact", "Xenotech", "Psionic Field", "Stasis Chamber", "Energy Signature", "Precursor Tech"],
+        possible_anomalies=[
+            "Ancient Artifact",
+            "Xenotech",
+            "Psionic Field",
+            "Stasis Chamber",
+            "Energy Signature",
+            "Precursor Tech",
+        ],
         generation_weight=5.0,
     ),
-    
     "nomadic_fleet": SystemTemplate(
         name="Nomadic Fleet System",
         description="System serving as a temporary home for wandering space nomads",
@@ -528,23 +553,23 @@ SYSTEM_TEMPLATES = {
 def select_system_template() -> SystemTemplate:
     """
     Select a random system template based on generation weights.
-    
+
     Returns:
         A SystemTemplate to use for generating a solar system
     """
     templates = list(SYSTEM_TEMPLATES.values())
     weights = [template.generation_weight for template in templates]
-    
+
     # Use weighted random selection
     total_weight = sum(weights)
     random_value = random.uniform(0, total_weight)
-    
+
     cumulative_weight = 0.0
     for template, weight in zip(templates, weights):
         cumulative_weight += weight
         if random_value <= cumulative_weight:
             return template
-    
+
     # Fallback to frontier system
     return SYSTEM_TEMPLATES["frontier"]
 
@@ -554,37 +579,37 @@ def generate_system_from_template(
 ) -> dict:
     """
     Generate solar system parameters from a template.
-    
+
     Args:
         name: Name of the system
         x: X coordinate in the region
         y: Y coordinate in the region
         template: SystemTemplate to use for generation
-        
+
     Returns:
         Dictionary of parameters for SolarSystem constructor
     """
     import random
-    
+
     # Generate basic system parameters
     size = round(random.uniform(*template.size_range), 2)
     field_quantity = random.randint(*template.field_quantity_range)
     station_quantity = random.randint(*template.station_quantity_range)
-    
+
     # Select security level and economy type
     security_level = random.choice(template.security_levels)
     economy_type = random.choice(template.economy_types)
-    
+
     # Generate population and tech level
     population = random.randint(*template.population_range)
     tech_level = random.randint(*template.tech_level_range)
-    
+
     # Generate anomalies if applicable
     anomalies = []
     if template.possible_anomalies and random.random() < template.anomaly_chance:
         num_anomalies = random.randint(1, min(2, len(template.possible_anomalies)))
         anomalies = random.sample(template.possible_anomalies, num_anomalies)
-    
+
     return {
         "name": name,
         "x": x,
@@ -600,6 +625,7 @@ def generate_system_from_template(
         "tech_level": tech_level,
         "anomalies": anomalies,
     }
+
 
 # This will be used to generate random names
 name_parts = [
@@ -706,7 +732,7 @@ name_parts = [
     "mer",
     "wer",
     "fer",
-    "fra" "gra",
+    "fragra",
     "bra",
     "zir",
     "dir",
@@ -799,7 +825,7 @@ class OreCargo:
 
     def to_dict(self):
         return {
-            "ore_id": self.ore.id,
+            "ore_id": self.ore.commodity.commodity_id,
             "quantity": self.quantity,
             "buy_price": self.buy_price,
             "sell_price": self.sell_price,
@@ -808,25 +834,20 @@ class OreCargo:
 
     @classmethod
     def from_dict(cls, data):
-
         ore_obj = ORES.get(data["ore_id"])
         if ore_obj is None:
             # Handle missing ore, perhaps raise an error or return None
+            # Handle purity if present
             raise ValueError(f"Ore with ID {data['ore_id']} not found in ORES map.")
-
-        # Handle purity if present
         if "purity" in data:
             try:
                 purity_level = PurityLevel[data["purity"]]
                 # Create a copy of the ore with the saved purity level
                 ore_obj = Ore(
-                    name=ore_obj.name,
-                    base_value=ore_obj.base_value,
-                    volume=ore_obj.volume,
+                    commodity=ore_obj.commodity,
                     mineral_yield=(
                         ore_obj.mineral_yield.copy() if ore_obj.mineral_yield else []
                     ),
-                    id=ore_obj.id,
                     purity=purity_level,
                     refining_difficulty=(
                         ore_obj.refining_difficulty
@@ -1551,7 +1572,7 @@ STELLAR_SYSTEM_NAMES = [
     "Brigid",
     "Cerridwen",
     "Lugh",
-    "Morrigan", 
+    "Morrigan",
     "Nuada",
     "Scathach",
     "Baldr",

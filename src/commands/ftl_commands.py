@@ -279,7 +279,7 @@ def list_systems_command(game_state: Game) -> None:
     max_index_width = len(str(len(systems) - 1))
     max_name_width = 0
     max_cost_width = 0
-    
+
     for idx, system in enumerate(systems):
         if idx == current_system_idx:
             marker = "(Current System)"
@@ -295,53 +295,56 @@ def list_systems_command(game_state: Game) -> None:
             cost_needed = distance_ly * player_ship.antimatter_consumption
             distance_str = f"{distance_ly:.2f} LY"
             ftl_cost_str = f"{cost_needed:.2f}g (Distance: {distance_str})"
-            
+
             # Determine reachability based on ship capabilities and fuel
             # Check if ship can theoretically reach (based on max antimatter capacity)
             max_possible_cost = distance_ly * player_ship.antimatter_consumption
             can_reach = max_possible_cost <= player_ship.max_antimatter
-            
+
             # Check if ship has enough fuel currently
             has_fuel = cost_needed <= player_ship.antimatter
-        
+
         # Calculate display name with marker
         display_name = f"{system.name} {marker}".strip()
         max_name_width = max(max_name_width, len(display_name))
         max_cost_width = max(max_cost_width, len(ftl_cost_str))
-        system_data.append({
-            'idx': idx,
-            'name': display_name,
-            'cost_str': ftl_cost_str,            'can_reach': can_reach,
-            'has_fuel': has_fuel,
-            'is_current': idx == current_system_idx,
-            'distance_ly': distance_ly
-        })
+        system_data.append(
+            {
+                "idx": idx,
+                "name": display_name,
+                "cost_str": ftl_cost_str,
+                "can_reach": can_reach,
+                "has_fuel": has_fuel,
+                "is_current": idx == current_system_idx,
+                "distance_ly": distance_ly,
+            }
+        )
 
     # Sort systems by distance (current system first, then by proximity)
-    system_data.sort(key=lambda x: (not x['is_current'], x['distance_ly']))
+    system_data.sort(key=lambda x: (not x["is_current"], x["distance_ly"]))
 
     game_state.ui.info_message("Available Solar Systems:")
-    
+
     for data in system_data:
         # Format index with proper padding
         index_str = f"Index: {data['idx']:>{max_index_width}}"
-        
+
         # Format name with proper padding
         name_str = f"Name: {data['name']:<{max_name_width}}"
-        
+
         # Format cost with proper padding
         cost_str = f"FTL Cost: {data['cost_str']:<{max_cost_width}}"
-        
+
         # Determine color for entire line based on reachability
-        if data['is_current']:
+        if data["is_current"]:
             line_color = Fore.CYAN  # Current system - cyan
-        elif not data['can_reach']:
-            line_color = Fore.RED   # Cannot reach - red
-        elif not data['has_fuel']:
+        elif not data["can_reach"]:
+            line_color = Fore.RED  # Cannot reach - red
+        elif not data["has_fuel"]:
             line_color = Fore.YELLOW  # Can reach but insufficient fuel - yellow
         else:
             line_color = Fore.GREEN  # Can reach with sufficient fuel - green
-        
+
         # Create the formatted line with entire line colored
         line = f"{line_color}  {index_str} | {name_str} | {cost_str}{Style.RESET_ALL}"
         print(line)

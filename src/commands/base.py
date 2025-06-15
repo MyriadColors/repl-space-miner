@@ -34,7 +34,5 @@ def register_command(
                     # If positional_index is already set, use the original Argument
                     argument_struct_list_with_index.append(arg)
 
-        command = Command(
-            command_function, argument_struct_list_with_index
-        )
+        command = Command(command_function, argument_struct_list_with_index)
         command_registry.register(name, command)

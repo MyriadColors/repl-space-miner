@@ -46,7 +46,7 @@ def market_command(game_state: Game) -> None:
     # Display available ores for trading
     game_state.ui.info_message("=== AVAILABLE ORES ===")
     game_state.ui.info_message(
-        f"{"Ore":<20} {"Quantity":<10} {"Buy Price":<12} {"Sell Price":<12} {"Value Diff":<12}"
+        f"{'Ore':<20} {'Quantity':<10} {'Buy Price':<12} {'Sell Price':<12} {'Value Diff':<12}"
     )
     game_state.ui.info_message("-" * 70)
 

@@ -244,7 +244,9 @@ def loan_menu(game_state: Game, character) -> None:
         color = (
             Fore.GREEN
             if credit_score > 700
-            else Fore.YELLOW if credit_score > 500 else Fore.RED
+            else Fore.YELLOW
+            if credit_score > 500
+            else Fore.RED
         )
         game_state.ui.info_message(
             f"Credit Score: {color}{credit_score}{Style.RESET_ALL} ({credit_rating})"
@@ -580,7 +582,7 @@ def display_loan_terms(game_state: Game, character) -> None:
     if character.debt_interest_mod != 1.0:
         if character.debt_interest_mod > 1.0:
             game_state.ui.warn_message(
-                f"Your Personalized Rate: {adjusted_rate:.1%}/week (+{(character.debt_interest_mod-1)*100:.0f}%)"
+                f"Your Personalized Rate: {adjusted_rate:.1%}/week (+{(character.debt_interest_mod - 1) * 100:.0f}%)"
             )
             if character.negative_trait == "Indebted":
                 game_state.ui.warn_message(
@@ -588,7 +590,7 @@ def display_loan_terms(game_state: Game, character) -> None:
                 )
         else:
             game_state.ui.success_message(
-                f"Your Personalized Rate: {adjusted_rate:.1%}/week (-{(1-character.debt_interest_mod)*100:.0f}%)"
+                f"Your Personalized Rate: {adjusted_rate:.1%}/week (-{(1 - character.debt_interest_mod) * 100:.0f}%)"
             )
 
     game_state.ui.info_message("\nLoan Terms:")

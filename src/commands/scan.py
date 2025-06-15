@@ -351,7 +351,7 @@ def display_celestial_detail(game_state: Game, celestial_body: CelestialBody) ->
         game_state.ui.info_message("Type: Moon")
         game_state.ui.info_message(
             f"Parent Planet: {celestial_body.parent_planet.name}"
-        )        # Display UHS information for moons
+        )  # Display UHS information for moons
         if (
             hasattr(celestial_body, "habitability_result")
             and celestial_body.habitability_result
@@ -364,7 +364,8 @@ def display_celestial_detail(game_state: Game, celestial_body: CelestialBody) ->
                 game_state.ui.info_message("Viable for life: Yes")
             else:
                 game_state.ui.info_message("Viable for life: No")
-        else:            game_state.ui.info_message(
+        else:
+            game_state.ui.info_message(
                 f"Habitability: {getattr(celestial_body, 'habitability_score', 0):.2f}/100"
             )
 
