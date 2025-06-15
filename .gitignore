@@ -114,3 +114,7 @@ game.txt
 .vscode
 *.zip
 .ruff_cache/
+main.dist
+main.build
+main.onefile-build
+main.exe
