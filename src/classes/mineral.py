@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Optional, Dict
 
+from src.classes.commodity import Commodity, Category
+
 
 class MineralQuality(Enum):
     """Represents the quality level of a mineral."""
@@ -27,10 +29,7 @@ class Mineral:
     used for refining, and the operator's engineering skill.
     """
 
-    name: str
-    base_value: float  # in credits
-    volume: float  # in m³ per unit
-    id: int
+    commodity: Commodity
     quality: MineralQuality = MineralQuality.STANDARD  # Default quality is STANDARD
     category: MaterialCategory = (
         MaterialCategory.HIGH_TEMP
@@ -39,16 +38,16 @@ class Mineral:
     def to_string(self):
         """Get a string representation of the mineral."""
         quality_str = self.quality.name.capitalize().replace("_", "-")
-        return f"{quality_str} {self.name}: {self.get_value()} credits, {self.volume} m³ per unit"
+        return f"{quality_str} {self.commodity.name}: {self.get_value()} credits, {self.commodity.volume_per_unit} m³ per unit"
 
     def get_info(self):
         """Get information about the mineral."""
         quality_str = self.quality.name.capitalize().replace("_", "-")
-        return f"{quality_str} {self.name} {self.get_value()} {self.volume}"
+        return f"{quality_str} {self.commodity.name} {self.get_value()} {self.commodity.volume_per_unit}"
 
     def get_name(self) -> str:
         """Get the lowercase name of the mineral."""
-        return self.name.lower()
+        return self.commodity.name.lower()
 
     def get_value(self) -> float:
         """Calculate the actual value based on quality level."""
@@ -57,7 +56,7 @@ class Mineral:
             MineralQuality.HIGH_GRADE: 1.75,
             MineralQuality.SPECIALIZED: 3.0,
         }
-        return round(self.base_value * quality_modifiers.get(self.quality, 1.0), 2)
+        return round(self.commodity.base_price * quality_modifiers.get(self.quality, 1.0), 2)
 
     def create_higher_quality_version(self) -> Optional["Mineral"]:
         """Create a new mineral object with the next quality level."""
@@ -74,43 +73,40 @@ class Mineral:
 
         # Create a new mineral with the same properties but higher quality
         return Mineral(
-            name=self.name,
-            base_value=self.base_value,
-            volume=self.volume
-            * 0.95,  # Higher quality minerals have slightly less volume
-            id=self.id,
+            commodity=self.commodity,
             quality=next_quality,
+            category=self.category,
         )
 
     def __hash__(self):
         # Use the ID and quality for hashing since they together form a unique identifier
-        return hash((self.id, self.quality))
+        return hash((self.commodity.commodity_id, self.quality))
 
     def __eq__(self, other):
         if not isinstance(other, Mineral):
             return False
-        return self.id == other.id and self.quality == other.quality
+        return self.commodity.commodity_id == other.commodity.commodity_id and self.quality == other.quality
 
 
 # Define minerals in a dictionary
 MINERALS: Dict[int, Mineral] = {
-    0: Mineral("Iron", 75.0, 0.2, 0, category=MaterialCategory.HIGH_TEMP),
+    0: Mineral(Commodity(commodity_id=0, name="Iron", category=Category.RAW_MATERIAL, base_price=75.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Iron ore", volume_per_unit=0.2, mass_per_unit=1.0), category=MaterialCategory.HIGH_TEMP),
     1: Mineral(
-        "Carbon", 45.0, 0.1, 1, category=MaterialCategory.LOW_TEMP
+        Commodity(commodity_id=1, name="Carbon", category=Category.RAW_MATERIAL, base_price=45.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Carbon-based material", volume_per_unit=0.1, mass_per_unit=0.5), category=MaterialCategory.LOW_TEMP
     ),  # Representing volatile carbon or less refractory forms
-    2: Mineral("Silicon", 90.0, 0.15, 2, category=MaterialCategory.HIGH_TEMP),
-    3: Mineral("Copper", 110.0, 0.25, 3, category=MaterialCategory.MID_TEMP),
-    4: Mineral("Zinc", 85.0, 0.2, 4, category=MaterialCategory.MID_TEMP),
-    5: Mineral("Aluminum", 95.0, 0.18, 5, category=MaterialCategory.HIGH_TEMP),
-    6: Mineral("Titanium", 200.0, 0.3, 6, category=MaterialCategory.HIGH_TEMP),
-    7: Mineral("Nickel", 150.0, 0.22, 7, category=MaterialCategory.HIGH_TEMP),
-    8: Mineral("Neodymium", 300.0, 0.25, 8, category=MaterialCategory.HIGH_TEMP),
-    9: Mineral("Gold", 500.0, 0.1, 9, category=MaterialCategory.HIGH_TEMP),
+    2: Mineral(Commodity(commodity_id=2, name="Silicon", category=Category.RAW_MATERIAL, base_price=90.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Silicon-based material", volume_per_unit=0.15, mass_per_unit=0.8), category=MaterialCategory.HIGH_TEMP),
+    3: Mineral(Commodity(commodity_id=3, name="Copper", category=Category.RAW_MATERIAL, base_price=110.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Copper ore", volume_per_unit=0.25, mass_per_unit=1.2), category=MaterialCategory.MID_TEMP),
+    4: Mineral(Commodity(commodity_id=4, name="Zinc", category=Category.RAW_MATERIAL, base_price=85.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Zinc ore", volume_per_unit=0.2, mass_per_unit=1.1), category=MaterialCategory.MID_TEMP),
+    5: Mineral(Commodity(commodity_id=5, name="Aluminum", category=Category.RAW_MATERIAL, base_price=95.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Aluminum ore", volume_per_unit=0.18, mass_per_unit=0.9), category=MaterialCategory.HIGH_TEMP),
+    6: Mineral(Commodity(commodity_id=6, name="Titanium", category=Category.RAW_MATERIAL, base_price=200.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Titanium ore", volume_per_unit=0.3, mass_per_unit=1.5), category=MaterialCategory.HIGH_TEMP),
+    7: Mineral(Commodity(commodity_id=7, name="Nickel", category=Category.RAW_MATERIAL, base_price=150.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Nickel ore", volume_per_unit=0.22, mass_per_unit=1.3), category=MaterialCategory.HIGH_TEMP),
+    8: Mineral(Commodity(commodity_id=8, name="Neodymium", category=Category.RAW_MATERIAL, base_price=300.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Neodymium ore", volume_per_unit=0.25, mass_per_unit=1.8), category=MaterialCategory.HIGH_TEMP),
+    9: Mineral(Commodity(commodity_id=9, name="Gold", category=Category.RAW_MATERIAL, base_price=500.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Gold ore", volume_per_unit=0.1, mass_per_unit=2.0), category=MaterialCategory.HIGH_TEMP),
     10: Mineral(
-        "Rare Earth Elements", 450.0, 0.15, 10, category=MaterialCategory.HIGH_TEMP
+        Commodity(commodity_id=10, name="Rare Earth Elements", category=Category.RAW_MATERIAL, base_price=450.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Rare earth elements", volume_per_unit=0.15, mass_per_unit=1.6), category=MaterialCategory.HIGH_TEMP
     ),
     11: Mineral(
-        "Exotic Materials", 1200.0, 0.5, 11, category=MaterialCategory.HIGH_TEMP
+        Commodity(commodity_id=11, name="Exotic Materials", category=Category.RAW_MATERIAL, base_price=1200.0, price_volatility=0.1, volatility_range=(0.0, 0.0), description="Exotic materials", volume_per_unit=0.5, mass_per_unit=2.5), category=MaterialCategory.HIGH_TEMP
     ),  # Assumption
 }
 
@@ -118,6 +114,6 @@ MINERALS: Dict[int, Mineral] = {
 def get_mineral_by_name(name: str) -> Mineral | None:
     """Get a mineral by its name."""
     for mineral in MINERALS.values():
-        if mineral.name.lower() == name.lower():
+        if mineral.commodity.name.lower() == name.lower():
             return mineral
     return None

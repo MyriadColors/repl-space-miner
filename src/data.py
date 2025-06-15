@@ -113,8 +113,10 @@ class PlanetType(Enum):
 # Constants for celestial body generation
 # Min/max number of planets to generate
 PLANET_MIN_MAX_NUM: Tuple[int, int] = (3, 8)
-ASTEROID_BELT_MIN_MAX_NUM: Tuple[int, int] = (1, 3)  # Min/max number of asteroid belts
-ASTEROID_BELT_WIDTH_MIN_MAX: Tuple[float, float] = (0.5, 2.0)  # Belt width in AU
+ASTEROID_BELT_MIN_MAX_NUM: Tuple[int, int] = (
+    1, 3)  # Min/max number of asteroid belts
+ASTEROID_BELT_WIDTH_MIN_MAX: Tuple[float, float] = (
+    0.5, 2.0)  # Belt width in AU
 ASTEROID_BELT_FIELDS_MIN_MAX: Tuple[int, int] = (3, 8)  # Fields per belt
 
 # System generation templates for creating diverse solar systems
@@ -221,7 +223,8 @@ SYSTEM_TEMPLATES = {
         population_range=(5000, 500000),
         tech_level_range=(3, 7),
         anomaly_chance=0.08,
-        possible_anomalies=["Rich Asteroid Belt", "Depleted Field", "Mining Accident"],
+        possible_anomalies=["Rich Asteroid Belt",
+                            "Depleted Field", "Mining Accident"],
         generation_weight=25.0,
     ),
     "research_outpost": SystemTemplate(
@@ -273,7 +276,8 @@ SYSTEM_TEMPLATES = {
         population_range=(10000, 1000000),
         tech_level_range=(5, 8),
         anomaly_chance=0.12,
-        possible_anomalies=["Trade Beacon", "Pirate Activity", "Navigation Hazard"],
+        possible_anomalies=["Trade Beacon",
+                            "Pirate Activity", "Navigation Hazard"],
         generation_weight=20.0,
     ),
     # New diverse system templates for expanded variety
@@ -329,7 +333,8 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(6, 10),
         faction_preference="Military Command",
         anomaly_chance=0.08,
-        possible_anomalies=["Security Grid", "Defense Platform", "Patrol Route"],
+        possible_anomalies=["Security Grid",
+                            "Defense Platform", "Patrol Route"],
         generation_weight=12.0,
     ),
     "pirate_haven": SystemTemplate(
@@ -382,7 +387,8 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(7, 10),
         faction_preference="Mega Corporation",
         anomaly_chance=0.06,
-        possible_anomalies=["Corporate Facility", "Production Line", "Trade Beacon"],
+        possible_anomalies=["Corporate Facility",
+                            "Production Line", "Trade Beacon"],
         generation_weight=18.0,
     ),
     "agricultural_colony": SystemTemplate(
@@ -406,7 +412,8 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(4, 7),
         faction_preference="Colonial Authority",
         anomaly_chance=0.05,
-        possible_anomalies=["Fertile Zone", "Weather Control", "Harvest Festival"],
+        possible_anomalies=["Fertile Zone",
+                            "Weather Control", "Harvest Festival"],
         generation_weight=14.0,
     ),
     "hazardous_zone": SystemTemplate(
@@ -489,7 +496,8 @@ SYSTEM_TEMPLATES = {
         tech_level_range=(5, 8),
         faction_preference="Industrial Syndicate",
         anomaly_chance=0.10,
-        possible_anomalies=["Processing Plant", "Refinery Station", "Material Cache"],
+        possible_anomalies=["Processing Plant",
+                            "Refinery Station", "Material Cache"],
         generation_weight=16.0,
     ),
     "ancient_mystery": SystemTemplate(
@@ -607,7 +615,8 @@ def generate_system_from_template(
     # Generate anomalies if applicable
     anomalies = []
     if template.possible_anomalies and random.random() < template.anomaly_chance:
-        num_anomalies = random.randint(1, min(2, len(template.possible_anomalies)))
+        num_anomalies = random.randint(
+            1, min(2, len(template.possible_anomalies)))
         anomalies = random.sample(template.possible_anomalies, num_anomalies)
 
     return {
@@ -838,7 +847,8 @@ class OreCargo:
         if ore_obj is None:
             # Handle missing ore, perhaps raise an error or return None
             # Handle purity if present
-            raise ValueError(f"Ore with ID {data['ore_id']} not found in ORES map.")
+            raise ValueError(
+                f"Ore with ID {data['ore_id']} not found in ORES map.")
         if "purity" in data:
             try:
                 purity_level = PurityLevel[data["purity"]]
@@ -872,7 +882,6 @@ class MineralCargo:
     """
     Represents a quantity of minerals in the player's cargo or a station's inventory.
     """
-
     mineral: Mineral
     quantity: int
     buy_price: float
@@ -880,7 +889,7 @@ class MineralCargo:
 
     def to_dict(self):
         return {
-            "mineral_id": self.mineral.id,
+            "mineral_id": self.mineral.commodity.commodity_id,
             "quantity": self.quantity,
             "buy_price": self.buy_price,
             "sell_price": self.sell_price,
@@ -908,11 +917,9 @@ class MineralCargo:
                 quality_level = MineralQuality[data["quality"]]
                 # Create a copy of the mineral with the saved quality level
                 mineral_obj = Mineral(
-                    name=mineral_obj.name,
-                    base_value=mineral_obj.base_value,
-                    volume=mineral_obj.volume,
-                    id=mineral_obj.id,
+                    commodity=mineral_obj.commodity,
                     quality=quality_level,
+                    category=mineral_obj.category,
                 )
             except (KeyError, AttributeError):
                 # If there's an error with quality, use the default mineral

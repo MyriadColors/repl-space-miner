@@ -42,7 +42,8 @@ def refine_command(game_state: Game, amount: Optional[int] = None) -> None:
 
     # Must be docked at a station to refine
     if not player_ship.is_docked:
-        game_state.ui.error_message("You must be docked at a station to refine ore.")
+        game_state.ui.error_message(
+            "You must be docked at a station to refine ore.")
         return
 
     station = player_ship.get_station_docked_at()
@@ -52,7 +53,8 @@ def refine_command(game_state: Game, amount: Optional[int] = None) -> None:
 
     # Check if player has any ore to refine
     if not player_ship.cargohold:
-        game_state.ui.error_message("You have no ore in your cargo hold to refine.")
+        game_state.ui.error_message(
+            "You have no ore in your cargo hold to refine.")
         return
 
     # Display available items to refine
@@ -61,7 +63,8 @@ def refine_command(game_state: Game, amount: Optional[int] = None) -> None:
     ]
 
     if not refinable_cargo:
-        game_state.ui.error_message("You have no ore that can be refined further.")
+        game_state.ui.error_message(
+            "You have no ore that can be refined further.")
         return
 
     game_state.ui.info_message("Available ores to refine:")
@@ -84,7 +87,8 @@ def refine_command(game_state: Game, amount: Optional[int] = None) -> None:
 
     # Get user selection
     try:
-        selection = int(take_input("Select ore number to refine (0 to cancel): "))
+        selection = int(take_input(
+            "Select ore number to refine (0 to cancel): "))
         if selection == 0:
             game_state.ui.info_message("Refining cancelled.")
             return
@@ -109,7 +113,8 @@ def refine_command(game_state: Game, amount: Optional[int] = None) -> None:
                 else:
                     amount = int(amount_str)
             except ValueError:
-                game_state.ui.error_message("Invalid amount. Refining cancelled.")
+                game_state.ui.error_message(
+                    "Invalid amount. Refining cancelled.")
                 return
 
         # Validate amount
@@ -145,10 +150,13 @@ def refine_command(game_state: Game, amount: Optional[int] = None) -> None:
             f"Ore: {selected_cargo.ore.purity.name} {selected_cargo.ore.name} -> {refined_ore.purity.name} {refined_ore.name}"
         )
         game_state.ui.info_message(f"Amount: {amount} units")
-        game_state.ui.info_message(f"Current value: {current_value_total} credits")
-        game_state.ui.info_message(f"Refined value: {refined_value_total} credits")
+        game_state.ui.info_message(
+            f"Current value: {current_value_total} credits")
+        game_state.ui.info_message(
+            f"Refined value: {refined_value_total} credits")
         game_state.ui.info_message(f"Value increase: {value_increase} credits")
-        game_state.ui.info_message(f"Refining cost: {total_refining_cost} credits")
+        game_state.ui.info_message(
+            f"Refining cost: {total_refining_cost} credits")
         game_state.ui.info_message(
             f"Net profit: {value_increase - total_refining_cost} credits"
         )
@@ -198,16 +206,19 @@ def refine_command(game_state: Game, amount: Optional[int] = None) -> None:
 
         # Grant experience for Refining & Processing skill
         assert amount is not None
-        process_skill_xp_from_activity(game_state, "Refining & Processing", amount * 2)
+        process_skill_xp_from_activity(
+            game_state, "Refining & Processing", amount * 2)
 
         game_state.ui.success_message(
             f"Successfully refined {amount} units of {selected_cargo.ore.name} "
             f"to {refined_ore.purity.name} purity."
         )
-        game_state.ui.info_message(f"Remaining credits: {player_character.credits}")
+        game_state.ui.info_message(
+            f"Remaining credits: {player_character.credits}")
 
     except ValueError:
-        game_state.ui.error_message("Invalid selection. Please enter a number.")
+        game_state.ui.error_message(
+            "Invalid selection. Please enter a number.")
         return
 
 
@@ -253,7 +264,8 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
 
     # Check if player has any ore to refine
     if not player_ship.cargohold:
-        game_state.ui.error_message("You have no ore in your cargo hold to refine.")
+        game_state.ui.error_message(
+            "You have no ore in your cargo hold to refine.")
         return
 
     # Display available items to refine
@@ -268,15 +280,14 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         return
 
     game_state.ui.info_message("Available ores to refine into minerals:")
-
     for i, cargo in enumerate(refinable_cargo, 1):
         mineral_yields = cargo.ore.get_mineral_yield()
-
         minerals_list = []
         for mineral_id, yield_amount in mineral_yields.items():
             mineral = MINERALS.get(mineral_id)
             if mineral:
-                minerals_list.append(f"{mineral.name} ({yield_amount * 100:.0f}%)")
+                minerals_list.append(
+                    f"{mineral.commodity.name} ({yield_amount * 100:.0f}%)")
 
         minerals_str = ", ".join(minerals_list)
 
@@ -290,7 +301,8 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
     # Get user selection
     try:
         selection = int(
-            take_input("Select ore number to refine into minerals (0 to cancel): ")
+            take_input(
+                "Select ore number to refine into minerals (0 to cancel): ")
         )
         if selection == 0:
             game_state.ui.info_message("Refining cancelled.")
@@ -315,7 +327,8 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
                 else:
                     amount = int(amount_str)
             except ValueError:
-                game_state.ui.error_message("Invalid amount. Refining cancelled.")
+                game_state.ui.error_message(
+                    "Invalid amount. Refining cancelled.")
                 return
         # Validate amount
         if amount is None or amount <= 0:
@@ -374,7 +387,8 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
                 # Calculate mineral amount produced, applying skill bonus
                 mineral_amount = round(amount * yield_ratio * skill_bonus)
                 mineral_value = round(mineral.get_value() * mineral_amount, 2)
-                mineral_volume = round(mineral.volume * mineral_amount, 2)
+                mineral_volume = round(
+                    mineral.commodity.volume_per_unit * mineral_amount, 2)
 
                 total_minerals_value += mineral_value
                 total_minerals_volume += mineral_volume
@@ -382,7 +396,7 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
                 minerals_produced[mineral_id] = mineral_amount
 
                 game_state.ui.info_message(
-                    f"  - {mineral.name}: {mineral_amount} units "
+                    f"  - {mineral.commodity.name}: {mineral_amount} units "
                     f"(Value: {mineral_value} credits, Volume: {mineral_volume} m³)"
                 )
 
@@ -399,13 +413,17 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         game_state.ui.info_message(
             f"Total minerals value: {total_minerals_value} credits"
         )
-        game_state.ui.info_message(f"Total minerals volume: {total_minerals_volume} m³")
-        game_state.ui.info_message(f"Net cargo volume change: {net_volume_change} m³")
-        game_state.ui.info_message(f"Refining cost: {total_refining_cost} credits")
+        game_state.ui.info_message(
+            f"Total minerals volume: {total_minerals_volume} m³")
+        game_state.ui.info_message(
+            f"Net cargo volume change: {net_volume_change} m³")
+        game_state.ui.info_message(
+            f"Refining cost: {total_refining_cost} credits")
         game_state.ui.info_message(
             f"Net profit: {total_minerals_value - total_refining_cost} credits"
         )
-        confirm = take_input("Proceed with refining into minerals? (y/n): ").lower()
+        confirm = take_input(
+            "Proceed with refining into minerals? (y/n): ").lower()
         if confirm != "y":
             game_state.ui.info_message("Refining cancelled.")
             return
@@ -468,7 +486,7 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         notify_skill_progress(game_state, skill_results)
 
         mineral_names = [
-            MINERALS[mineral_id].name for mineral_id in minerals_produced.keys()
+            MINERALS[mineral_id].commodity.name for mineral_id in minerals_produced.keys()
         ]
         mineral_names_str = ", ".join(mineral_names)
 
@@ -476,10 +494,12 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
             f"Successfully refined {amount} units of {selected_cargo.ore.name} "
             f"into minerals: {mineral_names_str}."
         )
-        game_state.ui.info_message(f"Remaining credits: {player_character.credits}")
+        game_state.ui.info_message(
+            f"Remaining credits: {player_character.credits}")
 
     except ValueError:
-        game_state.ui.error_message("Invalid selection. Please enter a number.")
+        game_state.ui.error_message(
+            "Invalid selection. Please enter a number.")
         return
 
 
