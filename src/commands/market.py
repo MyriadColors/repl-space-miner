@@ -27,7 +27,8 @@ def market_command(game_state: Game) -> None:
 
     station = player_ship.get_station_docked_at()
     if not station:
-        game_state.ui.error_message("Error: Cannot find the station you are docked at.")
+        game_state.ui.error_message(
+            "Error: Cannot find the station you are docked at.")
         return
 
     # Display station market header
@@ -38,7 +39,8 @@ def market_command(game_state: Game) -> None:
 
     # Display fuel prices
     game_state.ui.info_message("=== FUEL ===")
-    game_state.ui.info_message(f"Fuel Price: {station.fuel_price:.2f} credits per m³")
+    game_state.ui.info_message(
+        f"Fuel Price: {station.fuel_price:.2f} credits per m³")
     game_state.ui.info_message(
         f"Available Fuel: {station.fuel_tank:.2f}/{station.fuel_tank_capacity:.2f} m³\n"
     )
@@ -70,7 +72,8 @@ def market_command(game_state: Game) -> None:
     game_state.ui.info_message(
         "\nNote: You can use 'all' instead of a specific amount."
     )
-    game_state.ui.info_message("Example: 'sell Pyrogen all' or 'buy Ferrite 50'")
+    game_state.ui.info_message(
+        "Example: 'sell Pyrogen all' or 'buy Ferrite 50'")
 
 
 # Register the market command

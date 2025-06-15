@@ -56,7 +56,8 @@ def quick_start(game_state: "Game"):
     # Assign the fully initialized character to game_state
     game_state.player_character = character
 
-    print(Fore.GREEN + f"Created character: {player_name}, {age} year old {sex}")
+    print(Fore.GREEN +
+          f"Created character: {player_name}, {age} year old {sex}")
     print(Fore.GREEN + f"Background: {chosen_background.name}")
     print(Fore.GREEN + f"Positive trait: {chosen_positive}")
     # Create default ship
@@ -175,7 +176,8 @@ class AntimatterFluctuation(FTLEvent):
 
         # Apply the drop to containment integrity
         old_integrity = player_ship.containment_integrity
-        player_ship.containment_integrity = max(5.0, old_integrity - integrity_drop)
+        player_ship.containment_integrity = max(
+            5.0, old_integrity - integrity_drop)
 
         # Increase failure risk based on severity
         risk_increase = self.severity * random.uniform(1.0, 3.0)
@@ -218,7 +220,8 @@ class AntimatterFluctuation(FTLEvent):
                     print(
                         f"{Fore.GREEN}Emergency power applied. Containment stabilized at {player_ship.containment_integrity:.1f}%.{Style.RESET_ALL}"
                     )
-                    print(f"Fuel reserves depleted by {fuel_needed:.1f} units.")
+                    print(
+                        f"Fuel reserves depleted by {fuel_needed:.1f} units.")
                 else:
                     print(
                         f"{Fore.RED}Not enough fuel! Containment remains unstable!{Style.RESET_ALL}"
@@ -233,7 +236,8 @@ class AntimatterFluctuation(FTLEvent):
                 print(
                     f"{Fore.GREEN}Containment field recalibrated to {player_ship.containment_integrity:.1f}%.{Style.RESET_ALL}"
                 )
-                print(f"The procedure took {time_needed / 60:.1f} additional minutes.")
+                print(
+                    f"The procedure took {time_needed / 60:.1f} additional minutes.")
 
             else:  # choice 3 or invalid
                 print(
@@ -297,7 +301,8 @@ class SpacetimeDisruption(FTLEvent):
         # Effects based on severity
         if self.severity == 1:
             # Minor - just a delay or time save
-            time_effect = random.choice([-1800, -900, 900, 1800])  # +/- 15-30 minutes
+            time_effect = random.choice(
+                [-1800, -900, 900, 1800])  # +/- 15-30 minutes
             game_state.global_time += time_effect
 
             if time_effect < 0:
@@ -328,7 +333,8 @@ class SpacetimeDisruption(FTLEvent):
                 print(
                     f"{Fore.YELLOW}The disruption temporarily reduces sensor efficiency.{Style.RESET_ALL}"
                 )
-                print(f"Sensor range decreased to {player_ship.sensor_range:.2f} AU.")
+                print(
+                    f"Sensor range decreased to {player_ship.sensor_range:.2f} AU.")
                 result_system = {
                     "affected": "sensors",
                     "new_range": player_ship.sensor_range,
@@ -340,7 +346,8 @@ class SpacetimeDisruption(FTLEvent):
                 print(
                     f"{Fore.YELLOW}Spacetime stress causes minor hull damage.{Style.RESET_ALL}"
                 )
-                print(f"Hull integrity reduced to {player_ship.hull_integrity:.1f}%")
+                print(
+                    f"Hull integrity reduced to {player_ship.hull_integrity:.1f}%")
                 result_system = {"affected": "hull", "damage": damage}
 
             else:  # antimatter
@@ -382,13 +389,15 @@ class SpacetimeDisruption(FTLEvent):
                     print(
                         f"{Fore.GREEN}You push the engines hard and force your way through the disruption.{Style.RESET_ALL}"
                     )
-                    print(f"The maneuver consumed {fuel_needed:.1f} units of fuel.")
+                    print(
+                        f"The maneuver consumed {fuel_needed:.1f} units of fuel.")
                     return {
                         "choice": "force_through",
                         "fuel_used": fuel_needed,
                     }
                 elif choice == "2":
-                    added_time = round(random.uniform(3600, 7200), 2)  # 1-2 hours
+                    added_time = round(random.uniform(
+                        3600, 7200), 2)  # 1-2 hours
                     game_state.global_time += int(added_time)
                     print(
                         f"{Fore.YELLOW}You plot a safer course around the disruption.{Style.RESET_ALL}"
@@ -434,7 +443,8 @@ class SpacetimeDisruption(FTLEvent):
                     }
                     return result_choice3_bad
                 elif luck < 0.8:  # Neutral outcome
-                    time_effect = int(random.uniform(1800, 3600))  # 30-60 min delay
+                    time_effect = int(random.uniform(
+                        1800, 3600))  # 30-60 min delay
                     game_state.global_time += int(time_effect)
                     print(
                         f"{Fore.YELLOW}Your ship is buffeted by the disruption but survives intact.{Style.RESET_ALL}"

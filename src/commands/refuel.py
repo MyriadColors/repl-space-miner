@@ -43,7 +43,8 @@ def refuel_command(game_state: Game, amount: float) -> None:
         return
 
     if player_character.credits < total_cost:
-        game_state.ui.error_message(f"Not enough credits. Cost: {total_cost} credits")
+        game_state.ui.error_message(
+            f"Not enough credits. Cost: {total_cost} credits")
         return
 
     # Confirm purchase
@@ -60,11 +61,13 @@ def refuel_command(game_state: Game, amount: float) -> None:
     player_ship.fuel += amount
     station.fuel_tank -= amount
 
-    game_state.ui.success_message(f"Successfully refueled {amount} m³ of fuel.")
+    game_state.ui.success_message(
+        f"Successfully refueled {amount} m³ of fuel.")
     game_state.ui.info_message(
         f"New fuel level: {player_ship.fuel}/{player_ship.max_fuel} m³"
     )
-    game_state.ui.info_message(f"Remaining credits: {player_character.credits}")
+    game_state.ui.info_message(
+        f"Remaining credits: {player_character.credits}")
 
 
 # Register refuel command

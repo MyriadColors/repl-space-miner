@@ -35,7 +35,8 @@ def trading_menu_command(game_state: Game) -> None:
 
     station = player_ship.get_station_docked_at()
     if not station:
-        game_state.ui.error_message("Error: Cannot find the station you are docked at.")
+        game_state.ui.error_message(
+            "Error: Cannot find the station you are docked at.")
         return
 
     player_character = game_state.get_player_character()
@@ -112,7 +113,8 @@ def _display_trading_header(
     player_ship = game_state.get_player_ship()
     cargo_used = player_ship.cargohold_occupied
     cargo_capacity = player_ship.cargohold_capacity
-    cargo_percentage = (cargo_used / cargo_capacity * 100) if cargo_capacity > 0 else 0
+    cargo_percentage = (cargo_used / cargo_capacity *
+                        100) if cargo_capacity > 0 else 0
 
     cargo_color = (
         Fore.GREEN
@@ -165,7 +167,8 @@ def _enhanced_buy_interface(game_state: Game) -> None:
             take_input("Press Enter to return...")
             return
 
-        available_items = [cargo for cargo in station.ore_cargo if cargo.quantity > 0]
+        available_items = [
+            cargo for cargo in station.ore_cargo if cargo.quantity > 0]
 
         game_state.ui.info_message("Available Commodities:")
         game_state.ui.info_message(
@@ -188,10 +191,12 @@ def _enhanced_buy_interface(game_state: Game) -> None:
 
         game_state.ui.info_message(f"\n{Fore.YELLOW}Options:{Style.RESET_ALL}")
         game_state.ui.info_message("• Enter item number to buy")
-        game_state.ui.info_message("• Type 'all' to buy maximum affordable quantity")
+        game_state.ui.info_message(
+            "• Type 'all' to buy maximum affordable quantity")
         game_state.ui.info_message("• Type '0' to return to trading menu")
 
-        choice = take_input(f"\n{Fore.YELLOW}Select item to buy: {Style.RESET_ALL}")
+        choice = take_input(
+            f"\n{Fore.YELLOW}Select item to buy: {Style.RESET_ALL}")
 
         if choice == "0":
             break
@@ -222,7 +227,8 @@ def _enhanced_sell_interface(game_state: Game) -> None:
         )
 
         if not player_ship.cargohold:
-            game_state.ui.error_message("No commodities to sell in your cargo hold.")
+            game_state.ui.error_message(
+                "No commodities to sell in your cargo hold.")
             take_input("Press Enter to return...")
             return
 
@@ -251,7 +257,8 @@ def _enhanced_sell_interface(game_state: Game) -> None:
         game_state.ui.info_message("• Type 'all' to sell entire cargo hold")
         game_state.ui.info_message("• Type '0' to return to trading menu")
 
-        choice = take_input(f"\n{Fore.YELLOW}Select item to sell: {Style.RESET_ALL}")
+        choice = take_input(
+            f"\n{Fore.YELLOW}Select item to sell: {Style.RESET_ALL}")
 
         if choice == "0":
             break
@@ -260,7 +267,8 @@ def _enhanced_sell_interface(game_state: Game) -> None:
         elif choice.isdigit():
             item_index = int(choice) - 1
             if 0 <= item_index < len(player_ship.cargohold):
-                _process_item_sale(game_state, player_ship.cargohold[item_index])
+                _process_item_sale(
+                    game_state, player_ship.cargohold[item_index])
             else:
                 game_state.ui.error_message("Invalid item number.")
                 take_input("Press Enter to continue...")
@@ -293,7 +301,8 @@ def _price_comparison_interface(game_state: Game) -> None:
     game_state.ui.info_message("3. Trade opportunities")
     game_state.ui.info_message("4. All (comprehensive)")
 
-    choice = take_input(f"\n{Fore.YELLOW}Select option (1-4): {Style.RESET_ALL}")
+    choice = take_input(
+        f"\n{Fore.YELLOW}Select option (1-4): {Style.RESET_ALL}")
 
     option_map = {"1": "buy", "2": "sell", "3": "trade", "4": "all"}
     if choice in option_map:
@@ -315,7 +324,8 @@ def _trade_routes_interface(game_state: Game) -> None:
 
     max_routes = take_input("Maximum routes to display (default 5): ") or "5"
     include_unreachable = (
-        take_input("Include unreachable stations? (y/n, default n): ").lower() == "y"
+        take_input(
+            "Include unreachable stations? (y/n, default n): ").lower() == "y"
     )
 
     find_best_trade_routes(game_state, max_routes, include_unreachable)
@@ -332,11 +342,13 @@ def _quick_trade_interface(game_state: Game) -> None:
     )
 
     game_state.ui.info_message("1. Sell all cargo")
-    game_state.ui.info_message("2. Buy maximum affordable of most profitable item")
+    game_state.ui.info_message(
+        "2. Buy maximum affordable of most profitable item")
     game_state.ui.info_message("3. Fill cargo with cheapest available items")
     game_state.ui.info_message("4. Return to trading menu")
 
-    choice = take_input(f"\n{Fore.YELLOW}Select option (1-4): {Style.RESET_ALL}")
+    choice = take_input(
+        f"\n{Fore.YELLOW}Select option (1-4): {Style.RESET_ALL}")
 
     if choice == "1":
         _sell_all_cargo(game_state)
@@ -379,7 +391,8 @@ def _trading_statistics_interface(game_state: Game) -> None:
         station_ore = station.get_ore_by_name(cargo.ore.name)
         if station_ore:
             estimated_value = (
-                _calculate_modified_sell_price(game_state, station_ore.sell_price)
+                _calculate_modified_sell_price(
+                    game_state, station_ore.sell_price)
                 * cargo.quantity
             )
         else:
@@ -432,7 +445,8 @@ def _trading_statistics_interface(game_state: Game) -> None:
                 unit_value = cargo.ore.price
             total_value = unit_value * cargo.quantity
             ore_name = f"{cargo.ore.purity.name} {cargo.ore.name}"
-            cargo_values.append((ore_name, cargo.quantity, unit_value, total_value))
+            cargo_values.append(
+                (ore_name, cargo.quantity, unit_value, total_value))
 
         # Sort by total value (descending)
         cargo_values.sort(key=lambda x: x[3], reverse=True)
@@ -464,7 +478,8 @@ def _trading_statistics_interface(game_state: Game) -> None:
         else 0
     )
 
-    game_state.ui.info_message(f"Charisma Bonus: {charisma_bonus:.1f}% better prices")
+    game_state.ui.info_message(
+        f"Charisma Bonus: {charisma_bonus:.1f}% better prices")
     game_state.ui.info_message(
         f"Trader Reputation Bonus: {trader_rep_bonus:.1f}% better prices"
     )
@@ -478,7 +493,8 @@ def _trading_statistics_interface(game_state: Game) -> None:
 
     for ore_cargo in station.ore_cargo:
         if ore_cargo.quantity > 0:
-            buy_price = _calculate_modified_buy_price(game_state, ore_cargo.buy_price)
+            buy_price = _calculate_modified_buy_price(
+                game_state, ore_cargo.buy_price)
             value_ratio = ore_cargo.ore.base_value / buy_price if buy_price > 0 else 0
             ore_name = f"{ore_cargo.ore.purity.name} {ore_cargo.ore.name}"
             best_buys.append((ore_name, buy_price, value_ratio))
@@ -496,7 +512,8 @@ def _trading_statistics_interface(game_state: Game) -> None:
                 else 0
             )
             ore_name = f"{cargo.ore.purity.name} {cargo.ore.name}"
-            best_sells.append((ore_name, cargo.quantity, sell_price, profit_margin))
+            best_sells.append(
+                (ore_name, cargo.quantity, sell_price, profit_margin))
 
     if best_buys:
         best_buys.sort(key=lambda x: x[2], reverse=True)  # Sort by value ratio
@@ -509,7 +526,8 @@ def _trading_statistics_interface(game_state: Game) -> None:
     if best_sells:
         # Sort by profit margin
         best_sells.sort(key=lambda x: x[3], reverse=True)
-        game_state.ui.info_message("Best Sell Opportunities (by profit margin):")
+        game_state.ui.info_message(
+            "Best Sell Opportunities (by profit margin):")
         for ore_name, quantity, price, margin in best_sells[:3]:
             game_state.ui.info_message(
                 f"  {ore_name}: {price:.2f} credits ({margin:.1%} margin)"
@@ -578,7 +596,8 @@ def _smart_cargo_management(game_state: Game) -> None:
                 sell_price / cargo.ore.volume if cargo.ore.volume > 0 else 0
             )
             ore_name = f"{cargo.ore.purity.name} {cargo.ore.name}"
-            cargo_efficiency.append((cargo, ore_name, sell_price, value_per_volume))
+            cargo_efficiency.append(
+                (cargo, ore_name, sell_price, value_per_volume))
 
     if not cargo_efficiency:
         game_state.ui.warn_message("No cargo to manage.")
@@ -592,7 +611,8 @@ def _smart_cargo_management(game_state: Game) -> None:
     station_efficiency = []
     for ore_cargo in station.ore_cargo:
         if ore_cargo.quantity > 0:
-            buy_price = _calculate_modified_buy_price(game_state, ore_cargo.buy_price)
+            buy_price = _calculate_modified_buy_price(
+                game_state, ore_cargo.buy_price)
             value_per_volume = (
                 ore_cargo.ore.base_value / ore_cargo.ore.volume
                 if ore_cargo.ore.volume > 0
@@ -609,7 +629,8 @@ def _smart_cargo_management(game_state: Game) -> None:
     game_state.ui.info_message(
         f"\n{Fore.GREEN}=== SMART CARGO MANAGEMENT ==={Style.RESET_ALL}"
     )
-    game_state.ui.info_message("Least efficient cargo items (candidates for selling):")
+    game_state.ui.info_message(
+        "Least efficient cargo items (candidates for selling):")
 
     for i, (cargo, ore_name, sell_price, efficiency) in enumerate(cargo_efficiency[:3]):
         game_state.ui.info_message(
@@ -666,7 +687,8 @@ def _process_item_purchase(game_state: Game, ore_cargo) -> None:
     # Calculate modified price
     unit_price = _calculate_modified_buy_price(game_state, ore_cargo.buy_price)
 
-    game_state.ui.info_message(f"\n{Fore.GREEN}Purchasing: {ore_name}{Style.RESET_ALL}")
+    game_state.ui.info_message(
+        f"\n{Fore.GREEN}Purchasing: {ore_name}{Style.RESET_ALL}")
     game_state.ui.info_message(f"Available Quantity: {ore_cargo.quantity}")
     game_state.ui.info_message(f"Price per Unit: {unit_price:.2f} credits")
     game_state.ui.info_message(f"Your Credits: {player_character.credits:.2f}")
@@ -700,7 +722,8 @@ def _process_item_purchase(game_state: Game, ore_cargo) -> None:
                     f"Please enter a quantity between 1 and {max_available}."
                 )
         else:
-            game_state.ui.error_message("Please enter a valid number or 'max'.")
+            game_state.ui.error_message(
+                "Please enter a valid number or 'max'.")
 
     # Calculate total cost
     total_cost = unit_price * quantity
@@ -715,7 +738,8 @@ def _process_item_purchase(game_state: Game, ore_cargo) -> None:
         f"Credits After Purchase: {player_character.credits - total_cost:.2f}"
     )
 
-    confirm = take_input(f"\n{Fore.YELLOW}Confirm purchase? (y/n): {Style.RESET_ALL}")
+    confirm = take_input(
+        f"\n{Fore.YELLOW}Confirm purchase? (y/n): {Style.RESET_ALL}")
 
     if confirm.lower() == "y":
         # Use existing buy command
@@ -731,9 +755,11 @@ def _process_item_sale(game_state: Game, ore_cargo) -> None:
     ore_name = f"{ore_cargo.ore.purity.name} {ore_cargo.ore.name}"
 
     # Calculate estimated sell price
-    estimated_price = _calculate_modified_sell_price(game_state, ore_cargo.ore.price)
+    estimated_price = _calculate_modified_sell_price(
+        game_state, ore_cargo.ore.price)
 
-    game_state.ui.info_message(f"\n{Fore.GREEN}Selling: {ore_name}{Style.RESET_ALL}")
+    game_state.ui.info_message(
+        f"\n{Fore.GREEN}Selling: {ore_name}{Style.RESET_ALL}")
     game_state.ui.info_message(f"Available Quantity: {ore_cargo.quantity}")
     game_state.ui.info_message(
         f"Estimated Price per Unit: {estimated_price:.2f} credits"
@@ -757,7 +783,8 @@ def _process_item_sale(game_state: Game, ore_cargo) -> None:
                     f"Please enter a quantity between 1 and {ore_cargo.quantity}."
                 )
         else:
-            game_state.ui.error_message("Please enter a valid number or 'all'.")
+            game_state.ui.error_message(
+                "Please enter a valid number or 'all'.")
 
     # Calculate estimated total
     estimated_total = estimated_price * quantity
@@ -766,10 +793,13 @@ def _process_item_sale(game_state: Game, ore_cargo) -> None:
     game_state.ui.info_message("\nSale Summary:")
     game_state.ui.info_message(f"Item: {ore_name}")
     game_state.ui.info_message(f"Quantity: {quantity}")
-    game_state.ui.info_message(f"Estimated Unit Price: {estimated_price:.2f} credits")
-    game_state.ui.info_message(f"Estimated Total: {estimated_total:.2f} credits")
+    game_state.ui.info_message(
+        f"Estimated Unit Price: {estimated_price:.2f} credits")
+    game_state.ui.info_message(
+        f"Estimated Total: {estimated_total:.2f} credits")
 
-    confirm = take_input(f"\n{Fore.YELLOW}Confirm sale? (y/n): {Style.RESET_ALL}")
+    confirm = take_input(
+        f"\n{Fore.YELLOW}Confirm sale? (y/n): {Style.RESET_ALL}")
 
     if confirm.lower() == "y":
         # Simulate item selection for sell command
@@ -814,13 +844,15 @@ def _sell_all_cargo(game_state: Game) -> None:
 
     total_estimated_value = 0
     for cargo in player_ship.cargohold:
-        estimated_price = _calculate_modified_sell_price(game_state, cargo.ore.price)
+        estimated_price = _calculate_modified_sell_price(
+            game_state, cargo.ore.price)
         total_estimated_value += estimated_price * cargo.quantity
 
     game_state.ui.info_message(
         f"\nEstimated total value of all cargo: {total_estimated_value:.2f} credits"
     )
-    confirm = take_input(f"{Fore.YELLOW}Sell all cargo? (y/n): {Style.RESET_ALL}")
+    confirm = take_input(
+        f"{Fore.YELLOW}Sell all cargo? (y/n): {Style.RESET_ALL}")
 
     if confirm.lower() == "y":
         # Sell each item
@@ -855,24 +887,29 @@ def _sell_all_cargo(game_state: Game) -> None:
 
 def _buy_all_affordable(game_state: Game, available_items) -> None:
     """Buy maximum affordable quantity of selected items."""
-    game_state.ui.info_message("\nSelect items to buy maximum affordable quantity:")
+    game_state.ui.info_message(
+        "\nSelect items to buy maximum affordable quantity:")
 
     for i, ore_cargo in enumerate(available_items, 1):
         ore_name = f"{ore_cargo.ore.purity.name} {ore_cargo.ore.name}"
-        unit_price = _calculate_modified_buy_price(game_state, ore_cargo.buy_price)
+        unit_price = _calculate_modified_buy_price(
+            game_state, ore_cargo.buy_price)
         player_character = game_state.get_player_character()
         max_affordable = int(player_character.credits // unit_price)
         max_available = min(max_affordable, ore_cargo.quantity)
 
-        game_state.ui.info_message(f"{i}. {ore_name} - Max affordable: {max_available}")
+        game_state.ui.info_message(
+            f"{i}. {ore_name} - Max affordable: {max_available}")
 
-    selection = take_input(f"\n{Fore.YELLOW}Enter item number: {Style.RESET_ALL}")
+    selection = take_input(
+        f"\n{Fore.YELLOW}Enter item number: {Style.RESET_ALL}")
 
     if selection.isdigit():
         item_index = int(selection) - 1
         if 0 <= item_index < len(available_items):
             ore_cargo = available_items[item_index]
-            unit_price = _calculate_modified_buy_price(game_state, ore_cargo.buy_price)
+            unit_price = _calculate_modified_buy_price(
+                game_state, ore_cargo.buy_price)
             player_character = game_state.get_player_character()
             max_affordable = int(player_character.credits // unit_price)
             quantity = min(max_affordable, ore_cargo.quantity)
@@ -905,7 +942,8 @@ def _buy_most_profitable(game_state: Game) -> None:
     game_state.ui.info_message("Analyzing profitable trade opportunities...")
 
     # Get trade opportunities
-    opportunities = get_trade_opportunities(game_state, include_unreachable=False)
+    opportunities = get_trade_opportunities(
+        game_state, include_unreachable=False)
 
     if not opportunities:
         game_state.ui.warn_message("No profitable trade opportunities found.")
@@ -932,7 +970,8 @@ def _buy_most_profitable(game_state: Game) -> None:
                 )
 
     if not available_opportunities:
-        game_state.ui.warn_message("No profitable items available at this station.")
+        game_state.ui.warn_message(
+            "No profitable items available at this station.")
         take_input("Press Enter to continue...")
         return
 
@@ -943,7 +982,8 @@ def _buy_most_profitable(game_state: Game) -> None:
     ore_name, ore_cargo, sell_station, profit_per_unit = best_opportunity
 
     # Calculate how much we can afford
-    modified_price = _calculate_modified_buy_price(game_state, ore_cargo.buy_price)
+    modified_price = _calculate_modified_buy_price(
+        game_state, ore_cargo.buy_price)
     max_affordable = int(player_character.credits // modified_price)
     max_available = ore_cargo.quantity
 
@@ -1039,7 +1079,8 @@ def _fill_cargo_cheap(game_state: Game) -> None:
     game_state.ui.info_message(
         f"\n{Fore.GREEN}=== FILLING CARGO WITH CHEAPEST ITEMS ==={Style.RESET_ALL}"
     )
-    game_state.ui.info_message(f"Available cargo space: {cargo_space_available:.2f} m³")
+    game_state.ui.info_message(
+        f"Available cargo space: {cargo_space_available:.2f} m³")
     game_state.ui.info_message(f"Available credits: {remaining_credits:.2f}")
 
     # Fill cargo with cheapest items
@@ -1081,7 +1122,8 @@ def _fill_cargo_cheap(game_state: Game) -> None:
         f"\n{Fore.YELLOW}Total Cost: {total_cost:.2f} credits{Style.RESET_ALL}"
     )
     game_state.ui.info_message(f"Remaining Credits: {remaining_credits:.2f}")
-    game_state.ui.info_message(f"Remaining Cargo Space: {remaining_space:.2f} m³")
+    game_state.ui.info_message(
+        f"Remaining Cargo Space: {remaining_space:.2f} m³")
 
     confirm = take_input(
         f"\n{Fore.YELLOW}Proceed with bulk purchase? (y/n): {Style.RESET_ALL}"

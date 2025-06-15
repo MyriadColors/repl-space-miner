@@ -7,7 +7,8 @@ from src.repl import start_repl
 def parse_arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Space Trader CLI Game")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    parser.add_argument("--debug", action="store_true",
+                        help="Enable debug mode")
     parser.add_argument("--mute", action="store_true", help="Mute game sounds")
     parser.add_argument(
         "--skipc", action="store_true", help="Skip character customization"

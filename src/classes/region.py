@@ -75,7 +75,8 @@ class Region:
             base_names = available_names.copy()
             for i in range(num_systems - len(available_names)):
                 base_name = base_names[i % len(base_names)]
-                available_names.append(f"{base_name} {(i // len(base_names)) + 2}")
+                available_names.append(
+                    f"{base_name} {(i // len(base_names)) + 2}")
 
         max_placement_attempts = 5000  # Prevent infinite loops
 
@@ -127,7 +128,8 @@ class Region:
                         candidate_ok = True
                         for pos_x, pos_y in used_positions:
                             distance = math.sqrt(
-                                (x_candidate - pos_x) ** 2 + (y_candidate - pos_y) ** 2
+                                (x_candidate - pos_x) ** 2 +
+                                (y_candidate - pos_y) ** 2
                             )
                             if distance < local_min_distance:
                                 candidate_ok = False
@@ -156,7 +158,8 @@ class Region:
 
             # Select a system template and generate parameters
             template = select_system_template()
-            system_params = generate_system_from_template(system_name, x, y, template)
+            system_params = generate_system_from_template(
+                system_name, x, y, template)
 
             # Create the solar system using template parameters
             system = SolarSystem(**system_params)

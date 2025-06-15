@@ -61,7 +61,8 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
             return
 
         game_state.ui.info_message("=== AVAILABLE SHIP UPGRADES ===")
-        game_state.ui.info_message(f"Credits available: {game_state.get_credits():.2f}")
+        game_state.ui.info_message(
+            f"Credits available: {game_state.get_credits():.2f}")
         game_state.ui.info_message("")
 
         # Group upgrades by category for better presentation
@@ -97,7 +98,8 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
                 game_state.ui.info_message(  # Changed formatting to make ID more explicit
                     f"ID: {current_upgrade_obj.id} - {current_upgrade_obj.name}{level_info} - {price:.2f} credits"
                 )
-                game_state.ui.info_message(f"  {current_upgrade_obj.description}")
+                game_state.ui.info_message(
+                    f"  {current_upgrade_obj.description}")
 
                 # Show preview of effects (only if not maxed out)
                 if not (
@@ -107,7 +109,8 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
                     preview = player_ship.get_upgrade_effect_preview(
                         current_upgrade_obj
                     )
-                    attribute_name = preview["attribute"].replace("_", " ").title()
+                    attribute_name = preview["attribute"].replace(
+                        "_", " ").title()
 
                     precision = preview.get("display_precision", 2)
                     unit = preview.get("unit", "")
@@ -152,11 +155,13 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
                             if preview["after"] > preview["before"]
                             else "Reduced! ⚠"
                         )
-                        game_state.ui.info_message(f"  {change_symbol} {evaluation}")
+                        game_state.ui.info_message(
+                            f"  {change_symbol} {evaluation}")
 
                 game_state.ui.info_message("")  # Blank line after each upgrade
 
-        game_state.ui.info_message("To purchase an upgrade, use: upgrade <upgrade_id>")
+        game_state.ui.info_message(
+            "To purchase an upgrade, use: upgrade <upgrade_id>")
         return
     # else, (if not action_is_list) proceed to purchase logic
 
@@ -172,7 +177,8 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
 
     if upgrade_id not in UPGRADES:
         game_state.ui.error_message(f"Unknown upgrade: {upgrade_id}")
-        game_state.ui.info_message("Use 'upgrade list' to see available upgrades.")
+        game_state.ui.info_message(
+            "Use 'upgrade list' to see available upgrades.")
         return
 
     # Check if upgrade can be applied
@@ -241,7 +247,8 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
 
     # Show confirmation message with formatted values
     game_state.ui.info_message("=== UPGRADE CONFIRMATION ===")
-    game_state.ui.info_message(f"Purchase {upgrade.name} for {price:.2f} credits?")
+    game_state.ui.info_message(
+        f"Purchase {upgrade.name} for {price:.2f} credits?")
 
     # Display level information if applicable
     if upgrade_id in player_ship.applied_upgrades:
@@ -289,7 +296,8 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
     game_state.ui.info_message("\nFinancial impact:")
     credits = game_state.get_credits()
     if credits is not None:
-        game_state.ui.info_message(f"Credits: {credits:.2f} → {credits - price:.2f}")
+        game_state.ui.info_message(
+            f"Credits: {credits:.2f} → {credits - price:.2f}")
     else:
         game_state.ui.warn_message(
             "Warning: Unable to determine credits for financial impact."
@@ -329,7 +337,8 @@ def upgrade_command(game_state: Game, args: Optional[List[str]] = None) -> None:
             effect_str = f"{attribute_name} is now {preview['after']:.{precision}f} (+{preview['percent_change']:.1f}%)"
 
         game_state.ui.info_message(effect_str)
-        game_state.ui.info_message(f"Credits remaining: {game_state.get_credits():.2f}")
+        game_state.ui.info_message(
+            f"Credits remaining: {game_state.get_credits():.2f}")
     else:
         game_state.ui.error_message(
             "Failed to apply upgrade. Please report this as a bug."

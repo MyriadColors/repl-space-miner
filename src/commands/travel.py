@@ -17,7 +17,8 @@ def travel_command(game_state: Game, **kwargs) -> float:
     """Handle travel command execution."""
     player_ship = game_state.get_player_ship()
     destination = Vector2(
-        float(kwargs.get("destination_x", 0)), float(kwargs.get("destination_y", 0))
+        float(kwargs.get("destination_x", 0)), float(
+            kwargs.get("destination_y", 0))
     )
 
     # Check if destination is within system boundaries
@@ -34,7 +35,8 @@ def travel_command(game_state: Game, **kwargs) -> float:
     )
 
     if player_ship.fuel - fuel_consumed < 0:
-        game_state.ui.error_message("Not enough fuel to travel. Please refuel.")
+        game_state.ui.error_message(
+            "Not enough fuel to travel. Please refuel.")
         return 0.0
 
     # Show travel details before confirmation
@@ -127,7 +129,8 @@ def direct_travel_command(game_state: Game, destination_x: str, destination_y: s
     """Handle direct travel to coordinates command."""
     try:
         if game_state.get_player_ship().is_docked:
-            game_state.ui.error_message("You must undock your ship before traveling.")
+            game_state.ui.error_message(
+                "You must undock your ship before traveling.")
             return
         x = float(destination_x)
         y = float(destination_y)

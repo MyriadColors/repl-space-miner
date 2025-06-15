@@ -48,7 +48,8 @@ def game_reset_command(game_state: Game, seed: Optional[int] = None) -> None:
 
     # Inform the user about the reset
     game_state.ui.success_message(f"Game reset successfully with seed: {seed}")
-    game_state.ui.info_message("You will need to recreate your character and ship.")
+    game_state.ui.info_message(
+        "You will need to recreate your character and ship.")
     game_state.ui.info_message("Use 'help' command to see available commands.")
 
 

@@ -83,7 +83,8 @@ class DualFuelSystem:
         else:
             # Not enough power, increase risk significantly
             if player_ship is not None:
-                self.containment_failure_risk += (power_draw - player_ship.power) * 0.1
+                self.containment_failure_risk += (
+                    power_draw - player_ship.power) * 0.1
                 player_ship.power = 0
             else:
                 # No player ship reference, apply risk directly
@@ -95,14 +96,16 @@ class DualFuelSystem:
 
         # Apply decay proportional to antimatter amount
         integrity_loss = base_decay * (1 + decay_modifier)
-        self.containment_integrity = max(0, self.containment_integrity - integrity_loss)
+        self.containment_integrity = max(
+            0, self.containment_integrity - integrity_loss)
 
         # Calculate risk based on integrity
         risk_increase: float = 0
 
         if self.containment_integrity < 50:
             # Below 50% integrity, risk increases faster
-            risk_increase = (50 - self.containment_integrity) * 0.02 * (time_delta / 60)
+            risk_increase = (50 - self.containment_integrity) * \
+                0.02 * (time_delta / 60)
 
         self.containment_failure_risk = min(
             100, self.containment_failure_risk + risk_increase
@@ -215,7 +218,8 @@ class DualFuelSystem:
             # Apply the full travel time without any cap
             game_state.advance_time(timedelta(seconds=travel_time_seconds))
         else:
-            raise AttributeError("Game object is missing 'advance_time' method.")
+            raise AttributeError(
+                "Game object is missing 'advance_time' method.")
         if game_state.player_ship is not None:
             game_state.player_ship.previous_system = getattr(
                 game_state.player_ship, "current_system", "Unknown"
@@ -282,5 +286,6 @@ class DualFuelSystem:
         self.antimatter_consumption = data.get("antimatter_consumption", 1.0)
         self.containment_integrity = data.get("containment_integrity", 100.0)
         self.containment_power_draw = data.get("containment_power_draw", 1.0)
-        self.containment_failure_risk = data.get("containment_failure_risk", 0.0)
+        self.containment_failure_risk = data.get(
+            "containment_failure_risk", 0.0)
         self.last_containment_check = data.get("last_containment_check", 0.0)

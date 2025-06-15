@@ -63,7 +63,8 @@ class Ore:
             PurityLevel.ULTRA: 5.0,
         }
         return round(
-            self.commodity.base_price * purity_modifiers.get(self.purity, 1.0), 2
+            self.commodity.base_price *
+            purity_modifiers.get(self.purity, 1.0), 2
         )
 
     def can_refine(self) -> bool:

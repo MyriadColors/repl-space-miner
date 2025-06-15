@@ -31,7 +31,8 @@ def update_ore_quantities(
         ore_cargo_found.quantity += amount
     else:
         player_ship.cargohold.append(
-            OreCargo(ore_cargo.ore, amount, ore_cargo.buy_price, ore_cargo.sell_price)
+            OreCargo(ore_cargo.ore, amount,
+                     ore_cargo.buy_price, ore_cargo.sell_price)
         )
 
     player_ship.cargohold = [
