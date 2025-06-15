@@ -812,9 +812,6 @@ class Game:
                     name="Default Gen",
                     x=0.0,
                     y=0.0,
-                    size=250.0,
-                    field_quantity=15,
-                    station_quantity=7,
                 )
             ]
             game.current_solar_system_index = 0

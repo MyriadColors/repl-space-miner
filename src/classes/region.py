@@ -1,9 +1,9 @@
 from typing import List, Optional
 import math
+import random
 
 from src.classes.solar_system import SolarSystem
-from src.data import STELLAR_SYSTEM_NAMES
-import random
+from src.data import STELLAR_SYSTEM_NAMES, select_system_template, generate_system_from_template
 
 
 class Region:
@@ -29,8 +29,7 @@ class Region:
         s1 = self.get_system_by_name(system1_name)
         s2 = self.get_system_by_name(system2_name)
         if s1 is None or s2 is None:
-            raise ValueError("One or both systems not found in region.")
-        # Ensure x and y are floats for both systems
+            raise ValueError("One or both systems not found in region.")        # Ensure x and y are floats for both systems
         x1, y1 = float(s1.x), float(s1.y)
         x2, y2 = float(s2.x), float(s2.y)
 
@@ -40,18 +39,20 @@ class Region:
 
     @staticmethod
     def generate_random_region(
-        name: str, num_systems: int = 30, min_distance: float = 2.0
+        name: str, num_systems: int = 50, min_distance: float = 2.0
     ) -> "Region":
         """
-        Generate a random region with the specified number of solar systems.
+        Generate a random region with the specified number of solar systems using templates.
+        Templates provide variety in system characteristics including economy, security, and resources.
 
         Args:
             name: Name of the region
-            num_systems: Number of solar systems to generate
+            num_systems: Number of solar systems to generate (default: 50 for better variety)
             min_distance: Minimum distance between any two systems (in light years)
 
         Returns:
-            A new Region object containing the generated solar systems        """
+            A new Region object containing the generated solar systems with diverse characteristics
+        """
         from src.classes.solar_system import SolarSystem
         
         region = Region(name)
@@ -143,18 +144,14 @@ class Region:
                     # Ensure it's still within bounds, though this is less critical than avoiding (0,0)
                     x = max(-100, min(100, x))
                     y = max(-100, min(100, y))            # Add the position to our used positions list
-            used_positions.append((x, y))
-
-            # Use a unique name from our available names list
+            used_positions.append((x, y))            # Use a unique name from our available names list
             system_name = available_names[i]
-            # Todo, add templates for system generation so we can have different parameters for generating systems
-            system = SolarSystem(
-                system_name,
-                x,
-                y,
-                round(random.uniform(50, 150), 2),
-                random.randrange(25, 50),
-                random.randrange(5, 15),
-            )
+            
+            # Select a system template and generate parameters
+            template = select_system_template()
+            system_params = generate_system_from_template(system_name, x, y, template)
+            
+            # Create the solar system using template parameters
+            system = SolarSystem(**system_params)
             region.add_system(system)
         return region
