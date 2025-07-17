@@ -746,19 +746,29 @@ Character backgrounds represent the formative life experiences that have shaped 
 
 Backgrounds influence far more than just your starting skills and resources:
 
-      * **Narrative Perception:** NPCs will perceive and interact with you differently based on your background. An Ex-Miner might receive better treatment in rough frontier stations, while a Corp Dropout might face immediate suspicion in corporate facilities.
-      * **Mission Availability:** Certain backgrounds may unlock unique mission types or variations. A Xeno-Biologist might be approached for specialized specimen collection missions that wouldn't be offered to others, while a Discharged Trooper might receive covert combat operations.
-      * **Dialogue Options:** Your background provides unique dialogue options in conversations. A Corp Dropout might recognize corporate double-speak that others would miss, while a Lunar Drifter might pick up on subtle criminal cues in seemingly innocent conversations.
-      * **Environmental Responses:** Your background influences how you respond to certain environments. A Void Runner might be completely comfortable during lengthy FTL jumps where others experience psychological strain, while an Ex-Miner might have unique insights when exploring abandoned mining facilities.
-      * **Cultural Context:** Each background connects to specific subcultures within the universe. Understanding these connections helps you navigate the social landscape:
-        * **Belter Culture:** Centered around mining communities, values practical knowledge and self-sufficiency. Ex-Miners understand the unspoken codes and traditions.
-        * **Corporate Hierarchy:** Highly structured with implicit rules and power dynamics that Corp Dropouts can navigate or exploit.
-        * **Frontier Settlements:** The lawless edges where Lunar Drifters learned to survive through adaptability and street wisdom.
-        * **Deep Space Communities:** The unique culture of those born between stars, with traditions and perspectives Void Runners inherently understand.
-        * **Academic Circles:** The competitive, often political world of research that Xeno-Biologists have left but still understand intimately.
-        * **Military Structure:** The rigid hierarchy and brotherhood of arms that still influences a Discharged Trooper's worldview and reactions.
+* **Narrative Perception:** NPCs will perceive and interact with you differently based on your background. An Ex-Miner might receive better treatment in rough frontier stations, while a Corp Dropout might face immediate suspicion in corporate facilities.
 
-      **Creating Your Own Story:** Your background is not destiny but foundation - the starting point for the unique story you'll create through your decisions and actions. While your past shaped your initial skills and connections, your future path remains entirely your own to determine.
+* **Mission Availability:** Certain backgrounds may unlock unique mission types or variations. A Xeno-Biologist might be approached for specialized specimen collection missions that wouldn't be offered to others, while a Discharged Trooper might receive covert combat operations.
+
+* **Dialogue Options:** Your background provides unique dialogue options in conversations. A Corp Dropout might recognize corporate double-speak that others would miss, while a Lunar Drifter might pick up on subtle criminal cues in seemingly innocent conversations.
+
+* **Environmental Responses:** Your background influences how you respond to certain environments. A Void Runner might be completely comfortable during lengthy FTL jumps where others experience psychological strain, while an Ex-Miner might have unique insights when exploring abandoned mining facilities.
+
+* **Cultural Context:** Each background connects to specific subcultures within the universe. Understanding these connections helps you navigate the social landscape:
+
+* **Belter Culture:** Centered around mining communities, values practical knowledge and self-sufficiency. Ex-Miners understand the unspoken codes and traditions.
+
+* **Corporate Hierarchy:** Highly structured with implicit rules and power dynamics that Corp Dropouts can navigate or exploit.
+
+* **Frontier Settlements:** The lawless edges where Lunar Drifters learned to survive through adaptability and street wisdom.
+
+* **Deep Space Communities:** The unique culture of those born between stars, with traditions and perspectives Void Runners inherently understand.
+
+* **Academic Circles:** The competitive, often political world of research that Xeno-Biologists have left but still understand intimately.
+
+* **Military Structure:** The rigid hierarchy and brotherhood of arms that still influences a Discharged Trooper's worldview and reactions.
+
+**Creating Your Own Story:** Your background is not destiny but foundation - the starting point for the unique story you'll create through your decisions and actions. While your past shaped your initial skills and connections, your future path remains entirely your own to determine.
 
 ### C. AI Player Characters
 
@@ -809,11 +819,11 @@ Most established star systems, through efficient intra-system sub-FTL travel and
 
 ### B. Inter-System Governance - Loose Alliances & Pacts
 
-True interstellar empires are virtually non-existent. Systems form loose confederations, free-trade zones, or mutual defense pacts (e.g., "The Centauri Compact," "The Epsilon Eridani Corporate Concord"). These focus on standardizing trade, reducing tariffs, ensuring freedom of navigation, common legal frameworks for disputes, and mutual military aid. Member systems retain almost full sovereignty over their internal affairs. Disputes between member systems are common, and adherence to pact-wide rules and resolutions can be inconsistent, often depending on the individual system's power and interests.
+True interstellar empires are virtually non-existent. Systems form loose confederations, free-trade zones, or mutual defense pacts (e.g., "The Centauri Compact," "The Epsilon-Eridani Corporate Concord"). These focus on standardizing trade, reducing tariffs, ensuring freedom of navigation, common legal frameworks for disputes, and mutual military aid. Member systems retain almost full sovereignty over their internal affairs. Disputes between member systems are common, and adherence to pact-wide rules and resolutions can be inconsistent, often depending on the individual system's power and interests.
 
 ### C. Colonization Philosophy: Long-Term Investments
 
-New colonial ventures are generally viewed as long-term investments by sponsoring systems/corporations. The expectation is decades, if not centuries, for a colony to mature into a significant, self-reliant entity and a valuable independent commercial or political partner. Initial sponsorship provides essential resources, technology, and expertise, with the hope of cultivating a friendly future polity and preferential trade opportunities down the line.
+New colonial ventures are generally viewed as long-term investments by sponsoring systems/corporations. The expectation is decades, if not centuries, for a colony to mature into a significant, self-reliant entity and a valuable independent commercial or political partner. Initial sponsorship provides essential resources, technology, and expertise, with the hope of cultivating a friendly future polity and preferential trade opportunities down the line. Though it is important to note that this has not always worked as expected, and there has been cases where the colonizers ended up as antagonizers to their metropolises, this is understood as a risk, but most of the time the colonies end up at least on cordial terms with their originators, this is because, over time, through trial and error, most would-be metropolises have developed a set of 'good practices' when dealing with colonization efforts as enforcing their will directly may even work in the short term, but in the long haul, enforcing strict adherence and loyalties becomes utterly untractable.
 
 ### D. Sol System - "The Fractured Cradle" & Its Factions
 
