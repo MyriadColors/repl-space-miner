@@ -1,8 +1,8 @@
 import json
 import os
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, Tuple, Any
 import pygame as pg
-from datetime import datetime
+from datetime import datetime, timedelta
 from dataclasses import dataclass
 import random
 import time
@@ -18,54 +18,54 @@ init(autoreset=True)
 
 
 class UI:
-    def __init__(self, default_fg=Fore.WHITE, default_bg=Back.BLACK):
+    def __init__(self, default_fg: str = Fore.WHITE, default_bg: str = Back.BLACK) -> None:
         self.default_fg = default_fg
         self.default_bg = default_bg
         self.default_style = Style.NORMAL
 
-    def apply_default_colors(self):
+    def apply_default_colors(self) -> None:
         """Reset colors to the default settings."""
         print(self.default_fg + self.default_bg + self.default_style, end="")
 
-    def reset_colors(self):
+    def reset_colors(self) -> None:
         """Reset all colors to terminal defaults."""
         print(Style.RESET_ALL, end="")
 
-    def info_message(self, message):
+    def info_message(self, message: str) -> None:
         """Display an informational message with cyan color."""
         print(Fore.CYAN + message + Style.RESET_ALL)
 
-    def success_message(self, message):
+    def success_message(self, message: str) -> None:
         """Display a success message with green color."""
         print(Fore.GREEN + message + Style.RESET_ALL)
 
-    def warn_message(self, message):
+    def warn_message(self, message: str) -> None:
         """Display a warning message with yellow color."""
         print(Fore.YELLOW + message + Style.RESET_ALL)
 
-    def error_message(self, message):
+    def error_message(self, message: str) -> None:
         """Display an error message with red color."""
         print(Fore.RED + message + Style.RESET_ALL)
 
-    def highlight_message(self, message):
+    def highlight_message(self, message: str) -> None:
         """Display a highlighted message."""
         print(Fore.MAGENTA + Style.BRIGHT + message + Style.RESET_ALL)
 
-    def format_text(self, message, fg=None, bg=None, style=None):
+    def format_text(self, message: str, fg: Optional[str] = None, bg: Optional[str] = None, style: Optional[str] = None) -> str:
         """Format text with specified colors and style."""
         fg_color = fg if fg else self.default_fg
         bg_color = bg if bg else self.default_bg
         text_style = style if style else self.default_style
         return fg_color + bg_color + text_style + message + Style.RESET_ALL
 
-    def set_default_colors(self, fg=None, bg=None):
+    def set_default_colors(self, fg: Optional[str] = None, bg: Optional[str] = None) -> None:
         """Change the default colors."""
         if fg:
             self.default_fg = fg
         if bg:
             self.default_bg = bg
 
-    def clear_screen(self):
+    def clear_screen(self) -> None:
         """Clear the terminal screen."""
         import os
 
@@ -98,7 +98,7 @@ class Character:
         background: str,
         starting_creds: float,
         starting_debt: float,
-    ):
+    ) -> None:
         self.name = name
         self.age = age
         self.sex = sex
@@ -145,7 +145,7 @@ class Character:
         self.fuel_consumption_mod = 1.0
         self.debt_interest_mod = 1.0
 
-    def initialize_faction_standings(self):
+    def initialize_faction_standings(self) -> None:
         """Initialize the faction standings dictionary with default values."""
         self.faction_standings = {
             "states": 0,
@@ -223,7 +223,7 @@ class Character:
         if skill:
             skill._level = value
 
-    def apply_stat_effects(self):
+    def apply_stat_effects(self) -> None:
         """Apply effects from all character stats"""
         self.apply_perception_effects()
         self.apply_resilience_effects()
@@ -232,7 +232,7 @@ class Character:
         self.apply_adaptability_effects()
         self.apply_technical_aptitude_effects()
 
-    def apply_perception_effects(self):
+    def apply_perception_effects(self) -> None:
         """Apply effects from the Perception stat"""
 
         self.critical_hit_chance_mod = 1.0
@@ -245,7 +245,7 @@ class Character:
 
             self.sensor_range_mod *= 1 + ((self.perception - 5) * 0.03)
 
-    def apply_resilience_effects(self):
+    def apply_resilience_effects(self) -> None:
         """Apply effects from the Resilience stat"""
 
         self.hull_integrity_mod = 1.0
@@ -257,7 +257,7 @@ class Character:
 
             self.damage_resist_mod *= 1 - ((self.resilience - 5) * 0.02)
 
-    def apply_intellect_effects(self):
+    def apply_intellect_effects(self) -> None:
         """Apply effects from the Intellect stat"""
 
         self.research_speed_mod = 1.0
@@ -267,7 +267,7 @@ class Character:
             self.research_speed_mod = 1 + ((self.intellect - 5) * 0.05)
             self.market_analysis_mod = 1 + ((self.intellect - 5) * 0.03)
 
-    def apply_presence_effects(self):
+    def apply_presence_effects(self) -> None:
         """Apply effects from the Presence stat"""
 
         self.faction_relation_mod = 1.0
@@ -278,7 +278,7 @@ class Character:
             self.sell_price_mod *= 1 + price_bonus
             self.faction_relation_mod = 1 + ((self.presence - 5) * 0.03)
 
-    def apply_adaptability_effects(self):
+    def apply_adaptability_effects(self) -> None:
         """Apply effects from the Adaptability stat"""
 
         self.cross_cultural_mod = 1.0
@@ -286,7 +286,7 @@ class Character:
         if self.adaptability > 5:
             self.cross_cultural_mod = 1 + ((self.adaptability - 5) * 0.04)
 
-    def apply_technical_aptitude_effects(self):
+    def apply_technical_aptitude_effects(self) -> None:
         """Apply effects from the Technical Aptitude stat"""
 
         self.repair_efficiency_mod = 1.0
@@ -298,7 +298,7 @@ class Character:
             self.salvage_success_mod = 1 + \
                 ((self.technical_aptitude - 5) * 0.05)
 
-    def get_mining_bonus(self):
+    def get_mining_bonus(self) -> float:
         """Calculate mining bonus based on stats and skills"""
 
         mining_bonus = self.mining_yield_mod
@@ -311,7 +311,7 @@ class Character:
 
         return mining_bonus
 
-    def get_trading_bonus(self):
+    def get_trading_bonus(self) -> Tuple[float, float]:
         """Calculate trading bonuses based on stats and skills"""
 
         buy_mod = self.buy_price_mod
@@ -356,7 +356,7 @@ class Character:
         self.debt = self.round_credits(self.debt - amount)
         return self.debt
 
-    def apply_trait_effects(self):
+    def apply_trait_effects(self) -> None:
         """Apply effects from personality traits"""
 
         self.damage_resist_mod = 1.0
@@ -398,7 +398,7 @@ class Character:
 
         self.apply_stat_effects()
 
-    def calculate_debt_interest(self, current_time: int):
+    def calculate_debt_interest(self, current_time: int) -> Optional[Tuple[float, float]]:
         """
         Calculate and apply interest on the debt
         Returns a tuple of (interest_amount, new_debt) if interest was applied, None otherwise
@@ -484,7 +484,7 @@ class Character:
             + f"\nReputation Explorers: {self.reputation_explorers}"
         ]
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "name": self.name,
             "age": self.age,
@@ -519,7 +519,7 @@ class Character:
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: Dict[str, Any]) -> 'Character':
         character = cls(
             name=data["name"],
             age=data["age"],
@@ -571,7 +571,7 @@ class Contact(Character):
         faction: str,
         age: int = 30,
         sex: str = "unknown",
-    ):
+    ) -> None:
         super().__init__(
             name=name,
             age=age,
@@ -665,7 +665,7 @@ class Game:
         background: str,
         starting_creds: float,
         starting_debt: float,
-    ):
+    ) -> None:
         self.player_character = Character(
             name, age, sex, background, starting_creds, starting_debt
         )
@@ -681,7 +681,7 @@ class Game:
         """Get player character credits."""
         return round(self.player_character.credits, 2)
 
-    def get_ship(self):
+    def get_ship(self) -> Ship:
         return self.player_ship
 
     def get_player_character(self) -> Character:
@@ -699,10 +699,10 @@ class Game:
         """Adds a new solar system to the game."""
         self.solar_systems.append(solar_system)
 
-    def get_solar_system(self):
+    def get_solar_system(self) -> SolarSystem:
         return self.get_current_solar_system()
 
-    def advance_time(self, time_delta):
+    def advance_time(self, time_delta: timedelta) -> None:
         """
         Advance the game time by the specified timedelta
 
@@ -714,7 +714,7 @@ class Game:
     def get_region(self) -> Region:
         return self.region
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "global_time": self.global_time,
             "seed": self.seed,
@@ -730,7 +730,7 @@ class Game:
         }
 
     @classmethod
-    def from_dict(cls, data, ui_instance):
+    def from_dict(cls, data: Dict[str, Any], ui_instance: UI) -> 'Game':
         game = cls(
             debug_flag=data.get("debug_flag", False),
             mute_flag=data.get("mute_flag", False),
@@ -762,7 +762,7 @@ class Game:
         game.ui = ui_instance
         return game
 
-    def save_game(self, filename: str = "", human_readable: bool = False):
+    def save_game(self, filename: str = "", human_readable: bool = False) -> None:
         """
         Save the current game to a file.
 
@@ -835,7 +835,7 @@ class Game:
                     self.ui.error_message(f"Error saving backup: {e}")
 
     @classmethod
-    def load_game(cls, ui_instance, filename: str = ""):
+    def load_game(cls, ui_instance: UI, filename: str = "") -> Optional['Game']:
         save_dir = "save"
         if not os.path.exists(save_dir):
             ui_instance.error_message("No save directory found.")

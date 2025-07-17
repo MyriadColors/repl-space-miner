@@ -31,9 +31,7 @@ from src.commands import (
     Argument,
 )
 from src.command_handlers import process_command
-from pygame import Vector2  # Add this import
-
-# Import from events.py module directly
+from pygame import Vector2 
 import src.events
 import pygame as pg
 from colorama import init

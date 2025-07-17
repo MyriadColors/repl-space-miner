@@ -3,8 +3,7 @@
 This module initializes the REPL Space Miner game components
 """
 
-# Import key components to make them available at the package level
-from . import events as events  # Ensures events module is imported properly
+from . import events as events
 from . import repl as repl
 from . import helpers as helpers
 from . import data as data

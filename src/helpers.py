@@ -1,48 +1,56 @@
 from src.classes.ore import ORES
 import math
 import random
+from typing import Union, Optional, TYPE_CHECKING
 
 from pygame import Vector2
 from src.classes.ore import Ore
 
+if TYPE_CHECKING:
+    from src.classes.solar_system import SolarSystem
+    from src.classes.asteroid import AsteroidField
+    from src.classes.station import Station
+    from src.classes.ship import Ship
+    from src.classes.game import Game
 
-def euclidean_distance(v1: Vector2, v2: Vector2):
+
+def euclidean_distance(v1: Vector2, v2: Vector2) -> float:
     return round(math.sqrt((v1.x - v2.x) ** 2 + (v1.y - v2.y) ** 2), 2)
 
 
-def rnd_float(min_val, max_val):
+def rnd_float(min_val: float, max_val: float) -> float:
     return round(min_val + random.random() * (max_val - min_val), 2)
 
 
-def rnd_int(min_val, max_val):
+def rnd_int(min_val: int, max_val: int) -> int:
     return random.randint(min_val, max_val)
 
 
-def rnd_vector(min_val, max_val):
+def rnd_vector(min_val: float, max_val: float) -> Vector2:
     return Vector2(rnd_float(min_val, max_val), rnd_float(min_val, max_val))
 
 
-def vector_to_string(vector: Vector2):
+def vector_to_string(vector: Vector2) -> str:
     return f"({vector.x:.3f}, {vector.y:.3f})"
 
 
-def take_input(prompt):
+def take_input(prompt: str) -> str:
     return input(prompt)
 
 
-def meters_cubed_to_km_cubed(meters_cubed):
+def meters_cubed_to_km_cubed(meters_cubed: float) -> float:
     return round(meters_cubed / 1000000.0, 3)
 
 
-def meters_cubed_to_million_km_cubed(meters_cubed):
+def meters_cubed_to_million_km_cubed(meters_cubed: float) -> float:
     return round(meters_cubed / 1000000000.0, 3)
 
 
-def meters_to_au_cubed(meters):
+def meters_to_au_cubed(meters: float) -> float:
     return round(meters / 149_597_870_700.0, 3)
 
 
-def format_seconds(seconds: float):
+def format_seconds(seconds: float) -> str:
     if seconds == 0:
         return "0 seconds"
     days = seconds // 86400
@@ -65,7 +73,11 @@ def select_random_ore() -> Ore:
     return ORES[rnd_index]
 
 
-def get_closest_field(solar_system, position, is_at_field=False):
+def get_closest_field(
+    solar_system: Union["SolarSystem", list["AsteroidField"]], 
+    position: Vector2, 
+    is_at_field: bool = False
+) -> "AsteroidField":
     """
     Find the closest asteroid field relative to a given position.
 
@@ -98,7 +110,11 @@ def get_closest_field(solar_system, position, is_at_field=False):
         return solar_system.sort_fields("asc", "distance", position)[0]
 
 
-def get_closest_station(solar_system, player_ship, is_at_station=False):
+def get_closest_station(
+    solar_system: Union["SolarSystem", list["Station"]], 
+    player_ship: "Ship", 
+    is_at_station: bool = False
+) -> "Station":
     """
     Find the closest station relative to a player ship's position.
 
@@ -134,7 +150,12 @@ def get_closest_station(solar_system, player_ship, is_at_station=False):
         return solar_system.sort_stations("asc", "distance", position)[0]
 
 
-def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station, time):
+def prompt_for_closest_travel_choice(
+    player_ship: "Ship", 
+    closest_field: "AsteroidField", 
+    closest_station: "Station", 
+    game_state: "Game"
+) -> Optional[bool]:
     """Prompts the player to choose between the closest field or station."""
     tries = 3
     while tries > 0:
@@ -142,17 +163,18 @@ def prompt_for_closest_travel_choice(player_ship, closest_field, closest_station
             "Do you wish to go to the closest 1. (f)ield or the closest 2. (s)tation?"
         )
         if response in ["1", "f", "field"]:
-            return player_ship.travel(closest_field.position, time)
+            return player_ship.travel(game_state, closest_field.space_object.position)
         elif response in ["2", "s", "station"]:
-            return player_ship.travel(closest_station.position, time)
+            return player_ship.travel(game_state, closest_station.space_object.position)
         else:
             print("Invalid choice. Please enter 'f' or 's'.")
             tries -= 1
 
     print("Too many invalid attempts. Aborting.")
+    return None
 
 
-def get_ore_by_id_or_name(identifier: str | int) -> Ore | None:
+def get_ore_by_id_or_name(identifier: Union[str, int]) -> Optional[Ore]:
     """Returns an Ore from the ORES dictionary based on its ID or name.
 
     Args:
