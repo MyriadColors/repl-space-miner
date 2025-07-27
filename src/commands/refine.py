@@ -651,7 +651,7 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
 register_command(
     ["refine", "ref-ore"],
     refine_command,
-    [Argument("amount", str, False)],  # Make it optional and accept string
+    [Argument("amount", str, True)],  # Change False to True to make it optional
 )
 
 # Register mineral refining command
