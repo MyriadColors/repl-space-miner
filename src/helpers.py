@@ -89,10 +89,12 @@ def get_closest_field(
     Returns:
         The closest AsteroidField object
     """
+    from src.classes.asteroid import AsteroidField
+    
     # Handle when we receive a list of asteroid fields directly
     if isinstance(solar_system, list):
         # Sort the fields by distance
-        sorted_fields = sorted(
+        sorted_fields: list[AsteroidField] = sorted(
             solar_system,
             key=lambda field: euclidean_distance(
                 position, field.space_object.position),
@@ -105,9 +107,10 @@ def get_closest_field(
         )
     else:
         # Handle when we receive a SolarSystem object
+        sorted_fields_result: list[AsteroidField] = solar_system.sort_fields("asc", "distance", position)
         if is_at_field:
-            return solar_system.sort_fields("asc", "distance", position)[1]
-        return solar_system.sort_fields("asc", "distance", position)[0]
+            return sorted_fields_result[1]
+        return sorted_fields_result[0]
 
 
 def get_closest_station(
@@ -126,12 +129,14 @@ def get_closest_station(
     Returns:
         The closest Station object
     """
+    from src.classes.station import Station
+    
     position = player_ship.space_object.get_position()
 
     # Handle when we receive a list of stations directly
     if isinstance(solar_system, list):
         # Sort the stations by distance
-        sorted_stations = sorted(
+        sorted_stations: list[Station] = sorted(
             solar_system,
             key=lambda station: euclidean_distance(
                 position, station.space_object.position
@@ -145,9 +150,10 @@ def get_closest_station(
         )
     else:
         # Handle when we receive a SolarSystem object
+        sorted_stations_result: list[Station] = solar_system.sort_stations("asc", "distance", position)
         if is_at_station:
-            return solar_system.sort_stations("asc", "distance", position)[1]
-        return solar_system.sort_stations("asc", "distance", position)[0]
+            return sorted_stations_result[1]
+        return sorted_stations_result[0]
 
 
 def prompt_for_closest_travel_choice(
@@ -162,10 +168,13 @@ def prompt_for_closest_travel_choice(
         response = take_input(
             "Do you wish to go to the closest 1. (f)ield or the closest 2. (s)tation?"
         )
+        travel_result: Optional[bool]
         if response in ["1", "f", "field"]:
-            return player_ship.travel(game_state, closest_field.space_object.position)
+            travel_result = player_ship.travel(game_state, closest_field.space_object.position)
+            return travel_result
         elif response in ["2", "s", "station"]:
-            return player_ship.travel(game_state, closest_station.space_object.position)
+            travel_result = player_ship.travel(game_state, closest_station.space_object.position)
+            return travel_result
         else:
             print("Invalid choice. Please enter 'f' or 's'.")
             tries -= 1

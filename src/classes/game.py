@@ -21,7 +21,7 @@ class UI:
     def __init__(self, default_fg: str = Fore.WHITE, default_bg: str = Back.BLACK) -> None:
         self.default_fg = default_fg
         self.default_bg = default_bg
-        self.default_style = Style.NORMAL
+        self.default_style: str = Style.NORMAL
 
     def apply_default_colors(self) -> None:
         """Reset colors to the default settings."""
@@ -52,11 +52,10 @@ class UI:
         print(Fore.MAGENTA + Style.BRIGHT + message + Style.RESET_ALL)
 
     def format_text(self, message: str, fg: Optional[str] = None, bg: Optional[str] = None, style: Optional[str] = None) -> str:
-        """Format text with specified colors and style."""
-        fg_color = fg if fg else self.default_fg
-        bg_color = bg if bg else self.default_bg
-        text_style = style if style else self.default_style
-        return fg_color + bg_color + text_style + message + Style.RESET_ALL
+        fg_color: str = fg if fg is not None else self.default_fg
+        bg_color: str = bg if bg is not None else self.default_bg
+        text_style: str = style if style is not None else self.default_style
+        return f"{fg_color}{bg_color}{text_style}{message}{Style.RESET_ALL}"
 
     def set_default_colors(self, fg: Optional[str] = None, bg: Optional[str] = None) -> None:
         """Change the default colors."""
@@ -703,13 +702,7 @@ class Game:
         return self.get_current_solar_system()
 
     def advance_time(self, time_delta: timedelta) -> None:
-        """
-        Advance the game time by the specified timedelta
-
-        Args:
-            time_delta (timedelta): The amount of time to advance
-        """
-        self.global_time += time_delta.total_seconds()
+        self.global_time += int(time_delta.total_seconds())
 
     def get_region(self) -> Region:
         return self.region

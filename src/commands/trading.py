@@ -10,7 +10,7 @@ from .base import register_command
 
 def barter(price: float) -> tuple[float, bool]:
     """Handles the bartering process and returns the potentially discounted price and success flag."""
-    confirm = input("Want to barter for a discount? y/n")
+    confirm = input("Want to barter for a discount? (y/n): ")
     bartering_flag: bool = False
 
     if confirm.lower() == "y":
@@ -28,7 +28,7 @@ def barter(price: float) -> tuple[float, bool]:
 
 
 def buy_command(game_state: Game, item_name: str, amount: str) -> None:
-    """Handle buying items from a station."""
+    """Handle buying items from a station by name or index."""
     player_ship = game_state.get_player_ship()
     if not player_ship.is_docked:
         game_state.ui.error_message("Must be docked to buy items.")
@@ -39,45 +39,101 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
         game_state.ui.error_message("Not docked at any station.")
         return
 
-    try:
-        amount_int = int(amount)
-    except ValueError:
-        game_state.ui.error_message("Invalid amount specified.")
+    ore_cargo = None
+    
+    # Check if item_name is a number (index)
+    if item_name.isdigit():
+        index = int(item_name) - 1  # Convert to 0-based index
+        available_cargo = [cargo for cargo in station.ore_cargo if cargo.quantity > 0]
+        
+        if 0 <= index < len(available_cargo):
+            ore_cargo = available_cargo[index]
+        else:
+            game_state.ui.error_message(f"Invalid index. Available items: 1-{len(available_cargo)}")
+            return
+    else:
+        # Original name-based lookup
+        ore_cargo = next(
+            (
+                cargo
+                for cargo in station.ore_cargo
+                if cargo.ore.name.lower() == item_name.lower() and cargo.quantity > 0
+            ),
+            None,
+        )
+
+    if not ore_cargo:
+        game_state.ui.error_message(f"Item {item_name} not found or not available.")
         return
 
-    # Find the item in station's ore_cargo instead of inventory
-    item = next(
-        (
-            cargo.ore
-            for cargo in station.ore_cargo
-            if cargo.ore.name.lower() == item_name.lower()
-        ),
-        None,
-    )
-    if not item:
-        game_state.ui.error_message(
-            f"Item {item_name} not found in station inventory.")
-        return
+    item = ore_cargo.ore
 
-    # Get the cargo that contains the ore
-    ore_cargo = next(
-        (
-            cargo
-            for cargo in station.ore_cargo
-            if cargo.ore.name.lower() == item_name.lower()
-        ),
-        None,
-    )
+    # Handle "all" amount - buy maximum affordable quantity
+    if amount.lower() == "all":
+        player_character = game_state.get_player_character()
+        if player_character is None:
+            game_state.ui.error_message("Player character not found.")
+            return
+
+        # Calculate how many we can afford
+        base_price_per_unit = ore_cargo.buy_price
+        
+        # Apply price modifiers to get actual price per unit
+        price_modifier = 1.0
+        if hasattr(player_character, "buy_price_mod"):
+            price_modifier = player_character.buy_price_mod
+
+        # Apply charisma bonus (0.5% discount per point above 5)
+        if player_character.charisma > 5:
+            charisma_bonus = 1 - ((player_character.charisma - 5) * 0.005)
+            price_modifier *= charisma_bonus
+
+        # Apply trader reputation bonus (0.25% per positive reputation point)
+        if player_character.reputation_traders > 0:
+            trader_bonus = 1 - (player_character.reputation_traders * 0.0025)
+            price_modifier *= trader_bonus
+
+        actual_price_per_unit = base_price_per_unit * price_modifier
+        
+        # Calculate maximum affordable quantity
+        max_affordable = int(player_character.credits // actual_price_per_unit)
+        
+        # Also check cargo space constraints
+        remaining_space = player_ship.get_remaining_cargo_space()
+        max_by_space = int(remaining_space // item.volume)
+        
+        # Take the minimum of what we can afford, what's available, and what fits
+        amount_int = min(max_affordable, ore_cargo.quantity, max_by_space)
+        
+        if amount_int <= 0:
+            if max_affordable <= 0:
+                game_state.ui.error_message("Not enough credits to buy any units.")
+            elif max_by_space <= 0:
+                game_state.ui.error_message("Not enough cargo space.")
+            else:
+                game_state.ui.error_message("No units available to buy.")
+            return
+            
+        game_state.ui.info_message(f"Buying maximum affordable quantity: {amount_int} units")
+    else:
+        try:
+            amount_int = int(amount)
+        except ValueError:
+            game_state.ui.error_message("Invalid amount specified.")
+            return
 
     # Check if station has enough of the item
-    if not ore_cargo:
-        game_state.ui.error_message(
-            f"Item {item_name} not available at this station.")
-        return
-
     if ore_cargo.quantity < amount_int:
         game_state.ui.error_message(
-            f"Station only has {ore_cargo.quantity} {item_name} available."
+            f"Station only has {ore_cargo.quantity} {item.purity.name} {item.name} available."
+        )
+        return
+
+    # Check cargo space
+    required_space = item.volume * amount_int
+    if player_ship.get_remaining_cargo_space() < required_space:
+        game_state.ui.error_message(
+            f"Not enough cargo space. Need {required_space:.2f} m³, but only {player_ship.get_remaining_cargo_space():.2f} m³ available."
         )
         return
 
@@ -182,7 +238,7 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
             )
 
     game_state.ui.info_message(
-        f"Successfully purchased {amount_int} {item_name} for {final_price} credits."
+        f"Successfully purchased {amount_int} {item.purity.name} {item.name} for {final_price} credits."
     )
 
 
@@ -244,8 +300,8 @@ def sell_command(game_state: Game) -> None:
         game_state.ui.error_message("Player character not found.")
         return
 
-    # Calculate base price
-    base_price = selected_cargo.ore.price * quantity
+    # Calculate base price using get_value() method instead of price attribute
+    base_price = selected_cargo.ore.get_value() * quantity
 
     # Apply sell price modifier from traits
     price_modifier = 1.0

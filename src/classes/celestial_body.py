@@ -509,23 +509,20 @@ class Planet(CelestialBody):
         details.append(
             f"  Temperature: {result.factors.biocompatible_temperature:.2f}")
         details.append(
-            f"  Radiation Protection: {result.factors.radiation_protection:.2f}"
-        )
+            f"  Radiation Protection: {result.factors.radiation_protection:.2f}")
         details.append("")
         details.append("Primary Habitability Factors:")
         details.append(f"  Overall PHF: {result.phf_score:.1f}/100")
         details.append(
             f"  Atmosphere: {result.factors.atmospheric_conditions:.1f}/100")
         details.append(
-            f"  Geochemistry: {result.factors.substrate_geochemistry:.1f}/100"
-        )
+            f"  Geochemistry: {result.factors.substrate_geochemistry:.1f}/100")
         details.append(
             f"  Energy: {result.factors.energy_availability:.1f}/100")
         details.append(
             f"  Stability: {result.factors.environmental_stability:.1f}/100")
         details.append(
-            f"  Planetary: {result.factors.planetary_characteristics:.1f}/100"
-        )
+            f"  Planetary: {result.factors.planetary_characteristics:.1f}/100")
         details.append(
             f"  Stellar: {result.factors.stellar_characteristics:.1f}/100")
 
@@ -997,13 +994,11 @@ class AsteroidBelt(CelestialBody):
         return selected_ores
 
     def _determine_ore_category(self, ore: Ore) -> MaterialCategory:
-        """Determine the material category of an ore based on its mineral yields."""
         from src.classes.mineral import MINERALS
-
+        
         if not ore.mineral_yield:
-            return MaterialCategory.MID_TEMP  # Default for ores without mineral data
+            return MaterialCategory.MID_TEMP
 
-        # Count the categories of minerals this ore produces
         category_weights = {
             MaterialCategory.HIGH_TEMP: 0.0,
             MaterialCategory.MID_TEMP: 0.0,
@@ -1014,10 +1009,16 @@ class AsteroidBelt(CelestialBody):
         for mineral_id, yield_amount in ore.mineral_yield:
             mineral = MINERALS.get(mineral_id)
             if mineral:
-                category_weights[mineral.category] += float(yield_amount)
+                # Use mineral's material_category if available
+                if hasattr(mineral, 'material_category'):
+                    mineral_category = mineral.material_category
+                else:
+                    # Fallback to MID_TEMP since Category enum doesn't have the expected values
+                    mineral_category = MaterialCategory.MID_TEMP
+                
+                category_weights[mineral_category] += float(yield_amount)
                 total_yield += float(yield_amount)
 
-        # Return the category with the highest yield
         if total_yield > 0:
             max_category = MaterialCategory.MID_TEMP
             max_weight = 0.0
@@ -1027,7 +1028,7 @@ class AsteroidBelt(CelestialBody):
                     max_category = category
             return max_category
         else:
-            return MaterialCategory.MID_TEMP  # Default fallback
+            return MaterialCategory.MID_TEMP
 
     def _select_random_ores(self) -> List[Ore]:
         """Fallback method for random ore selection (original behavior)."""

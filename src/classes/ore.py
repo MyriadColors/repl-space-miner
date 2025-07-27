@@ -1,8 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Optional, Dict, List, Tuple
 
 from src.classes.commodity import Commodity, Category
+from src.classes.resource import Resource, ProductionStage
 
 
 class PurityLevel(Enum):
@@ -16,42 +17,33 @@ class PurityLevel(Enum):
 
 
 @dataclass
-class Ore:
-    commodity: Commodity
-    mineral_yield: List[Tuple[int, float]]
+class Ore(Resource):
+    """
+    Represents a raw ore resource in the game.
+    
+    Ores are the first stage in the production chain, extracted directly from
+    asteroids and other celestial bodies. They can be refined into minerals.
+    """
+    mineral_yield: List[Tuple[int, float]] = field(default_factory=list)
     purity: PurityLevel = PurityLevel.RAW  # Default purity is RAW
     refining_difficulty: float = 1.0
-
-    @property
-    def id(self) -> int:
-        """Get the ore ID from the commodity."""
-        return self.commodity.commodity_id
-
-    @property
-    def name(self) -> str:
-        """Get the ore name from the commodity."""
-        return self.commodity.name
-
-    @property
-    def base_value(self) -> float:
-        """Get the base value from the commodity."""
-        return self.commodity.base_price
-
-    @property
-    def volume(self) -> float:
-        """Get the volume per unit from the commodity."""
-        return self.commodity.volume_per_unit
-
+    extraction_difficulty: float = 1.0  # Higher values mean harder to mine
+    region_availability: Dict[str, float] = field(default_factory=dict)  # Region name to availability factor mapping
+    
+    def __post_init__(self):
+        """Ensure production stage is set to RAW."""
+        if not hasattr(self, 'production_stage') or self.production_stage is None:
+            self.production_stage = ProductionStage.RAW
+    
     def to_string(self):
+        """Get a string representation of the ore."""
         purity_str = self.purity.name.capitalize()
         return f"{purity_str} {self.commodity.name}: {self.get_value()} credits, {self.commodity.volume_per_unit} m³ per unit"
 
     def get_info(self):
+        """Get information about the ore."""
         purity_str = self.purity.name.capitalize()
         return f"{purity_str} {self.commodity.name} {self.get_value()} {self.commodity.volume_per_unit}"
-
-    def get_name(self) -> str:
-        return self.commodity.name.lower()
 
     def get_value(self) -> float:
         """Calculate the actual value based on purity level."""
@@ -87,27 +79,24 @@ class Ore:
             return None
         return purity_order[current_index + 1]
 
-    def create_refined_version(self) -> Optional["Ore"]:
-        """Create a new ore object with the next purity level."""
+    def create_refined_version(self) -> 'Ore':
         next_purity = self.get_next_purity_level()
-        if not next_purity:
-            return None
-
-        # Create a new ore with the same properties but higher purity
+        if next_purity is None:
+            raise ValueError(f"Cannot refine ore with purity level {self.purity.name}")
+        
         return Ore(
             commodity=Commodity(
-                commodity_id=self.commodity.commodity_id,
-                name=self.commodity.name,
+                commodity_id=self.commodity.commodity_id + 1000,
+                name=f"Refined {self.commodity.name}",
+                description=f"Refined version of {self.commodity.description}",
+                base_price=self.commodity.base_price * 2.5,
+                volume_per_unit=self.commodity.volume_per_unit * 0.8,
+                mass_per_unit=self.commodity.mass_per_unit * 0.9,
                 category=self.commodity.category,
-                base_price=self.commodity.base_price,
-                price_volatility=self.commodity.price_volatility,
+                price_volatility=self.commodity.price_volatility * 0.8,
                 volatility_range=self.commodity.volatility_range,
-                description=self.commodity.description,
-                volume_per_unit=self.commodity.volume_per_unit
-                * 0.9,  # Refined ore has slightly less volume
-                mass_per_unit=self.commodity.mass_per_unit,
             ),
-            mineral_yield=self.mineral_yield.copy() if self.mineral_yield else [],
+            production_stage=ProductionStage.REFINED,
             purity=next_purity,
             refining_difficulty=self.refining_difficulty,
         )
@@ -123,7 +112,45 @@ class Ore:
             self.commodity.commodity_id == other.commodity.commodity_id
             and self.purity == other.purity
         )
-        return self.id == other.id and self.purity == other.purity
+        
+    def to_dict(self) -> Dict:
+        """Convert the ore to a dictionary for serialization."""
+        base_dict = super().to_dict()
+        base_dict.update({
+            "mineral_yield": self.mineral_yield,
+            "purity": self.purity.name,
+            "refining_difficulty": self.refining_difficulty,
+            "extraction_difficulty": self.extraction_difficulty,
+            "region_availability": self.region_availability
+        })
+        return base_dict
+        
+    @classmethod
+    def from_dict(cls, data: Dict, commodity: Commodity) -> 'Ore':
+        """Create an ore from a dictionary representation."""
+        # First create a base Resource object
+        resource = Resource.from_dict(data, commodity)
+        
+        # Extract ore-specific properties
+        mineral_yield = data.get("mineral_yield", [])
+        purity = PurityLevel[data.get("purity", "RAW")]
+        refining_difficulty = data.get("refining_difficulty", 1.0)
+        extraction_difficulty = data.get("extraction_difficulty", 1.0)
+        region_availability = data.get("region_availability", {})
+        
+        # Create and return the Ore object
+        return cls(
+            commodity=commodity,
+            production_stage=resource.production_stage,
+            market_demand=resource.market_demand,
+            market_supply=resource.market_supply,
+            price_history=resource.price_history,
+            mineral_yield=mineral_yield,
+            purity=purity,
+            refining_difficulty=refining_difficulty,
+            extraction_difficulty=extraction_difficulty,
+            region_availability=region_availability
+        )
 
     def get_mineral_yield(self) -> Dict[int, float]:
         """
@@ -149,6 +176,33 @@ class Ore:
             yields[mineral_id] = round(base_yield * purity_modifier, 2)
 
         return yields
+    
+    def get_waste_products(self) -> Dict[int, float]:
+        """
+        Calculate the waste products generated when refining this ore.
+        
+        Returns:
+            Dictionary mapping waste_product_id to the amount produced per ore unit.
+        """
+        # This is a placeholder implementation. The actual waste product generation
+        # will be implemented in the waste management system.
+        waste_base_rate = 0.2  # 20% waste by default
+        
+        # Purity affects waste generation - higher purity means less waste
+        purity_waste_modifiers = {
+            PurityLevel.RAW: 1.5,     # 30% waste
+            PurityLevel.LOW: 1.2,     # 24% waste
+            PurityLevel.MEDIUM: 1.0,  # 20% waste
+            PurityLevel.HIGH: 0.75,   # 15% waste
+            PurityLevel.ULTRA: 0.5,   # 10% waste
+        }
+        
+        waste_modifier = purity_waste_modifiers.get(self.purity, 1.0)
+        waste_rate = waste_base_rate * waste_modifier
+        
+        # For now, we'll just return a generic waste product with ID 0
+        # This will be expanded in the waste management system implementation
+        return {0: round(waste_rate, 2)}
 
 
 # Define ores in a dictionary
@@ -168,6 +222,7 @@ ORES = {
         mineral_yield=[(0, 0.7), (1, 0.2)],
         purity=PurityLevel.RAW,
         refining_difficulty=1.0,
+        production_stage=ProductionStage.RAW,
     ),
     1: Ore(
         commodity=Commodity(
@@ -184,6 +239,7 @@ ORES = {
         mineral_yield=[(1, 0.8)],
         purity=PurityLevel.LOW,
         refining_difficulty=1.2,
+        production_stage=ProductionStage.RAW,
     ),
     2: Ore(
         commodity=Commodity(
@@ -200,6 +256,7 @@ ORES = {
         mineral_yield=[(3, 0.6), (4, 0.3)],
         purity=PurityLevel.MEDIUM,
         refining_difficulty=1.5,
+        production_stage=ProductionStage.RAW,
     ),
     3: Ore(
         commodity=Commodity(
@@ -216,6 +273,7 @@ ORES = {
         mineral_yield=[(10, 0.5)],
         purity=PurityLevel.HIGH,
         refining_difficulty=0.8,
+        production_stage=ProductionStage.RAW,
     ),
     4: Ore(
         commodity=Commodity(
@@ -232,6 +290,7 @@ ORES = {
         mineral_yield=[(11, 0.3)],
         purity=PurityLevel.ULTRA,
         refining_difficulty=2.5,
+        production_stage=ProductionStage.RAW,
     ),
     5: Ore(
         commodity=Commodity(
@@ -248,6 +307,7 @@ ORES = {
         mineral_yield=[(2, 0.7), (5, 0.2)],
         purity=PurityLevel.RAW,
         refining_difficulty=1.8,
+        production_stage=ProductionStage.RAW,
     ),
     6: Ore(
         commodity=Commodity(
@@ -264,6 +324,7 @@ ORES = {
         mineral_yield=[(6, 0.5), (7, 0.4)],
         purity=PurityLevel.LOW,
         refining_difficulty=2.0,
+        production_stage=ProductionStage.RAW,
     ),
     7: Ore(
         commodity=Commodity(
@@ -280,6 +341,7 @@ ORES = {
         mineral_yield=[(9, 0.2), (10, 0.1)],
         purity=PurityLevel.MEDIUM,
         refining_difficulty=3.0,
+        production_stage=ProductionStage.RAW,
     ),
     8: Ore(
         commodity=Commodity(
@@ -296,6 +358,7 @@ ORES = {
         mineral_yield=[(0, 0.4), (8, 0.5)],
         purity=PurityLevel.HIGH,
         refining_difficulty=2.2,
+        production_stage=ProductionStage.RAW,
     ),
 }
 

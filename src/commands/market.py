@@ -48,32 +48,34 @@ def market_command(game_state: Game) -> None:
     # Display available ores for trading
     game_state.ui.info_message("=== AVAILABLE ORES ===")
     game_state.ui.info_message(
-        f"{'Ore':<20} {'Quantity':<10} {'Buy Price':<12} {'Sell Price':<12} {'Value Diff':<12}"
+        f"{'#':<3} {'Ore':<20} {'Quantity':<10} {'Buy Price':<12} {'Sell Price':<12} {'Value Diff':<12}"
     )
-    game_state.ui.info_message("-" * 70)
+    game_state.ui.info_message("-" * 75)
 
     if station.ore_cargo:
-        for ore_cargo in station.ore_cargo:
+        available_cargo = [cargo for cargo in station.ore_cargo if cargo.quantity > 0]
+        for i, ore_cargo in enumerate(available_cargo, 1):
             ore_name = f"{ore_cargo.ore.purity.name} {ore_cargo.ore.name}"
             price_diff = ore_cargo.buy_price - ore_cargo.sell_price
             price_diff_str = f"{price_diff:.2f}"
 
             game_state.ui.info_message(
-                f"{ore_name:<20} {ore_cargo.quantity:<10} {ore_cargo.buy_price:<12.2f} {ore_cargo.sell_price:<12.2f} {price_diff_str:<12}"
+                f"{i:<3} {ore_name:<20} {ore_cargo.quantity:<10} {ore_cargo.buy_price:<12.2f} {ore_cargo.sell_price:<12.2f} {price_diff_str:<12}"
             )
     else:
         game_state.ui.info_message("No ores available at this station.")
 
     # Display trading instructions
     game_state.ui.info_message("\n=== TRADING COMMANDS ===")
-    game_state.ui.info_message("To buy: 'buy <ore_name> <amount>'")
+    game_state.ui.info_message("To buy: 'buy <ore_name> <amount>' or 'buy <index> <amount>'")
     game_state.ui.info_message("To sell: 'sell <ore_name> <amount>'")
     game_state.ui.info_message("To refuel: 'refuel <amount>'")
     game_state.ui.info_message(
         "\nNote: You can use 'all' instead of a specific amount."
     )
     game_state.ui.info_message(
-        "Example: 'sell Pyrogen all' or 'buy Ferrite 50'")
+        "Example: 'sell Pyrogen all', 'buy Ferrite 50', or 'buy 1 50' (buy item #1)"
+    )
 
 
 # Register the market command

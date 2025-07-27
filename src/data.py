@@ -864,6 +864,7 @@ class OreCargo:
                         if hasattr(ore_obj, "refining_difficulty")
                         else 1.0
                     ),
+                    production_stage=ore_obj.production_stage,
                 )
             except (KeyError, AttributeError):
                 # If there's an error with purity, use the default ore
@@ -903,14 +904,14 @@ class MineralCargo:
     @classmethod
     def from_dict(cls, data):
         from src.classes.mineral import MINERALS
-
+    
         mineral_obj = MINERALS.get(data["mineral_id"])
         if mineral_obj is None:
             # Handle missing mineral, raise an error
             raise ValueError(
                 f"Mineral with ID {data['mineral_id']} not found in MINERALS map."
             )
-
+    
         # Handle quality if present
         if "quality" in data:
             try:
@@ -919,12 +920,12 @@ class MineralCargo:
                 mineral_obj = Mineral(
                     commodity=mineral_obj.commodity,
                     quality=quality_level,
-                    category=mineral_obj.category,
+                    production_stage=mineral_obj.production_stage,
                 )
             except (KeyError, AttributeError):
                 # If there's an error with quality, use the default mineral
                 pass
-
+    
         return cls(
             mineral=mineral_obj,
             quantity=data["quantity"],

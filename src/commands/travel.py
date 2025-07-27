@@ -92,7 +92,6 @@ def travel_command(game_state: Game, **kwargs) -> float:
 
 
 def closest_travel(game_state: Game, object_type: str) -> None:
-    """Handle travel to closest object command."""
     player_ship = game_state.get_player_ship()
     current_system: SolarSystem = game_state.get_current_solar_system()
 
@@ -111,7 +110,7 @@ def closest_travel(game_state: Game, object_type: str) -> None:
 
     elif object_type.lower() == "station":
         closest_station = get_closest_station(
-            current_system.get_all_stations(), player_ship.space_object.position
+            current_system.get_all_stations(), player_ship
         )
         if closest_station:
             travel_command(
