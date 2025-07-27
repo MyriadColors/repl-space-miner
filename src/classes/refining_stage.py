@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 from src.classes.production_stage import ProductionStage, ProductionOutput, ProductionResult
 from src.classes.ore import Ore, PurityLevel, ORES
 from src.classes.mineral import MINERALS
+from src.classes.waste_product import WasteGenerator
 
 
 class RefiningStage(ProductionStage):
@@ -218,26 +219,16 @@ class RefiningStage(ProductionStage):
         Returns:
             Dictionary of waste product IDs to quantities
         """
-        # Base waste generation from the ore
-        ore_waste = ore.get_waste_products()
+        # Use the WasteGenerator to calculate refining waste
+        operator_skill = 1.0  # Default skill level, could be passed as parameter
+        equipment_quality = 0.8  # Default equipment quality, could be passed as parameter
         
-        # Apply quantity scaling
-        scaled_waste = {}
-        for waste_id, waste_rate in ore_waste.items():
-            waste_quantity = waste_rate * quantity
-            
-            # Efficiency affects waste generation - lower efficiency means more waste
-            efficiency_factor = 1.5 - (efficiency * 0.5)  # 1.0 to 1.5 range
-            waste_quantity *= efficiency_factor
-            
-            # Ore refining difficulty affects waste generation
-            difficulty_factor = 1.0 + (ore.refining_difficulty - 1.0) * 0.2
-            waste_quantity *= difficulty_factor
-            
-            if waste_quantity > 0:
-                scaled_waste[waste_id] = waste_quantity
-        
-        return scaled_waste
+        return WasteGenerator.calculate_refining_waste(
+            ore_type=ore.name,
+            ore_quantity=quantity,
+            equipment_quality=equipment_quality,
+            operator_skill=operator_skill
+        )
     
     def _get_relevant_skills(self) -> List[str]:
         """

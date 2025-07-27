@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Any, Union, Tuple
 from src.classes.production_stage import ProductionStage, ProductionOutput, ProductionResult
 from src.classes.mineral import MINERALS, Mineral
 from src.classes.component import Component, ComponentType, COMPONENTS
+from src.classes.waste_product import WasteGenerator
 
 
 class ComponentManufacturingStage(ProductionStage):
@@ -401,40 +402,18 @@ class ComponentManufacturingStage(ProductionStage):
         Returns:
             Dictionary of waste product IDs to quantities
         """
-        # Base waste rate for manufacturing
-        base_waste_rate = 0.15  # 15% base waste
+        # Use the WasteGenerator to calculate manufacturing waste
+        # For now, use a generic mineral type - this could be improved to consider
+        # the actual minerals being processed
+        operator_skill = 1.0  # Default skill level, could be passed as parameter
+        equipment_quality = 0.8  # Default equipment quality, could be passed as parameter
         
-        # Efficiency affects waste - lower efficiency means more waste
-        efficiency_factor = 1.5 - (efficiency * 0.5)  # 1.0 to 1.5 range
-        
-        # Complexity affects waste - more complex manufacturing generates more waste
-        complexity_waste_factor = 1.0 + (complexity_factor - 1.0) * 0.2
-        
-        # Component type affects waste generation
-        type_waste_modifiers = {
-            ComponentType.STRUCTURAL: 1.0,     # Standard waste
-            ComponentType.ELECTRONIC: 1.3,    # More waste due to precision requirements
-            ComponentType.MECHANICAL: 1.1,    # Slightly more waste
-            ComponentType.POWER: 1.4,         # High waste due to complexity
-            ComponentType.PROPULSION: 1.2,    # Moderate additional waste
-            ComponentType.LIFE_SUPPORT: 1.3,  # High precision requirements
-            ComponentType.WEAPONS: 1.5,       # Highest waste due to precision
-            ComponentType.SHIELDS: 1.4,       # High complexity waste
-            ComponentType.SENSORS: 1.3,       # Precision manufacturing waste
-        }
-        
-        type_modifier = type_waste_modifiers.get(component.component_type, 1.0)
-        
-        # Calculate total waste
-        total_waste_rate = base_waste_rate * efficiency_factor * complexity_waste_factor * type_modifier
-        total_waste = input_quantity * total_waste_rate
-        
-        # For now, return generic manufacturing waste (ID 2)
-        # This will be expanded in the waste management system
-        if total_waste > 0:
-            return {2: round(total_waste, 3)}
-        else:
-            return {}
+        return WasteGenerator.calculate_manufacturing_waste(
+            mineral_type="iron",  # Generic type for now
+            mineral_quantity=input_quantity,
+            equipment_quality=equipment_quality,
+            operator_skill=operator_skill
+        )
     
     def get_required_resources(self, output_quantity: float, component_id: Optional[int] = None) -> Dict[int, float]:
         if component_id is None:

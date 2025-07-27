@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Any
 from src.classes.production_stage import ProductionStage, ProductionOutput, ProductionResult
 from src.classes.component import ComponentQuality, COMPONENTS
 from src.classes.finished_good import FinishedGood, FinishedGoodQuality, FinishedGoodType, FINISHED_GOODS
+from src.classes.waste_product import WasteGenerator
 
 
 class AssemblyStage(ProductionStage):
@@ -429,50 +430,16 @@ class AssemblyStage(ProductionStage):
         Returns:
             Dictionary of waste product IDs to quantities
         """
-        # Base waste rate for assembly (lower than manufacturing)
-        base_waste_rate = 0.05  # 5% base waste
+        # Use the WasteGenerator to calculate assembly waste
+        operator_skill = 1.0  # Default skill level, could be passed as parameter
+        equipment_quality = 0.8  # Default equipment quality, could be passed as parameter
         
-        # Efficiency affects waste - lower efficiency means more waste
-        efficiency_factor = 1.3 - (efficiency * 0.3)  # 1.0 to 1.3 range
-        
-        # Complexity affects waste - more complex assembly generates more waste
-        complexity_waste_factor = 1.0 + (complexity_factor - 1.0) * 0.1
-        
-        # Product type affects waste generation
-        type_waste_modifiers = {
-            FinishedGoodType.CONSUMER: 1.0,      # Standard waste
-            FinishedGoodType.INDUSTRIAL: 1.1,   # Slightly more waste
-            FinishedGoodType.MILITARY: 1.4,     # High precision requirements
-            FinishedGoodType.MEDICAL: 1.3,      # Precision assembly
-            FinishedGoodType.SCIENTIFIC: 1.2,   # Moderate precision requirements
-            FinishedGoodType.LUXURY: 1.5,       # Highest waste due to precision
-            FinishedGoodType.SHIP_EQUIPMENT: 1.3, # High reliability requirements
-        }
-        
-        type_modifier = type_waste_modifiers.get(product.good_type, 1.0)
-        
-        # Quality affects waste generation
-        quality_waste_modifiers = {
-            FinishedGoodQuality.ECONOMY: 0.8,    # Less waste due to lower standards
-            FinishedGoodQuality.STANDARD: 1.0,   # Standard waste
-            FinishedGoodQuality.PREMIUM: 1.2,    # More waste due to higher standards
-            FinishedGoodQuality.LUXURY: 1.5,     # High waste due to perfection requirements
-            FinishedGoodQuality.MILITARY: 1.3,   # High waste due to strict standards
-        }
-        
-        quality_modifier = quality_waste_modifiers.get(product.quality, 1.0)
-        
-        # Calculate total waste
-        total_waste_rate = (base_waste_rate * efficiency_factor * complexity_waste_factor * 
-                           type_modifier * quality_modifier)
-        total_waste = input_quantity * total_waste_rate
-        
-        # For now, return generic assembly waste (ID 3)
-        # This will be expanded in the waste management system
-        if total_waste > 0:
-            return {3: round(total_waste, 3)}
-        else:
-            return {}
+        return WasteGenerator.calculate_assembly_waste(
+            component_type=product.name,  # Use product name as component type
+            component_quantity=input_quantity,
+            equipment_quality=equipment_quality,
+            operator_skill=operator_skill
+        )
     
     def get_required_resources(self, output_quantity: float, product_id: Optional[int] = None) -> Dict[int, float]:
         if product_id is None or product_id not in FINISHED_GOODS:
