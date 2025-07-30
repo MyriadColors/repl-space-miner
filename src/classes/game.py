@@ -708,127 +708,161 @@ class Game:
         return self.region
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "global_time": self.global_time,
-            "seed": self.seed,
-            "solar_systems": [ss.to_dict() for ss in self.solar_systems],
-            "current_solar_system_index": self.current_solar_system_index,
-            "player_character": (
-                self.player_character.to_dict() if self.player_character else None
-            ),
-            "player_ship": self.player_ship.to_dict() if self.player_ship else None,
-            "debug_flag": self.debug_flag,
-            "mute_flag": self.mute_flag,
-            "skip_customization": self.skipc,
-        }
+        try:
+            # Get ship serialization with Result handling
+            ship_result = self.player_ship.to_dict()
+            if ship_result.is_err():
+                error_details = ship_result.unwrap_err()
+                self.ui.error_message(f"Failed to serialize ship: {error_details.message}")
+                if error_details.context:
+                    self.ui.error_message(f"Error context: {error_details.context}")
+                # For backward compatibility, raise an exception
+                raise ValueError(f"Ship serialization failed: {error_details.message}")
+            
+            ship_dict = ship_result.unwrap()
+            
+            return {
+                "player_ship": ship_dict,
+                "player_character": self.player_character.to_dict() if self.player_character else None,
+                "solar_systems": [ss.to_dict() for ss in self.solar_systems],
+                "current_solar_system_index": self.current_solar_system_index,
+                "global_time": self.global_time,
+                "debug_flag": self.debug_flag,
+                "mute_flag": self.mute_flag,
+                "region": self.region.to_dict() if self.region else None,
+            }
+        except Exception as e:
+            self.ui.error_message(f"Failed to serialize game state: {str(e)}")
+            raise
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any], ui_instance: UI) -> 'Game':
-        game = cls(
-            debug_flag=data.get("debug_flag", False),
-            mute_flag=data.get("mute_flag", False),
-            skip_customization=data.get("skip_customization", False),
-            seed=data.get("seed", None),
-        )
-        game.global_time = data["global_time"]
-
-        game.solar_systems = [
-            SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]
-        ]
-        game.current_solar_system_index = data.get(
-            "current_solar_system_index", 0)
-        if not game.solar_systems:
-            game.solar_systems = [
-                SolarSystem(
-                    name="Default Gen",
-                    x=0.0,
-                    y=0.0,
-                )
-            ]
-            game.current_solar_system_index = 0
-
-        if data["player_character"]:
-            game.player_character = Character.from_dict(
-                data["player_character"])
-        if data["player_ship"]:
-            game.player_ship = Ship.from_dict(data["player_ship"], game)
-        game.ui = ui_instance
-        return game
+        try:
+            # Create game instance
+            game = cls(
+                debug_flag=data.get("debug_flag", False),
+                mute_flag=data.get("mute_flag", False),
+                skip_customization=True,  # Skip customization when loading
+            )
+            game.ui = ui_instance
+            
+            # Deserialize ship with Result handling
+            if "player_ship" in data and data["player_ship"]:
+                ship_result = Ship.from_dict(data["player_ship"])
+                if ship_result.is_err():
+                    error_details = ship_result.unwrap_err()
+                    ui_instance.error_message(f"Failed to deserialize ship: {error_details.message}")
+                    if error_details.context:
+                        ui_instance.error_message(f"Error context: {error_details.context}")
+                    # For backward compatibility, raise an exception
+                    raise ValueError(f"Ship deserialization failed: {error_details.message}")
+                
+                game.player_ship = ship_result.unwrap()
+            
+            # Deserialize other components
+            if "player_character" in data and data["player_character"]:
+                game.player_character = Character.from_dict(data["player_character"])
+            
+            if "solar_systems" in data:
+                from .solar_system import SolarSystem
+                game.solar_systems = [
+                    SolarSystem.from_dict(ss_data) for ss_data in data["solar_systems"]
+                ]
+            
+            if "region" in data and data["region"]:
+                game.region = Region.from_dict(data["region"])
+            
+            # Set simple attributes
+            game.current_solar_system_index = data.get("current_solar_system_index", 0)
+            game.global_time = data.get("global_time", 0)
+            
+            return game
+            
+        except Exception as e:
+            ui_instance.error_message(f"Failed to deserialize game state: {str(e)}")
+            raise
 
     def save_game(self, filename: str = "", human_readable: bool = False) -> None:
         """
-        Save the current game to a file.
-
-        Args:
-            filename: Optional file name for the save
-            human_readable: If True, save in human-readable JSON format instead of compressed
+        Save the current game state with proper error handling for Result types.
         """
+        save_dir = "save"
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"RSM_SAVE_{timestamp}.json"
+        elif not filename.endswith(".json"):
+            filename += ".json"
 
-        save_path = os.path.join("save", filename)
-        os.makedirs("save", exist_ok=True)
+        save_path = os.path.join(save_dir, filename)
+        backup_path = save_path + ".backup"
 
-        game_data = self.to_dict()
-
-        if not hasattr(self, "save_preference"):
-            while True:
-                choice = input(
-                    "Save as [c]ompressed or [h]uman-readable format? (c/h): "
-                ).lower()
-                if choice in ["c", "h"]:
-                    human_readable = choice == "h"
-
-                    self.save_preference = human_readable
-                    break
-                else:
-                    self.ui.warn_message(
-                        "Invalid choice. Please enter 'c' or 'h'.")
-        else:
-            human_readable = self.save_preference
-
-        if human_readable:
-            try:
-                with open(save_path, "w") as f:
-                    json.dump(game_data, f, indent=4)
-                self.ui.success_message(
-                    f"Game saved to {save_path} (Human-readable format)"
-                )
-            except IOError as e:
-                self.ui.error_message(f"Error saving game: {e}")
-        else:
-            try:
-                from src.utils.compression import compress_save_data
-
-                compressed_data = compress_save_data(game_data)
-
-                original_size = len(json.dumps(game_data))
-                compressed_size = len(compressed_data)
-                compression_rate = (
-                    1 - (compressed_size / original_size)) * 100
-
-                with open(save_path, "w") as f:
-                    f.write(compressed_data)
-
-                self.ui.success_message(
-                    f"Game saved to {save_path} (Compressed {compression_rate:.1f}%)"
-                )
-            except IOError as e:
-                self.ui.error_message(f"Error saving game: {e}")
-            except Exception as e:
-                self.ui.error_message(f"Error during save compression: {e}")
-
+        try:
+            # Create backup if file exists
+            if os.path.exists(save_path):
                 try:
+                    import shutil
+                    shutil.copy2(save_path, backup_path)
+                except Exception as e:
+                    self.ui.warn_message(f"Could not create backup: {e}")
+
+            # Serialize game data (this will handle Result types internally)
+            game_data = self.to_dict()
+
+            # Save the data
+            if human_readable:
+                with open(save_path, "w") as f:
+                    json.dump(game_data, f, indent=2)
+                self.ui.success_message(f"Game saved in human-readable format to {save_path}")
+            else:
+                try:
+                    from src.utils.compression import compress_save_data
+                    compressed_data = compress_save_data(game_data)
                     with open(save_path, "w") as f:
-                        json.dump(game_data, f, indent=4)
-                    self.ui.warn_message(
-                        f"Saved uncompressed backup to {save_path}")
-                except IOError as e:
-                    self.ui.error_message(f"Error saving backup: {e}")
+                        f.write(compressed_data)
+                    self.ui.success_message(f"Game saved (compressed) to {save_path}")
+                except ImportError:
+                    # Fallback to uncompressed if compression not available
+                    with open(save_path, "w") as f:
+                        json.dump(game_data, f)
+                    self.ui.success_message(f"Game saved (uncompressed) to {save_path}")
+
+            # Remove backup if save was successful
+            if os.path.exists(backup_path):
+                try:
+                    os.remove(backup_path)
+                except Exception as e:
+                    self.ui.warn_message(f"Could not remove backup file: {e}")
+
+        except ValueError as e:
+            # This catches serialization errors from Result types
+            self.ui.error_message(f"Failed to save game due to data serialization error: {str(e)}")
+            # Restore backup if it exists
+            if os.path.exists(backup_path) and os.path.exists(save_path):
+                try:
+                    import shutil
+                    shutil.move(backup_path, save_path)
+                    self.ui.info_message("Original save file restored from backup.")
+                except Exception as restore_error:
+                    self.ui.error_message(f"Failed to restore backup: {restore_error}")
+        except Exception as e:
+            self.ui.error_message(f"Failed to save game: {str(e)}")
+            # Restore backup if it exists
+            if os.path.exists(backup_path) and os.path.exists(save_path):
+                try:
+                    import shutil
+                    shutil.move(backup_path, save_path)
+                    self.ui.info_message("Original save file restored from backup.")
+                except Exception as restore_error:
+                    self.ui.error_message(f"Failed to restore backup: {restore_error}")
 
     @classmethod
     def load_game(cls, ui_instance: UI, filename: str = "") -> Optional['Game']:
+        """
+        Load a saved game state with proper error handling for Result types.
+        """
         save_dir = "save"
         if not os.path.exists(save_dir):
             ui_instance.error_message("No save directory found.")
@@ -858,18 +892,15 @@ class Game:
 
             while True:
                 try:
-                    choice_str = input(
-                        "Enter the number of the save file to load: ")
+                    choice_str = input("Enter the number of the save file to load: ")
                     choice_idx = int(choice_str) - 1
                     if 0 <= choice_idx < len(save_files):
                         filename = save_files[choice_idx]
                         break
                     else:
-                        ui_instance.warn_message(
-                            "Invalid selection. Please try again.")
+                        ui_instance.warn_message("Invalid selection. Please try again.")
                 except ValueError:
-                    ui_instance.warn_message(
-                        "Invalid input. Please enter a number.")
+                    ui_instance.warn_message("Invalid input. Please enter a number.")
 
         load_path = os.path.join(save_dir, filename)
         if not os.path.exists(load_path):
@@ -887,17 +918,23 @@ class Game:
                     game_data = decompress_save_data(file_content)
                     ui_instance.info_message("Loaded compressed save file.")
                 else:
-                    ui_instance.info_message(
-                        "Loading uncompressed save file...")
+                    ui_instance.info_message("Loading uncompressed save file...")
                     game_data = json.loads(file_content)
             except json.JSONDecodeError:
                 with open(load_path, "r") as f:
                     game_data = json.load(f)
                 ui_instance.warn_message("Loaded using fallback method.")
 
+            # This will handle Result types internally
             game_instance = cls.from_dict(game_data, ui_instance)
             ui_instance.success_message(f"Game loaded from {load_path}")
             return game_instance
-        except (IOError, json.JSONDecodeError, ValueError) as e:
+            
+        except ValueError as e:
+            # This catches deserialization errors from Result types
+            ui_instance.error_message(f"Failed to load game due to data format error: {str(e)}")
+            ui_instance.info_message("The save file may be corrupted or from an incompatible version.")
+            return None
+        except (IOError, json.JSONDecodeError) as e:
             ui_instance.error_message(f"Error loading game: {e}")
             return None

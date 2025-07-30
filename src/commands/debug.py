@@ -1,9 +1,8 @@
 from src.classes.game import Game
 from src.helpers import get_ore_by_id_or_name
-from src.data import OreCargo
+from src.classes.result import Result, CargoError, CargoErrorDetails
 from .registry import Argument
 from .base import register_command
-from .helpers import update_ore_quantities
 from .system import display_status
 
 
@@ -27,7 +26,8 @@ def add_ore_debug_command(game_state: Game, amount: int, ore_name: str) -> None:
         return
 
     total_volume = ore.volume * amount
-    if total_volume > player_ship.cargohold_occupied:
+    remaining_space = player_ship.get_remaining_cargo_space()
+    if total_volume > remaining_space:
         game_state.ui.warn_message(
             "You are trying to add more cargo than your ship's capacity."
         )
@@ -35,9 +35,21 @@ def add_ore_debug_command(game_state: Game, amount: int, ore_name: str) -> None:
             "Since this is a debug command, i will allow you to do that."
         )
 
-    ore_cargo = OreCargo(ore, amount, ore.base_value, ore.base_value)
-    update_ore_quantities(game_state, ore_cargo,
-                          ore_name, amount, ore.base_value)
+    # Use unified cargo system directly
+    add_result = player_ship.add_cargo(ore, amount, ore.base_value, ore.base_value)
+    if add_result.is_err():
+        error = add_result.unwrap_err()
+        if error.error_type == CargoError.INSUFFICIENT_SPACE:
+            game_state.ui.error_message(f"Not enough cargo space: {error.message}")
+            if error.context:
+                game_state.ui.error_message(f"Required: {error.context.get('required_space', 'unknown')} m³, Available: {error.context.get('available_space', 'unknown')} m³")
+        elif error.error_type == CargoError.INVALID_QUANTITY:
+            game_state.ui.error_message(f"Invalid quantity: {error.message}")
+        else:
+            game_state.ui.error_message(f"Failed to add cargo: {error.message}")
+        return
+    
+    game_state.ui.success_message(f"Added {amount} {ore_name} to cargo.")
     display_status(game_state)
 
 
@@ -98,7 +110,7 @@ def add_cargo_space_debug_command(game_state: Game, amount: str) -> None:
         game_state.ui.error_message("You have entered a negative number.")
         return
 
-    player_ship.cargohold_capacity += amount_value
+    player_ship.cargo_hold.capacity += amount_value
     game_state.ui.success_message(
         f"{amount_value} cargo space added to your ship.")
 

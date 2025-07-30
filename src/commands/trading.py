@@ -8,7 +8,8 @@ from .registry import Argument
 from .base import register_command
 import random
 from typing import Optional, Tuple
-from src.data import OreCargo
+from src.classes.result import Result, CargoError, CargoErrorDetails
+
 
 
 def barter(price: float) -> tuple[float, bool]:
@@ -167,9 +168,9 @@ def _calculate_max_buyable_quantity(player_character, ore_cargo, player_ship, ac
     """Calculate maximum quantity that can be bought considering credits, space, and availability."""
     max_affordable = int(player_character.credits // actual_price_per_unit)
     remaining_space = player_ship.get_remaining_cargo_space()
-    max_by_space = int(remaining_space // ore_cargo.ore.volume)
+    max_by_space = int(remaining_space // ore_cargo.ore.commodity.volume_per_unit)
     
-    return min(max_affordable, ore_cargo.quantity, max_by_space)
+    return min(max_affordable, int(ore_cargo.quantity), max_by_space)
 
 
 def buy_command(game_state: Game, item_name: str, amount: str) -> None:
@@ -204,7 +205,7 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
         if amount_int <= 0:
             max_affordable = int(player_character.credits // actual_price_per_unit)
             remaining_space = player_ship.get_remaining_cargo_space()
-            max_by_space = int(remaining_space // item.volume)
+            max_by_space = int(remaining_space // item.commodity.volume_per_unit)
             
             if max_affordable <= 0:
                 game_state.ui.error_message("Not enough credits to buy any units.")
@@ -229,8 +230,8 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
         )
         return
 
-    required_space = item.volume * amount_int
-    if player_ship.get_remaining_cargo_space() < required_space:
+    if not player_ship.can_fit_cargo(item, amount_int):
+        required_space = item.commodity.volume_per_unit * amount_int
         game_state.ui.error_message(
             f"Not enough cargo space. Need {required_space:.2f} m³, but only {player_ship.get_remaining_cargo_space():.2f} m³ available."
         )
@@ -271,15 +272,25 @@ def buy_command(game_state: Game, item_name: str, amount: str) -> None:
     # Update inventories
     ore_cargo.quantity -= amount_int
     
-    existing_cargo = next(
-        (cargo for cargo in player_ship.cargohold if cargo.ore.id == item.id), None
-    )
-    if existing_cargo:
-        existing_cargo.quantity += amount_int
-    else:
-        player_ship.cargohold.append(
-            OreCargo(item, amount_int, ore_cargo.buy_price, ore_cargo.sell_price)
-        )
+    # Use the new unified cargo system
+    add_result = player_ship.add_cargo(item, amount_int, ore_cargo.buy_price, ore_cargo.sell_price)
+    if add_result.is_err():
+        # Handle the error gracefully
+        error = add_result.unwrap_err()
+        if error.error_type == CargoError.INSUFFICIENT_SPACE:
+            game_state.ui.error_message(f"Not enough cargo space: {error.message}")
+            if error.context:
+                game_state.ui.error_message(f"Required: {error.context.get('required_space', 'unknown')} m³, Available: {error.context.get('available_space', 'unknown')} m³")
+        elif error.error_type == CargoError.INVALID_QUANTITY:
+            game_state.ui.error_message(f"Invalid quantity: {error.message}")
+        elif error.error_type == CargoError.NEGATIVE_QUANTITY:
+            game_state.ui.error_message(f"Quantity cannot be negative: {error.message}")
+        else:
+            game_state.ui.error_message(f"Failed to add cargo to ship: {error.message}")
+        # Revert station inventory change
+        ore_cargo.quantity += amount_int
+        player_character.add_credits(final_price)
+        return
 
     game_state.ui.info_message(
         f"Successfully purchased {amount_int} {item.purity.name} {item.name} for {final_price} credits."
@@ -294,15 +305,17 @@ def sell_command(game_state: Game) -> None:
         return
     player_ship, station = docking_result
 
-    if not player_ship.cargohold:
+    # Get all cargo using the new unified system
+    all_cargo = player_ship.get_all_cargo()
+    if not all_cargo:
         game_state.ui.error_message("No items to sell.")
         return
 
     # Display available items
     game_state.ui.info_message("Available items to sell:")
-    for i, cargo in enumerate(player_ship.cargohold, 1):
+    for i, cargo in enumerate(all_cargo, 1):
         game_state.ui.info_message(
-            f"{i}. {cargo.ore.name} - Quantity: {cargo.quantity}"
+            f"{i}. {cargo.item_name} - Quantity: {cargo.quantity}"
         )
 
     # Get user selection
@@ -310,7 +323,7 @@ def sell_command(game_state: Game) -> None:
         selection = int(take_input("Select item number to sell (0 to cancel): "))
         if selection == 0:
             return
-        if selection < 1 or selection > len(player_ship.cargohold):
+        if selection < 1 or selection > len(all_cargo):
             game_state.ui.error_message("Invalid selection.")
             return
     except ValueError:
@@ -321,7 +334,7 @@ def sell_command(game_state: Game) -> None:
     quantity_input = take_input("Enter quantity to sell (or 'all' for entire stack): ")
     
     # Validate selection first to get the cargo
-    selected_cargo = player_ship.cargohold[selection - 1]
+    selected_cargo = all_cargo[selection - 1]
     
     # Handle "all" or parse quantity
     if quantity_input.lower() == "all":
@@ -348,7 +361,13 @@ def sell_command(game_state: Game) -> None:
         return
 
     # Calculate price with modifiers
-    base_price = selected_cargo.ore.get_value() * quantity
+    # For unified cargo system, we need to get the value differently based on item type
+    if hasattr(selected_cargo.item, 'get_value'):
+        base_price = selected_cargo.item.get_value() * quantity
+    else:
+        # Fallback to commodity base value if get_value method doesn't exist
+        base_price = selected_cargo.item.base_value * quantity
+    
     price_modifier = _calculate_price_modifiers(player_character, is_buying=False)
     price_modifier = _apply_superstitious_trait(game_state, player_character, price_modifier, is_buying=False)
     total_price = round(base_price * price_modifier, 2)
@@ -361,7 +380,7 @@ def sell_command(game_state: Game) -> None:
     final_price = round(final_price, 2)
     
     # Confirm the sale before proceeding
-    confirm = take_input(f"Confirm sale of {quantity} {selected_cargo.ore.name} for {final_price} credits? (y/n): ")
+    confirm = take_input(f"Confirm sale of {quantity} {selected_cargo.item_name} for {final_price} credits? (y/n): ")
     if confirm.lower() != "y":
         game_state.ui.info_message("Sale cancelled.")
         return
@@ -376,16 +395,35 @@ def sell_command(game_state: Game) -> None:
     player_character.add_credits(final_price)
     _process_trading_skill_xp(game_state, final_price)
 
-    # Update cargo quantities
-    selected_cargo.quantity -= quantity
-    if selected_cargo.quantity <= 0:
-        player_ship.cargohold.remove(selected_cargo)
+    # Remove cargo from ship using the new unified system
+    remove_result = player_ship.remove_cargo(selected_cargo.item_id, quantity)
+    if remove_result.is_err():
+        # Handle the error gracefully
+        error = remove_result.unwrap_err()
+        if error.error_type == CargoError.ITEM_NOT_FOUND:
+            game_state.ui.error_message(f"Item not found in cargo: {error.message}")
+        elif error.error_type == CargoError.INVALID_QUANTITY:
+            game_state.ui.error_message(f"Invalid quantity: {error.message}")
+            if error.context:
+                game_state.ui.error_message(f"Requested: {error.context.get('requested', 'unknown')}, Available: {error.context.get('available', 'unknown')}")
+        elif error.error_type == CargoError.NEGATIVE_QUANTITY:
+            game_state.ui.error_message(f"Quantity cannot be negative: {error.message}")
+        else:
+            game_state.ui.error_message(f"Failed to remove cargo from ship: {error.message}")
+        player_character.remove_credits(final_price)
+        return
+    
+    removed_cargo = remove_result.unwrap()
 
-    # Add to station inventory
-    station.add_item(selected_cargo.ore, quantity)
+    # Add to station inventory - need to handle different item types
+    if hasattr(station, 'add_item'):
+        station.add_item(selected_cargo.item, quantity)
+    else:
+        # Fallback if station doesn't have add_item method
+        game_state.ui.warn_message("Station inventory update not implemented for this item type.")
 
     game_state.ui.info_message(
-        f"Successfully sold {quantity} {selected_cargo.ore.name} for {final_price} credits."
+        f"Successfully sold {quantity} {selected_cargo.item_name} for {final_price} credits."
     )
 
 

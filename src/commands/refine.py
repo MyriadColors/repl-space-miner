@@ -1,11 +1,12 @@
-from typing import Optional
+from typing import Optional, cast, Dict, Any
 from src.classes.game import Game
-from src.classes.mineral import MINERALS, MineralQuality
+from src.classes.ore import Ore
+from src.classes.mineral import MINERALS, MineralQuality, Mineral
 from src.helpers import take_input, get_ore_by_id_or_name
-from src.data import OreCargo, MineralCargo
 from .base import register_command
 from .registry import Argument
 from src.events.skill_events import process_skill_xp_from_activity, notify_skill_progress
+from src.classes.result import Result, CargoError, CargoErrorDetails
 
 def refine_command(game_state: Game, amount: Optional[str] = None) -> None:
     player_ship = game_state.get_player_ship()
@@ -31,15 +32,18 @@ def refine_command(game_state: Game, amount: Optional[str] = None) -> None:
         return
 
     # Check if player has any ore to refine
-    if not player_ship.cargohold:
+    ore_cargo = player_ship.get_cargo_by_type(Ore)
+    if not ore_cargo:
         game_state.ui.error_message(
             "You have no ore in your cargo hold to refine.")
         return
 
-    # Display available items to refine
-    refinable_cargo = [
-        cargo for cargo in player_ship.cargohold if cargo.ore.can_refine()
-    ]
+    # Get refinable cargo items using unified system
+    refinable_cargo = []
+    for cargo_item in ore_cargo:
+        # Type guard to ensure we have an Ore that can be refined
+        if isinstance(cargo_item.item, Ore) and cargo_item.item.can_refine():
+            refinable_cargo.append(cargo_item)
 
     if not refinable_cargo:
         game_state.ui.error_message(
@@ -85,7 +89,7 @@ def refine_command(game_state: Game, amount: Optional[str] = None) -> None:
         # Find all cargo of the specified ore type that can be refined
         target_cargo = [
             cargo for cargo in refinable_cargo 
-            if cargo.ore.id == target_ore.id
+            if cargo.item.commodity.commodity_id == target_ore.commodity.commodity_id
         ]
         
         if not target_cargo:
@@ -104,19 +108,21 @@ def refine_command(game_state: Game, amount: Optional[str] = None) -> None:
         game_state.ui.info_message("Refining all available ore...")
         
         # Calculate detailed information for each operation
-        total_cost = 0
-        total_current_value = 0
-        total_refined_value = 0
-        refining_operations = []
+        total_cost = 0.0
+        total_current_value = 0.0
+        total_refined_value = 0.0
+        refining_operations: list[Dict[str, Any]] = []
         
         for cargo in refinable_cargo:
+            # Type assertion since we know all items in refinable_cargo are Ore objects
+            ore_item = cast(Ore, cargo.item)
             base_refining_cost = 50
-            refining_cost_per_unit = base_refining_cost * cargo.ore.refining_difficulty
+            refining_cost_per_unit = base_refining_cost * ore_item.refining_difficulty
             operation_cost = round(refining_cost_per_unit * cargo.quantity, 2)
             
             # Calculate current and refined values
-            current_value = round(cargo.ore.get_value() * cargo.quantity, 2)
-            refined_ore = cargo.ore.create_refined_version()
+            current_value = round(ore_item.get_value() * cargo.quantity, 2)
+            refined_ore = ore_item.create_refined_version()
             refined_value = round(refined_ore.get_value() * cargo.quantity, 2)
             value_increase = refined_value - current_value
             net_profit = value_increase - operation_cost
@@ -152,9 +158,11 @@ def refine_command(game_state: Game, amount: Optional[str] = None) -> None:
         # Show details for each operation
         for i, op in enumerate(refining_operations, 1):
             cargo = op['cargo']
-            refined_ore = op['refined_ore']
+            # Type assertion since we know all items in refining_operations are Ore objects
+            ore_item = cast(Ore, cargo.item)
+            refined_ore = cast(Ore, op['refined_ore'])
             game_state.ui.info_message(
-                f"{i}. {cargo.ore.purity.name} {cargo.ore.name} -> {refined_ore.purity.name} {refined_ore.name}"
+                f"{i}. {ore_item.purity.name} {ore_item.name} -> {refined_ore.purity.name} {refined_ore.name}"
             )
             game_state.ui.info_message(f"   Amount: {op['amount']} units")
             game_state.ui.info_message(f"   Current value: {op['current_value']} credits")
@@ -182,7 +190,9 @@ def refine_command(game_state: Game, amount: Optional[str] = None) -> None:
         
         # Process all refining operations
         for op in refining_operations:
-            _refine_specific_cargo(game_state, op['cargo'], op['amount'], show_summary=False)
+            cargo = op['cargo']
+            refine_amount = cast(int, op['amount'])
+            _refine_specific_cargo(game_state, cargo, refine_amount, show_summary=False)
         
         game_state.ui.success_message(
             f"Successfully refined all available ore for {total_cost} credits."
@@ -193,20 +203,25 @@ def refine_command(game_state: Game, amount: Optional[str] = None) -> None:
     # Interactive selection mode (original behavior)
     game_state.ui.info_message("Available ores to refine:")
     for i, cargo in enumerate(refinable_cargo, 1):
-        next_purity = cargo.ore.get_next_purity_level().name
-        current_value = cargo.ore.get_value()
-        refined_ore = cargo.ore.create_refined_version()
+        # Type assertion since we know all items in refinable_cargo are Ore objects
+        ore_item = cast(Ore, cargo.item)
+        next_purity_level = ore_item.get_next_purity_level()
+        if next_purity_level is None:
+            continue  # Skip if can't be refined further
+        next_purity = next_purity_level.name
+        current_value = ore_item.get_value()
+        refined_ore = ore_item.create_refined_version()
         refined_value = refined_ore.get_value()
 
         game_state.ui.info_message(
-            f"{i}. {cargo.ore.purity.name} {cargo.ore.name} "
-            f"-> {next_purity} {cargo.ore.name}"
+            f"{i}. {ore_item.purity.name} {ore_item.name} "
+            f"-> {next_purity} {ore_item.name}"
         )
         game_state.ui.info_message(
             f"   Quantity: {cargo.quantity}, Value: {current_value} -> {refined_value} credits"
         )
         game_state.ui.info_message(
-            f"   Volume: {cargo.ore.volume} -> {refined_ore.volume} m³ per unit"
+            f"   Volume: {ore_item.volume} -> {refined_ore.volume} m³ per unit"
         )
 
     # Get user selection
@@ -260,27 +275,18 @@ def refine_command(game_state: Game, amount: Optional[str] = None) -> None:
         return
 
 
-def _refine_specific_cargo(game_state: Game, selected_cargo: OreCargo, amount: int, show_summary: bool = True) -> None:
-    """
-    Helper function to refine a specific cargo item.
-    
-    Args:
-        game_state: The game state
-        selected_cargo: The cargo to refine
-        amount: Amount to refine
-        show_summary: Whether to show detailed summary (False for batch operations)
-    """
+def _refine_specific_cargo(game_state: Game, selected_cargo, amount: int, show_summary: bool = True) -> None:
     player_ship = game_state.get_player_ship()
     player_character = game_state.get_player_character()
     
     if not player_ship or not player_character:
         return
 
-    # Calculate refining cost based on refining difficulty and amount
-    base_refining_cost = 50  # Base cost per unit
-    refining_cost_per_unit = (
-        base_refining_cost * selected_cargo.ore.refining_difficulty
-    )
+    # Calculate refining cost
+    # Type assertion since we know selected_cargo.item is an Ore object
+    ore_item = cast(Ore, selected_cargo.item)
+    base_refining_cost = 50
+    refining_cost_per_unit = base_refining_cost * ore_item.refining_difficulty
     total_refining_cost = round(refining_cost_per_unit * amount, 2)
 
     # Check if player has enough credits
@@ -290,83 +296,101 @@ def _refine_specific_cargo(game_state: Game, selected_cargo: OreCargo, amount: i
         )
         return
 
-    if show_summary:
-        # Show refining summary and confirm
-        current_value_total = round(selected_cargo.ore.get_value() * amount, 2)
-        refined_ore = selected_cargo.ore.create_refined_version()
-        refined_value_total = round(refined_ore.get_value() * amount, 2)
-        value_increase = refined_value_total - current_value_total
+    # Create refined version of the ore
+    refined_ore = ore_item.create_refined_version()
+    if not refined_ore:
+        game_state.ui.error_message("This ore cannot be refined further.")
+        return
 
+    # Calculate values for summary
+    current_value = round(ore_item.get_value() * amount, 2)
+    refined_value = round(refined_ore.get_value() * amount, 2)
+    value_increase = refined_value - current_value
+    net_profit = value_increase - total_refining_cost
+
+    if show_summary:
         game_state.ui.info_message("\n=== Refining Summary ===")
         game_state.ui.info_message(
-            f"Ore: {selected_cargo.ore.purity.name} {selected_cargo.ore.name} -> {refined_ore.purity.name} {refined_ore.name}"
+            f"Ore: {ore_item.purity.name} {ore_item.name} -> {refined_ore.purity.name} Refined {refined_ore.name}"
         )
         game_state.ui.info_message(f"Amount: {amount} units")
-        game_state.ui.info_message(
-            f"Current value: {current_value_total} credits")
-        game_state.ui.info_message(
-            f"Refined value: {refined_value_total} credits")
+        game_state.ui.info_message(f"Current value: {current_value} credits")
+        game_state.ui.info_message(f"Refined value: {refined_value} credits")
         game_state.ui.info_message(f"Value increase: {value_increase} credits")
-        game_state.ui.info_message(
-            f"Refining cost: {total_refining_cost} credits")
-        game_state.ui.info_message(
-            f"Net profit: {value_increase - total_refining_cost} credits")
+        game_state.ui.info_message(f"Refining cost: {total_refining_cost} credits")
+        game_state.ui.info_message(f"Net profit: {net_profit} credits")
+
         confirm = take_input("Proceed with refining? (y/n): ").lower()
         if confirm != "y":
             game_state.ui.info_message("Refining cancelled.")
             return
 
     # Process the refining
-    refined_ore = selected_cargo.ore.create_refined_version()
-    
     # 1. Reduce player credits
     player_character.remove_credits(total_refining_cost)
 
-    # 2. Remove the refined ore from inventory
-    selected_cargo.quantity -= amount
+    # 2. Remove the original ore from cargo using the unified cargo system
+    remove_result = player_ship.remove_cargo(selected_cargo.item_id, amount)
+    if remove_result.is_err():
+        error = remove_result.unwrap_err()
+        if error.error_type == CargoError.ITEM_NOT_FOUND:
+            game_state.ui.error_message(f"Ore not found in cargo: {error.message}")
+        elif error.error_type == CargoError.INVALID_QUANTITY:
+            game_state.ui.error_message(f"Invalid quantity for refining: {error.message}")
+            if error.context:
+                game_state.ui.error_message(f"Requested: {error.context.get('requested', 'unknown')}, Available: {error.context.get('available', 'unknown')}")
+        else:
+            game_state.ui.error_message(f"Failed to remove ore from cargo: {error.message}")
+        # Refund the credits since the operation failed
+        player_character.add_credits(total_refining_cost)
+        return
+
+    # 3. Add the refined ore to cargo
+    add_result = player_ship.add_cargo(
+        refined_ore,
+        amount,
+        selected_cargo.buy_price,  # Keep original buy price
+        refined_ore.get_value() * 1.1  # Set sell price slightly above market value
+    )
     
-    # 3. Add the refined version to inventory
-    # We need to check if we already have this refined ore type in inventory
-    refined_ore_cargo = None
-    for cargo in player_ship.cargohold:
-        if (
-            cargo.ore.id == selected_cargo.ore.id
-            and cargo.ore.purity == refined_ore.purity
-        ):
-            refined_ore_cargo = cargo
-            break
-
-    if refined_ore_cargo:
-        # If we already have this refined ore, just increase quantity
-        refined_ore_cargo.quantity += amount
-    else:
-        # Otherwise add a new entry for the refined ore
-        new_refined_cargo = OreCargo(
-            ore=refined_ore,
-            quantity=amount,
-            buy_price=selected_cargo.buy_price * 1.5,  # Higher buy price for refined ore
-            sell_price=selected_cargo.sell_price * 1.5,  # Higher sell price for refined ore
+    if add_result.is_err():
+        error = add_result.unwrap_err()
+        if error.error_type == CargoError.INSUFFICIENT_SPACE:
+            game_state.ui.error_message(f"Not enough cargo space for refined ore: {error.message}")
+            if error.context:
+                game_state.ui.error_message(f"Required: {error.context.get('required_space', 'unknown')} m³, Available: {error.context.get('available_space', 'unknown')} m³")
+        else:
+            game_state.ui.error_message(f"Failed to add refined ore to cargo: {error.message}")
+        
+        # Try to restore the original ore since refining failed
+        restore_result = player_ship.add_cargo(
+            ore_item,
+            amount,
+            selected_cargo.buy_price,
+            selected_cargo.sell_price
         )
-        player_ship.cargohold.append(new_refined_cargo)
+        
+        if restore_result.is_err():
+            game_state.ui.error_message("Critical error: Failed to restore original ore after refining failure!")
+        
+        # Refund the credits
+        player_character.add_credits(total_refining_cost)
+        return
 
-    # Clean up empty entries in cargohold
-    player_ship.cargohold = [
-        cargo for cargo in player_ship.cargohold if cargo.quantity > 0
-    ]
-
-    # Grant experience for Refining & Processing skill
-    process_skill_xp_from_activity(game_state, "Refining & Processing", amount * 2)
+    # 5. Grant experience for Refining & Processing skill
+    skill_results = process_skill_xp_from_activity(
+        game_state, "Refining & Processing", amount
+    )
+    notify_skill_progress(game_state, skill_results)
 
     if show_summary:
         game_state.ui.success_message(
-            f"Successfully refined {amount} units of {selected_cargo.ore.name} "
-            f"to {refined_ore.purity.name} purity."
+            f"Successfully refined {amount} units of {ore_item.name} to {refined_ore.purity.name} purity."
         )
-        game_state.ui.info_message(
-            f"Remaining credits: {player_character.credits}")
+        game_state.ui.info_message(f"Remaining credits: {player_character.credits}")
 
 
-def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -> None:
+def refine_to_minerals_command(game_state: Game, amount: Optional[str] = None) -> None:
     """
     Handle refining ore into minerals.
 
@@ -377,9 +401,10 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
     player_character = game_state.get_player_character()
 
     # Convert string amount to int if needed
-    if amount is not None and isinstance(amount, str):
+    refine_amount: Optional[int] = None
+    if amount is not None:
         try:
-            amount = int(amount)
+            refine_amount = int(amount)
         except ValueError:
             game_state.ui.error_message(
                 "Invalid amount. Please provide a valid number."
@@ -407,15 +432,18 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         return
 
     # Check if player has any ore to refine
-    if not player_ship.cargohold:
+    ore_cargo = player_ship.get_cargo_by_type(Ore)
+    if not ore_cargo:
         game_state.ui.error_message(
             "You have no ore in your cargo hold to refine.")
         return
 
-    # Display available items to refine
-    refinable_cargo = [
-        cargo for cargo in player_ship.cargohold if cargo.ore.mineral_yield
-    ]
+    # Get refinable cargo items using unified system
+    refinable_cargo = []
+    for cargo_item in ore_cargo:
+        # Type guard to ensure we have an Ore that can yield minerals
+        if isinstance(cargo_item.item, Ore) and cargo_item.item.mineral_yield:
+            refinable_cargo.append(cargo_item)
 
     if not refinable_cargo:
         game_state.ui.error_message(
@@ -425,7 +453,9 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
 
     game_state.ui.info_message("Available ores to refine into minerals:")
     for i, cargo in enumerate(refinable_cargo, 1):
-        mineral_yields = cargo.ore.get_mineral_yield()
+        # Type assertion since we know all items in refinable_cargo are Ore objects
+        ore_item = cast(Ore, cargo.item)
+        mineral_yields = ore_item.get_mineral_yield()
         minerals_list = []
         for mineral_id, yield_amount in mineral_yields.items():
             mineral = MINERALS.get(mineral_id)
@@ -436,10 +466,10 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         minerals_str = ", ".join(minerals_list)
 
         game_state.ui.info_message(
-            f"{i}. {cargo.ore.purity.name} {cargo.ore.name} -> {minerals_str}"
+            f"{i}. {ore_item.purity.name} {ore_item.name} -> {minerals_str}"
         )
         game_state.ui.info_message(
-            f"   Quantity: {cargo.quantity}, Purity: {cargo.ore.purity.name}"
+            f"   Quantity: {cargo.quantity}, Purity: {ore_item.purity.name}"
         )
 
     # Get user selection
@@ -461,50 +491,52 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         selected_cargo = refinable_cargo[selection - 1]
         # Ask for amount if not provided
         max_amount = selected_cargo.quantity
-        if amount is None or amount <= 0:
+        if refine_amount is None or refine_amount <= 0:
             try:
                 amount_str = take_input(
                     f"How many units to refine (1-{max_amount}, 'all' for all): "
                 )
                 if amount_str.lower() == "all":
-                    amount = max_amount
+                    refine_amount = max_amount
                 else:
-                    amount = int(amount_str)
+                    refine_amount = int(amount_str)
             except ValueError:
                 game_state.ui.error_message(
                     "Invalid amount. Refining cancelled.")
                 return
         # Validate amount
-        if amount is None or amount <= 0:
+        if refine_amount is None or refine_amount <= 0:
             game_state.ui.error_message("Amount must be greater than 0.")
             return
 
-        # At this point, amount is guaranteed to be a positive integer
-        assert amount is not None, "Amount should not be None here"
+        # At this point, refine_amount is guaranteed to be a positive integer
+        assert refine_amount is not None, "Amount should not be None here"
 
         # Ensure amount doesn't exceed available quantity
-        amount = min(amount, max_amount)
+        refine_amount = min(refine_amount, max_amount)
 
         # Calculate refining cost based on refining difficulty and amount
         # Base cost per unit (higher than regular refining)
+        # Type assertion since we know selected_cargo.item is an Ore object
+        ore_item = cast(Ore, selected_cargo.item)
         base_refining_cost = 75
         refining_cost_per_unit = (
-            base_refining_cost * selected_cargo.ore.refining_difficulty
+            base_refining_cost * ore_item.refining_difficulty
         )
-        total_refining_cost = round(refining_cost_per_unit * amount, 2)
+        total_refining_cost = round(refining_cost_per_unit * refine_amount, 2)
 
         # Check if player has enough credits
         if player_character.credits < total_refining_cost:
             game_state.ui.error_message(
-                f"Not enough credits. Refining {amount} units costs {total_refining_cost} credits."
+                f"Not enough credits. Refining {refine_amount} units costs {total_refining_cost} credits."
             )
             return
 
         # Calculate the minerals that will be produced
-        mineral_yields = selected_cargo.ore.get_mineral_yield()
+        mineral_yields = ore_item.get_mineral_yield()
         minerals_produced = {}
-        total_minerals_volume = 0
-        total_minerals_value = 0
+        total_minerals_volume = 0.0
+        total_minerals_value = 0.0
 
         # Apply engineering skill bonus (if above 5, 1% per point)
         skill_bonus = 1.0
@@ -517,9 +549,9 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         # Show refining summary
         game_state.ui.info_message("\n=== Mineral Refining Summary ===")
         game_state.ui.info_message(
-            f"Ore: {selected_cargo.ore.purity.name} {selected_cargo.ore.name}"
+            f"Ore: {ore_item.purity.name} {ore_item.name}"
         )
-        game_state.ui.info_message(f"Amount: {amount} units")
+        game_state.ui.info_message(f"Amount: {refine_amount} units")
         game_state.ui.info_message(
             f"Engineering Skill Bonus: +{(skill_bonus - 1.0) * 100:.0f}%"
         )
@@ -529,7 +561,7 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
             mineral = MINERALS.get(mineral_id)
             if mineral:
                 # Calculate mineral amount produced, applying skill bonus
-                mineral_amount = round(amount * yield_ratio * skill_bonus)
+                mineral_amount = round(refine_amount * yield_ratio * skill_bonus)
                 mineral_value = round(mineral.get_value() * mineral_amount, 2)
                 mineral_volume = round(
                     mineral.commodity.volume_per_unit * mineral_amount, 2)
@@ -545,7 +577,7 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
                 )
 
         # Check if we have enough cargo space
-        ore_volume_to_be_removed = selected_cargo.ore.volume * amount
+        ore_volume_to_be_removed = ore_item.volume * refine_amount
         net_volume_change = total_minerals_volume - ore_volume_to_be_removed
 
         if player_ship.get_remaining_cargo_space() < net_volume_change:
@@ -575,8 +607,21 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         # 1. Reduce player credits
         player_character.remove_credits(total_refining_cost)
 
-        # 2. Remove the ore from inventory
-        selected_cargo.quantity -= amount
+        # 2. Remove the ore from inventory using unified cargo system
+        remove_result = player_ship.remove_cargo(selected_cargo.item_id, refine_amount)
+        if remove_result.is_err():
+            error = remove_result.unwrap_err()
+            if error.error_type == CargoError.ITEM_NOT_FOUND:
+                game_state.ui.error_message(f"Ore not found in cargo: {error.message}")
+            elif error.error_type == CargoError.INVALID_QUANTITY:
+                game_state.ui.error_message(f"Invalid quantity for mineral refining: {error.message}")
+                if error.context:
+                    game_state.ui.error_message(f"Requested: {error.context.get('requested', 'unknown')}, Available: {error.context.get('available', 'unknown')}")
+            else:
+                game_state.ui.error_message(f"Failed to remove ore from cargo: {error.message}")
+            # Refund the credits since the operation failed
+            player_character.add_credits(total_refining_cost)
+            return
 
         # 3. Add the minerals to inventory
         for mineral_id, mineral_amount in minerals_produced.items():
@@ -584,23 +629,41 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
             if (
                 mineral and mineral_amount > 0
             ):  # Check if we already have this mineral in inventory
+                # Check if we already have this mineral using the unified cargo system
                 existing_mineral_cargo = None
-
-                # Player ship may not have mineralhold yet, create it if needed
-                if not hasattr(player_ship, "mineralhold"):
-                    player_ship.mineralhold = []
-
-                for cargo in player_ship.mineralhold:
-                    if (
-                        cargo.mineral.id == mineral_id
-                        and cargo.mineral.quality == MineralQuality.STANDARD
+                mineral_items = player_ship.get_cargo_by_type(Mineral)
+                
+                for cargo_item in mineral_items:
+                    # Type guard to ensure we have a Mineral
+                    if isinstance(cargo_item.item, Mineral) and (
+                        cargo_item.item.id == mineral_id
+                        and cargo_item.item.quality == MineralQuality.STANDARD
                     ):
-                        existing_mineral_cargo = cargo
+                        existing_mineral_cargo = cargo_item
                         break
 
                 if existing_mineral_cargo:
-                    # If we already have this mineral, just increase quantity
-                    existing_mineral_cargo.quantity += mineral_amount
+                    # If we already have this mineral, add more using the unified system
+                    # Remove the existing amount and add the new total
+                    remove_result = player_ship.remove_cargo(existing_mineral_cargo.item_id, existing_mineral_cargo.quantity)
+                    if remove_result.is_err():
+                        error = remove_result.unwrap_err()
+                        game_state.ui.error_message(f"Failed to remove existing mineral: {error.message}")
+                        continue
+                    
+                    add_result = player_ship.add_cargo(
+                        existing_mineral_cargo.item,
+                        existing_mineral_cargo.quantity + mineral_amount,
+                        existing_mineral_cargo.buy_price,
+                        existing_mineral_cargo.sell_price
+                    )
+                    if add_result.is_err():
+                        error = add_result.unwrap_err()
+                        if error.error_type == CargoError.INSUFFICIENT_SPACE:
+                            game_state.ui.error_message(f"Not enough cargo space for mineral {mineral.name}: {error.message}")
+                        else:
+                            game_state.ui.error_message(f"Failed to add mineral to cargo: {error.message}")
+                        continue
                 else:
                     # Otherwise add a new entry for the mineral
                     buy_price = (
@@ -610,22 +673,27 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
                         mineral.get_value() * 1.2
                     )  # Some markup from base value
 
-                    new_mineral_cargo = MineralCargo(
-                        mineral=mineral,
-                        quantity=mineral_amount,
-                        buy_price=buy_price,
-                        sell_price=sell_price,
+                    add_result = player_ship.add_cargo(
+                        mineral,
+                        mineral_amount,
+                        buy_price,
+                        sell_price
                     )
-                    player_ship.mineralhold.append(new_mineral_cargo)
-        # Clean up empty entries in cargohold
-        player_ship.cargohold = [
-            cargo for cargo in player_ship.cargohold if cargo.quantity > 0
-        ]
+                    if add_result.is_err():
+                        error = add_result.unwrap_err()
+                        if error.error_type == CargoError.INSUFFICIENT_SPACE:
+                            game_state.ui.error_message(f"Not enough cargo space for mineral {mineral.name}: {error.message}")
+                            if error.context:
+                                game_state.ui.error_message(f"Required: {error.context.get('required_space', 'unknown')} m³, Available: {error.context.get('available_space', 'unknown')} m³")
+                        else:
+                            game_state.ui.error_message(f"Failed to add mineral to cargo: {error.message}")
+                        continue
+        # Note: Cleanup is now handled automatically by the unified cargo system
 
         # Grant experience for Refining & Processing skill - more XP than regular refining
-        assert amount is not None, "Amount should not be None here"
+        assert refine_amount is not None, "Amount should not be None here"
         skill_results = process_skill_xp_from_activity(
-            game_state, "Refining & Processing", amount * 3
+            game_state, "Refining & Processing", refine_amount * 3
         )
         notify_skill_progress(game_state, skill_results)
 
@@ -635,7 +703,7 @@ def refine_to_minerals_command(game_state: Game, amount: Optional[int] = None) -
         mineral_names_str = ", ".join(mineral_names)
 
         game_state.ui.success_message(
-            f"Successfully refined {amount} units of {selected_cargo.ore.name} "
+            f"Successfully refined {refine_amount} units of {ore_item.name} "
             f"into minerals: {mineral_names_str}."
         )
         game_state.ui.info_message(

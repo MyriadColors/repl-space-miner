@@ -65,9 +65,10 @@ def mine_command(
             )
 
             # Suggest selling ore to pay debt if cargo is valuable
-            if player_ship.cargohold:
+            all_cargo = player_ship.get_all_cargo()
+            if all_cargo:
                 total_cargo_value = sum(
-                    cargo.quantity * cargo.sell_price for cargo in player_ship.cargohold
+                    cargo.quantity * cargo.sell_price for cargo in all_cargo
                 )
                 if total_cargo_value > 0:
                     game_state.ui.info_message(

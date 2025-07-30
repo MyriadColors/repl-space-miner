@@ -41,6 +41,24 @@ class Region:
         # Calculate Euclidean distance manually to ensure we're using the correct values
         distance = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
         return round(distance, 2)
+    
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "solar_systems": [system.to_dict() for system in self.solar_systems],
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> "Region":
+        region = cls(data["name"])
+        
+        # Load solar systems if they exist in the data
+        if "solar_systems" in data:
+            for system_data in data["solar_systems"]:
+                system = SolarSystem.from_dict(system_data)
+                region.add_system(system)
+        
+        return region
 
     @staticmethod
     def generate_random_region(

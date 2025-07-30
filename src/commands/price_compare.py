@@ -576,7 +576,7 @@ def find_best_trade_routes(
 
             if ore_cargo:
                 # Calculate how many units of this ore the ship can hold
-                max_units = int(player_ship.cargohold_capacity //
+                max_units = int(player_ship.cargo_hold.capacity //
                                 ore_cargo.ore.volume)
                 ore_capacity[ore_name] = max_units
 

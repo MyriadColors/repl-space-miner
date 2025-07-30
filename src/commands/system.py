@@ -2,6 +2,8 @@ import os
 from typing import Optional
 from colorama import Fore, Style
 from src.classes.game import Game
+from src.classes.ore import Ore
+from src.classes.mineral import Mineral
 from src.helpers import format_seconds
 from .registry import Argument, command_registry
 from .base import register_command
@@ -52,14 +54,25 @@ def display_status(game_state: Game) -> None:
 
     # --- CARGO SECTION ---
     game_state.ui.info_message("CARGO:")
+    cargo_used = player_ship.get_cargo_space_used()
+    cargo_capacity = player_ship.cargo_hold.capacity
     game_state.ui.info_message(
-        f"Cargo Total: {player_ship.cargohold_occupied + player_ship.mineralhold_occupied:.2f}/{player_ship.cargohold_capacity:.1f} m3"
+        f"Cargo Total: {cargo_used:.2f}/{cargo_capacity:.1f} m3"
+    )
+    
+    # Show breakdown by item type
+    ore_items = player_ship.get_cargo_by_type(Ore)
+    mineral_items = player_ship.get_cargo_by_type(Mineral)
+    ore_count = sum(c.quantity for c in ore_items)
+    mineral_count = sum(c.quantity for c in mineral_items)
+    ore_volume = sum(c.total_volume for c in ore_items)
+    mineral_volume = sum(c.total_volume for c in mineral_items)
+    
+    game_state.ui.info_message(
+        f"Ores: {ore_count} units ({ore_volume:.2f} m3)"
     )
     game_state.ui.info_message(
-        f"Ores: {sum(c.quantity for c in getattr(player_ship, 'cargohold', []))} units ({player_ship.cargohold_occupied:.2f} m3)"
-    )
-    game_state.ui.info_message(
-        f"Minerals: {sum(c.quantity for c in getattr(player_ship, 'mineralhold', []))} units ({player_ship.mineralhold_occupied:.2f} m3)"
+        f"Minerals: {mineral_count} units ({mineral_volume:.2f} m3)"
     )
     game_state.ui.info_message("------------------------")
 

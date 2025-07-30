@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Tuple, List, Dict, Union, Any
 
 from pygame import Vector2
 
@@ -6,6 +6,12 @@ from src.classes.asteroid import Asteroid, AsteroidField
 from src.classes.engine import Engine, EngineType
 from src.classes.station import Station
 from src.classes.space_object import IsSpaceObject, CanMove
+from src.classes.cargo_hold import CargoHold, CargoItem
+from src.classes.result import Result, CargoErrorDetails, CargoResult, VoidResult, CargoError
+from src.classes.ore import Ore
+from src.classes.mineral import Mineral
+from src.classes.component import Component
+from src.classes.finished_good import FinishedGood
 from src.data import (
     OreCargo,
     MineralCargo,
@@ -80,11 +86,8 @@ class Ship:
         self.containment_failure_risk = 0.0
         self.last_containment_check = 0.0  # game time of last integrity check
 
-        self.cargohold: list = []
-        self.cargohold_occupied: float = 0
-        self.cargohold_capacity = cargo_capacity
-        self.mineralhold: list = []  # Storage for minerals
-        self.mineralhold_occupied: float = 0  # Space occupied by minerals
+        # Unified cargo system
+        self.cargo_hold = CargoHold(cargo_capacity)
         self.value = value
         self.mining_speed = mining_speed
         self.appearance = (
@@ -94,7 +97,6 @@ class Ship:
         self.interaction_radius = 0.001
         self.is_docked = False
         self.docked_at: Station | None = None
-        self.calculate_cargo_occupancy()
         # If any entity enters this range around the ship, it is detected
         self.sensor_range = sensor_range
         # Track applied upgrades
@@ -144,59 +146,76 @@ class Ship:
                 magneton_resistance=0.0,
             )
 
-    def get_ore_cargo_by_id(self, ore_id: int, purity=None) -> OreCargo | None:
-        """
-        Get ore cargo by id and optionally by purity level.
 
+
+    # New unified cargo interface methods
+    def add_cargo(self, item: Union[Ore, Mineral, Component, FinishedGood], 
+                  quantity: int, buy_price: float = 0.0, sell_price: float = 0.0) -> VoidResult:
+        """
+        Add items to ship's cargo using the unified cargo system.
+        
         Args:
-            ore_id: The ID of the ore to find
-            purity: Optional purity level to match (from PurityLevel enum)
-
+            item: The item to add
+            quantity: Number of items to add
+            buy_price: Price paid for the items
+            sell_price: Expected selling price
+            
         Returns:
-            OreCargo object if found, None otherwise
+            Result[None, CargoErrorDetails]: Success or error details
         """
-        if purity:
-            return next(
-                (
-                    cargo
-                    for cargo in self.cargohold
-                    if cargo.ore.id == ore_id and cargo.ore.purity == purity
-                ),
-                None,
-            )
-        else:
-            return next(
-                (cargo for cargo in self.cargohold if cargo.ore.id == ore_id), None
-            )
-
-    def get_mineral_cargo_by_id(
-        self, mineral_id: str, quality=None
-    ) -> Optional[MineralCargo]:
+        return self.cargo_hold.add_item(item, quantity, buy_price, sell_price)
+    
+    def remove_cargo(self, item_id: str, quantity: int) -> CargoResult[CargoItem]:
         """
-        Get mineral cargo by id and optionally by quality level.
-
+        Remove items from ship's cargo.
+        
         Args:
-            mineral_id: The ID of the mineral to find
-            quality: Optional quality level to match (from MineralQuality enum)
-
+            item_id: ID of the item to remove
+            quantity: Number of items to remove
+            
         Returns:
-            MineralCargo object if found, None otherwise
+            Result[CargoItem, CargoErrorDetails]: Removed items or error details
         """
-        if quality:
-            return next(
-                (
-                    cargo
-                    for cargo in self.mineralhold
-                    if cargo.mineral.id == mineral_id
-                    and cargo.mineral.quality == quality
-                ),
-                None,
-            )
-        else:
-            return next(
-                (cargo for cargo in self.mineralhold if cargo.mineral.id == mineral_id),
-                None,
-            )
+        return self.cargo_hold.remove_item(item_id, quantity)
+    
+    def get_cargo_item(self, item_id: str) -> CargoResult[CargoItem]:
+        """
+        Get specific cargo item by ID.
+        
+        Args:
+            item_id: ID of the item to retrieve
+            
+        Returns:
+            Result[CargoItem, CargoErrorDetails]: Found item or error details
+        """
+        return self.cargo_hold.get_item(item_id)
+    
+    def get_all_cargo(self) -> List[CargoItem]:
+        """Get all cargo items."""
+        return self.cargo_hold.get_all_items()
+    
+    def get_cargo_by_type(self, item_type: type) -> List[CargoItem]:
+        """Get cargo items of specific type."""
+        return self.cargo_hold.get_items_by_type(item_type)
+    
+    def get_cargo_space_used(self) -> float:
+        """Get total cargo space used."""
+        return self.cargo_hold.get_occupied_space()
+    
+    def get_remaining_cargo_space(self) -> float:
+        """Get remaining cargo space."""
+        return self.cargo_hold.get_remaining_space()
+    
+    def is_cargo_full(self) -> bool:
+        """Check if cargo is full."""
+        return self.cargo_hold.is_full()
+    
+    def can_fit_cargo(self, item: Union[Ore, Mineral, Component, FinishedGood], 
+                      quantity: int) -> bool:
+        """Check if items can fit in cargo."""
+        return self.cargo_hold.can_fit(item, quantity)
+
+
 
     def set_name(self, new_name):
         self.name = new_name
@@ -303,11 +322,15 @@ class Ship:
         print(f"The ship has arrived at {vector_to_string(destination)}")
 
     def status_to_string(self) -> list[str]:
-        ore_units_on_cargohold = sum(
-            cargo.quantity for cargo in self.cargohold)
-        mineral_units_on_mineralhold = sum(
-            cargo.quantity for cargo in self.mineralhold)
-        total_cargo_occupied = self.cargohold_occupied + self.mineralhold_occupied
+        ore_items = self.cargo_hold.get_items_by_type(Ore)
+        mineral_items = self.cargo_hold.get_items_by_type(Mineral)
+        
+        ore_units = sum(cargo.quantity for cargo in ore_items)
+        mineral_units = sum(cargo.quantity for cargo in mineral_items)
+        ore_volume = sum(cargo.total_volume for cargo in ore_items)
+        mineral_volume = sum(cargo.total_volume for cargo in mineral_items)
+        total_cargo_occupied = self.cargo_hold.get_occupied_space()
+        
         docked_at_name = "Not docked" if self.docked_at is None else self.docked_at.name
         return [
             f"Ship Name: {self.name}",
@@ -319,9 +342,9 @@ class Ship:
             f"Antimatter: {self.antimatter:.2f}/{self.max_antimatter} g",
             f"Power: {self.power:.2f}/{self.max_power}",
             f"Containment Integrity: {self.containment_integrity:.1f}%",
-            f"Cargo Total: {total_cargo_occupied:.2f}/{self.cargohold_capacity} m3",
-            f"Ores: {ore_units_on_cargohold} units ({self.cargohold_occupied:.2f} m3)",
-            f"Minerals: {mineral_units_on_mineralhold} units ({self.mineralhold_occupied:.2f} m3)",
+            f"Cargo Total: {total_cargo_occupied:.2f}/{self.cargo_hold.capacity} m3",
+            f"Ores: {ore_units} units ({ore_volume:.2f} m3)",
+            f"Minerals: {mineral_units} units ({mineral_volume:.2f} m3)",
             f"Docked at: {docked_at_name}",
             f"Hull Integrity: {self.hull_integrity:.1f}%",
             f"Shield Capacity: {self.shield_capacity:.1f}%",
@@ -434,7 +457,7 @@ class Ship:
                     continue
 
             # Check if the ore fits in the remaining cargo capacity
-            if self.cargohold_occupied + ore.volume > self.cargohold_capacity:
+            if not self.can_fit_cargo(ore, 1):
                 print(
                     f"Cannot mine more {ore.name} because it exceeds the ship's cargo capacity."
                 )
@@ -452,33 +475,27 @@ class Ship:
 
             # Add the ore to mined cargo
             ore_cargo = next(
-                (cargo for cargo in ores_mined if cargo.ore.id == ore.id), None
+                (cargo for cargo in ores_mined if cargo.ore.commodity.commodity_id == ore.commodity.commodity_id), None
             )
             if ore_cargo:
                 ore_cargo.quantity += 1
             else:
                 ores_mined.append(
-                    OreCargo(ore, 1, ore.base_value, ore.base_value))
+                    OreCargo(ore, 1, ore.commodity.base_price, ore.commodity.base_price))
 
-            # Decrease the asteroid's volume and update ship's cargo data
-            asteroid_being_mined.volume -= ore.volume
-            self.cargohold_occupied += ore.volume
+            # Decrease the asteroid's volume and add to ship's cargo
+            asteroid_being_mined.volume -= ore.commodity.volume_per_unit
+            self.add_cargo(ore, 1, ore.commodity.base_price, ore.commodity.base_price)
             mined_volume += effective_mining_speed
             time_spent += 1
 
         # Summarize mined results
         total_volume = sum(
-            cargo.quantity * cargo.ore.volume for cargo in ores_mined)
+            cargo.quantity * cargo.ore.commodity.volume_per_unit for cargo in ores_mined)
         total_quantity = sum(cargo.quantity for cargo in ores_mined)
-        ore_names = {cargo.ore.name for cargo in ores_mined}
+        ore_names = {cargo.ore.commodity.name for cargo in ores_mined}
 
-        # Update the ship's cargo hold with mined ores
-        for ore_cargo in ores_mined:
-            existing_cargo = self.get_ore_cargo_by_id(ore_cargo.ore.id)
-            if existing_cargo:
-                existing_cargo.quantity += ore_cargo.quantity
-            else:
-                self.cargohold.append(ore_cargo)
+        # Note: Ores are already added to cargo during mining loop above
 
         if total_quantity > 0:
             print(
@@ -491,31 +508,15 @@ class Ship:
         else:
             print(
                 "No ores were mined."
-                # Recalculate cargo occupancy and update global game time        self.calculate_cargo_occupancy()
             )
         print(f"Time spent mining: {time_spent} seconds.")
         game_state.global_time += time_spent
 
-    def calculate_cargo_occupancy(self):
-        """Calculate the total cargo space occupied by ores and minerals."""
-        self.cargohold_occupied = sum(
-            cargo.quantity * cargo.ore.volume for cargo in self.cargohold
-        )
-        self.mineralhold_occupied = sum(
-            cargo.quantity * cargo.mineral.volume for cargo in self.mineralhold
-        )
 
-    def is_cargo_full(self) -> bool:
-        total_occupied = self.cargohold_occupied + self.mineralhold_occupied
-        return total_occupied >= self.cargohold_capacity
 
-    def get_remaining_cargo_space(self) -> float:
-        """Get the remaining cargo space, accounting for both ores and minerals
+    # Note: is_cargo_full method is already defined above in the new cargo interface
 
-        Returns:
-            float: Available cargo space in cubic meters"""
-        total_occupied = self.cargohold_occupied + self.mineralhold_occupied
-        return max(0.0, self.cargohold_capacity - total_occupied)
+    # Note: get_remaining_cargo_space method is already defined above in the new cargo interface
 
     def check_field_presence(self, game_state) -> Tuple[bool, Optional[AsteroidField]]:
         for field in game_state.get_current_solar_system().get_all_asteroid_fields():
@@ -539,60 +540,145 @@ class Ship:
         for ore in field.ores_available:
             print(f"{ore.name} - {ore.volume} m3")
 
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "position": {
-                "x": self.space_object.position.x,
-                "y": self.space_object.position.y,
-            },
-            "speed": self.moves.speed,
-            "max_fuel": self.max_fuel,
-            "fuel": self.fuel,
-            "fuel_consumption": self.fuel_consumption,
-            "power": self.power,
-            "max_power": self.max_power,
-            "cargo_capacity": self.cargohold_capacity,
-            "cargohold_occupied": self.cargohold_occupied,
-            "cargohold": [cargo.to_dict() for cargo in self.cargohold],
-            "mineralhold_occupied": self.mineralhold_occupied,
-            "mineralhold": [cargo.to_dict() for cargo in self.mineralhold],
-            "value": self.value,
-            "mining_speed": self.mining_speed,
-            "sensor_range": self.sensor_range,
-            "is_docked": self.is_docked,
-            "docked_at_id": self.docked_at.space_object.id if self.docked_at else None,
-            "applied_upgrades": {
-                upgrade_id: upgrade.to_dict()
-                for upgrade_id, upgrade in self.applied_upgrades.items()
-            },
-            "hull_integrity": self.hull_integrity,
-            "shield_capacity": self.shield_capacity,
-            "last_position": (
-                {"x": self.last_position.x, "y": self.last_position.y}
-                if self.last_position
-                else None
-            ),
-        }
+    def to_dict(self) -> Result[Dict[str, Any], CargoErrorDetails]:
+        """
+        Convert Ship to dictionary representation.
+        
+        Returns:
+            Result containing ship dictionary or error details
+        """
+        try:
+            # Get cargo hold serialization
+            cargo_result = self.cargo_hold.to_dict()
+            if cargo_result.is_err():
+                return Result.err(CargoErrorDetails(
+                    error_type=CargoError.SERIALIZATION_ERROR,
+                    message="Failed to serialize cargo hold",
+                    context={
+                        "ship_name": self.name,
+                        "cargo_error": cargo_result.unwrap_err().message
+                    }
+                ))
+            
+            cargo_dict = cargo_result.unwrap()
+            
+            # Serialize position as a dict if it exists
+            position_dict = None
+            if hasattr(self, 'space_object') and self.space_object:
+                position = self.space_object.get_position()
+                position_dict = {"x": position.x, "y": position.y}
+            
+            # Serialize location as a dict if it exists
+            location_dict = None
+            if hasattr(self, 'location') and self.location:
+                if hasattr(self.location, 'to_dict'):
+                    location_dict = self.location.to_dict()
+                else:
+                    location_dict = {"x": self.location.x, "y": self.location.y}
+            
+            # Serialize docked station if it exists
+            docked_station_dict = None
+            if self.docked_at and hasattr(self.docked_at, 'to_dict'):
+                try:
+                    docked_station_dict = self.docked_at.to_dict()
+                except Exception:
+                    # If station serialization fails, just store basic info
+                    docked_station_dict = {"name": getattr(self.docked_at, 'name', 'Unknown Station')}
+            
+            # Serialize engine if it exists
+            engine_dict = None
+            if hasattr(self, 'engine') and self.engine:
+                if hasattr(self.engine, 'to_dict'):
+                    engine_dict = self.engine.to_dict()
+                else:
+                    engine_dict = {
+                        "id": getattr(self.engine, 'id', 'default'),
+                        "name": getattr(self.engine, 'name', 'Default Engine')
+                    }
+            
+            ship_dict = {
+                "name": self.name,
+                "position": position_dict,
+                "speed": self.moves.speed if hasattr(self, 'moves') else 1.0,
+                "fuel": self.fuel,
+                "max_fuel": self.max_fuel,
+                "fuel_consumption": self.fuel_consumption,
+                "cargo_capacity": self.cargo_hold.capacity,
+                "cargo_hold": cargo_dict,
+                "value": self.value,
+                "mining_speed": self.mining_speed,
+                "sensor_range": self.sensor_range,
+                "appearance": self.appearance,
+                "antimatter": self.antimatter,
+                "max_antimatter": self.max_antimatter,
+                "antimatter_consumption": self.antimatter_consumption,
+                "power": self.power,
+                "max_power": self.max_power,
+                "containment_integrity": self.containment_integrity,
+                "containment_failure_risk": self.containment_failure_risk,
+                "last_containment_check": self.last_containment_check,
+                "hull_integrity": self.hull_integrity,
+                "shield_capacity": self.shield_capacity,
+                "sensor_signature": self.sensor_signature,
+                "location": location_dict,
+                "docked": self.is_docked,
+                "docked_station": docked_station_dict,
+                "engine": engine_dict,
+                "applied_upgrades": {k: v.to_dict() if hasattr(v, 'to_dict') else str(v) 
+                                   for k, v in self.applied_upgrades.items()},
+                "previous_system": self.previous_system,
+                "current_system": self.current_system
+            }
+            
+            return Result.ok(ship_dict)
+            
+        except Exception as e:
+            return Result.err(CargoErrorDetails(
+                error_type=CargoError.SERIALIZATION_ERROR,
+                message=f"Unexpected error during ship serialization: {str(e)}",
+                context={
+                    "ship_name": getattr(self, 'name', 'Unknown'),
+                    "exception_type": type(e).__name__
+                }
+            ))
 
     def cargo_to_string(self):
         """Return a string representation of the cargo contents."""
         result = []
 
         # Add ore information
-        if self.cargohold:
+        ore_items = self.cargo_hold.get_items_by_type(Ore)
+        if ore_items:
             result.append("=== Ores ===")
-            for cargo in self.cargohold:
-                result.append(f"{cargo.quantity} units of {cargo.ore.name}")
+            for cargo in ore_items:
+                result.append(f"{cargo.quantity} units of {cargo.item_name}")
 
         # Add mineral information
-        if self.mineralhold:
+        mineral_items = self.cargo_hold.get_items_by_type(Mineral)
+        if mineral_items:
             if result:  # Add a blank line if we already have ores listed
                 result.append("")
             result.append("=== Minerals ===")
-            for cargo in self.mineralhold:
-                result.append(
-                    f"{cargo.quantity} units of {cargo.mineral.name}")
+            for cargo in mineral_items:
+                result.append(f"{cargo.quantity} units of {cargo.item_name}")
+
+        # Add component information
+        component_items = self.cargo_hold.get_items_by_type(Component)
+        if component_items:
+            if result:
+                result.append("")
+            result.append("=== Components ===")
+            for cargo in component_items:
+                result.append(f"{cargo.quantity} units of {cargo.item_name}")
+
+        # Add finished goods information
+        finished_good_items = self.cargo_hold.get_items_by_type(FinishedGood)
+        if finished_good_items:
+            if result:
+                result.append("")
+            result.append("=== Finished Goods ===")
+            for cargo in finished_good_items:
+                result.append(f"{cargo.quantity} units of {cargo.item_name}")
 
         # If we have no cargo, return a message
         if not result:
@@ -601,90 +687,161 @@ class Ship:
         return "\n".join(result)
 
     @classmethod
-    def from_dict(cls, data, game_state):  # Added game_state parameter
-        ship = cls(
-            name=data["name"],
-            position=Vector2(data["position"]["x"], data["position"]["y"]),
-            speed=data["speed"],
-            max_fuel=data["max_fuel"],
-            fuel_consumption=data["fuel_consumption"],
-            cargo_capacity=data["cargo_capacity"],
-            value=data["value"],
-            mining_speed=data["mining_speed"],
-            sensor_range=data["sensor_range"],
-        )
-        ship.fuel = data["fuel"]
-
-        # Load power attributes if they exist in saved data, otherwise use defaults
-        if "power" in data:
-            ship.power = data["power"]
-        if "max_power" in data:
-            ship.max_power = data["max_power"]
-
-        ship.cargohold_occupied = data["cargohold_occupied"]
-        ship.cargohold = [
-            OreCargo.from_dict(cargo_data) for cargo_data in data["cargohold"]
-        ]
-
-        # Load mineralhold if present
-        if "mineralhold" in data:
-            from src.data import MineralCargo
-
-            ship.mineralhold_occupied = data.get("mineralhold_occupied", 0.0)
-            ship.mineralhold = [
-                MineralCargo.from_dict(cargo_data) for cargo_data in data["mineralhold"]
-            ]
-        else:
-            ship.mineralhold = []
-            ship.mineralhold_occupied = 0.0
-
-        ship.is_docked = data["is_docked"]
-
-        # Load applied upgrades if present
-        if "applied_upgrades" in data:
-            from src.data import Upgrade
-
-            ship.applied_upgrades = {
-                upgrade_id: Upgrade.from_dict(upgrade_data)
-                for upgrade_id, upgrade_data in data["applied_upgrades"].items()
-            }
-
-        # Load hull and shield stats if present
-        if "hull_integrity" in data:
-            ship.hull_integrity = data["hull_integrity"]
-        if "shield_capacity" in data:
-            ship.shield_capacity = data["shield_capacity"]
-
-        # Load last_position if present
-        if "last_position" in data and data["last_position"] is not None:
-            ship.last_position = Vector2(
-                data["last_position"]["x"], data["last_position"]["y"]
+    def from_dict(cls, data: Dict[str, Any]) -> Result['Ship', CargoErrorDetails]:
+        """
+        Create Ship instance from dictionary representation.
+        
+        Args:
+            data: Dictionary containing ship data
+            
+        Returns:
+            Result containing Ship instance or error details
+        """
+        try:
+            # Validate required fields
+            required_fields = ["name", "cargo_hold"]
+            missing_fields = [field for field in required_fields if field not in data]
+            if missing_fields:
+                return Result.err(CargoErrorDetails(
+                    error_type=CargoError.DESERIALIZATION_ERROR,
+                    message=f"Missing required fields: {', '.join(missing_fields)}",
+                    context={
+                        "missing_fields": missing_fields,
+                        "available_fields": list(data.keys())
+                    }
+                ))
+            
+            # Deserialize position
+            position = Vector2(0, 0)
+            if data.get("position"):
+                pos_data = data["position"]
+                position = Vector2(pos_data.get("x", 0), pos_data.get("y", 0))
+            
+            # Deserialize cargo hold first to get the correct capacity
+            cargo_result = CargoHold.from_dict(data["cargo_hold"])
+            if cargo_result.is_err():
+                return Result.err(CargoErrorDetails(
+                    error_type=CargoError.DESERIALIZATION_ERROR,
+                    message="Failed to deserialize cargo hold",
+                    context={
+                        "ship_name": data["name"],
+                        "cargo_error": cargo_result.unwrap_err().message
+                    }
+                ))
+            
+            cargo_hold = cargo_result.unwrap()
+            
+            # Create ship instance with constructor parameters using cargo hold capacity
+            ship = cls(
+                name=data["name"],
+                position=position,
+                speed=data.get("speed", 1.0),
+                max_fuel=data.get("max_fuel", 100.0),
+                fuel_consumption=data.get("fuel_consumption", 1.0),
+                cargo_capacity=cargo_hold.capacity,  # Use capacity from deserialized cargo hold
+                value=data.get("value", 10000.0),
+                mining_speed=data.get("mining_speed", 1.0),
+                sensor_range=data.get("sensor_range", 1.0),
+                appearance=data.get("appearance", "Rust Bucket")
             )
-        else:
-            ship.last_position = None
-
-        if data["docked_at_id"] is not None:
-            # Find the station instance from the game_state
-            docked_station = next(
-                (
-                    s
-                    # MODIFIED
-                    for s in game_state.get_current_solar_system().stations
-                    if s.space_object.id == data["docked_at_id"]
-                ),
-                None,
-            )
-            if docked_station:
-                ship.docked_at = docked_station
-            else:
-                # Handle case where station might not be found (e.g. corrupted save)
-                print(
-                    f"Warning: Docked station with ID {data['docked_at_id']} not found during ship deserialization."
-                )
-                ship.docked_at = None
-        else:
-            ship.docked_at = None
-        return ship
+            
+            # Set fuel after creation (since constructor sets fuel to max_fuel)
+            ship.fuel = data.get("fuel", ship.max_fuel)
+            
+            # Replace the empty cargo hold with the deserialized one
+            ship.cargo_hold = cargo_hold
+            
+            # Set additional attributes that aren't in constructor
+            ship.antimatter = data.get("antimatter", 5.0)
+            ship.max_antimatter = data.get("max_antimatter", 5.0)
+            ship.antimatter_consumption = data.get("antimatter_consumption", 0.5)
+            ship.power = data.get("power", 100.0)
+            ship.max_power = data.get("max_power", 100.0)
+            ship.containment_integrity = data.get("containment_integrity", 100.0)
+            ship.containment_failure_risk = data.get("containment_failure_risk", 0.0)
+            ship.last_containment_check = data.get("last_containment_check", 0.0)
+            ship.hull_integrity = data.get("hull_integrity", 100.0)
+            ship.shield_capacity = data.get("shield_capacity", 0.0)
+            ship.sensor_signature = data.get("sensor_signature", 1.0)
+            ship.is_docked = data.get("docked", False)
+            ship.previous_system = data.get("previous_system", "Unknown")
+            ship.current_system = data.get("current_system", "Unknown")
+            
+            # Deserialize location
+            if data.get("location"):
+                loc_data = data["location"]
+                if isinstance(loc_data, dict) and "x" in loc_data and "y" in loc_data:
+                    ship.location = Vector2(loc_data["x"], loc_data["y"])
+                else:
+                    # Try to deserialize as a complex location object
+                    try:
+                        from .location import Location
+                        ship.location = Location.from_dict(loc_data)
+                    except (ImportError, AttributeError):
+                        # Fallback to Vector2 if Location class doesn't exist or doesn't have from_dict
+                        ship.location = Vector2(0, 0)
+            
+            # Deserialize docked station
+            if data.get("docked_station"):
+                try:
+                    from .station import Station
+                    if hasattr(Station, 'from_dict'):
+                        ship.docked_at = Station.from_dict(data["docked_station"])
+                    else:
+                        # If Station doesn't have from_dict, we can't deserialize it properly
+                        ship.docked_at = None
+                except (ImportError, AttributeError):
+                    ship.docked_at = None
+            
+            # Deserialize engine
+            if data.get("engine"):
+                try:
+                    engine_data = data["engine"]
+                    if hasattr(ship.engine, 'from_dict'):
+                        ship.engine = ship.engine.from_dict(engine_data)
+                    else:
+                        # Update engine attributes if possible
+                        if isinstance(engine_data, dict):
+                            for attr in ["id", "name"]:
+                                if attr in engine_data and hasattr(ship.engine, attr):
+                                    setattr(ship.engine, attr, engine_data[attr])
+                except (AttributeError, KeyError):
+                    # Keep default engine if deserialization fails
+                    pass
+            
+            # Deserialize applied upgrades
+            if data.get("applied_upgrades"):
+                try:
+                    upgrades_data = data["applied_upgrades"]
+                    if isinstance(upgrades_data, dict):
+                        ship.applied_upgrades = {}
+                        for key, value in upgrades_data.items():
+                            # For now, just store the string representation
+                            # In a full implementation, you'd deserialize Upgrade objects
+                            ship.applied_upgrades[key] = value
+                except (AttributeError, KeyError):
+                    ship.applied_upgrades = {}
+            
+            return Result.ok(ship)
+            
+        except KeyError as e:
+            return Result.err(CargoErrorDetails(
+                error_type=CargoError.DESERIALIZATION_ERROR,
+                message=f"Missing required key: {str(e)}",
+                context={
+                    "missing_key": str(e),
+                    "ship_name": data.get("name", "Unknown")
+                }
+            ))
+        except Exception as e:
+            return Result.err(CargoErrorDetails(
+                error_type=CargoError.DESERIALIZATION_ERROR,
+                message=f"Unexpected error during ship deserialization: {str(e)}",
+                context={
+                    "ship_name": data.get("name", "Unknown"),
+                    "exception_type": type(e).__name__
+                }
+            ))
 
     @classmethod
     def from_template(cls, template_id: str, name: Optional[str] = None) -> "Ship":
@@ -833,7 +990,7 @@ class Ship:
             self.fuel += self.max_fuel - old_capacity
 
         elif upgrade.target == UpgradeTarget.CARGO_CAPACITY:
-            self.cargohold_capacity *= upgrade.multiplier
+            self.cargo_hold.capacity *= upgrade.multiplier
 
         elif upgrade.target == UpgradeTarget.SENSOR_RANGE:
             self.sensor_range *= upgrade.multiplier
@@ -902,9 +1059,9 @@ class Ship:
             result["unit"] = "m³"
 
         elif upgrade.target == UpgradeTarget.CARGO_CAPACITY:
-            result["before"] = float(self.cargohold_capacity)
+            result["before"] = float(self.cargo_hold.capacity)
             result["after"] = float(
-                self.cargohold_capacity * upgrade.multiplier)
+                self.cargo_hold.capacity * upgrade.multiplier)
             result["is_positive"] = True
             result["unit"] = "m³"
 
