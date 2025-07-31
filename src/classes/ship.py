@@ -14,7 +14,6 @@ from src.classes.component import Component
 from src.classes.finished_good import FinishedGood
 from src.data import (
     OreCargo,
-    MineralCargo,
     Upgrade,
     UpgradeTarget,
     ENGINES,

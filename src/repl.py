@@ -3,7 +3,6 @@ from src.classes.game import Character, Game
 from src.classes.ship import Ship
 from src.classes.ship_integration import (
     integrate_dual_fuel_system,
-    update_ship_serialization,
 )
 from src.commands import (
     refuel_command,
@@ -41,7 +40,6 @@ init(autoreset=True)
 
 # Integrate dual fuel system
 integrate_dual_fuel_system()
-update_ship_serialization()
 
 # Constants for Character and Ship initialization
 CHARACTER_NAME = "Player"
